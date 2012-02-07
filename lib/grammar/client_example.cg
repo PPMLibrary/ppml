@@ -1,0 +1,55 @@
+client PSE
+  ! fortran definitions up front
+  ! or should we make it possible to define anywhere?
+  real, dimension(3), pointer :: bells_and_whistles
+  integer :: fortran_is_crap
+
+  property f
+  operator d
+  cloud c
+
+  ppm_init
+
+  c = create_particles
+  t = create_topology(c)
+
+  global_map(c,t)
+
+  attach(f,c)
+  ghost_map(c)
+  create_neighlist(c)
+
+  ! more fortran here
+  call boilerplate(some, arg)
+
+  compute(d,c)
+
+  o = initialize_ode(r)
+
+  ! PPMCG ----------------------------------
+  loop c.each do |p|
+    dp = 0
+    loop p.neighbours_with_distance do |n,d|
+      dp = dp + n.weight/d**2
+    end loop
+  end loop
+  ! FORTRAN --------------------------------
+  do i=1,c%size
+    dp = 0
+    neighlist => c%neighlist(i)
+    do j=1,c%nvlist(i)
+      dist = euclidean_distance(c%xp(i), c%xp(neiglist(j)))
+      dp = dp + c%wp(neighlist(j)) / dist**2
+    end
+  end
+  ! ----------------------------------------
+
+    step_ode(o,c)
+
+  ppm_finalize
+
+end client PSE
+
+rhs r(a)
+  a = apply_operator(d,a)
+end rhs
