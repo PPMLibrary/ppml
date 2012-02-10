@@ -1,4 +1,5 @@
 # -*- ruby -*-
+require 'rspec/core/rake_task'
 
 require 'rake/clean'
 # temp files
@@ -16,7 +17,7 @@ grammars = FileList.new("lib/grammar/*.g")
 grammars.each do |f|
   task :antlr do
     puts "Generating #{f}"
-    `antlr4ruby -make #{f}`
+    `antlr4ruby #{f}`
     name = f.match(/lib\/grammar\/(.*).g/)[1]
     `mv lib/grammar/#{name}*.rb lib/parser/`
     `mv #{name}.tokens lib/parser/`
@@ -25,10 +26,10 @@ end
 
 desc "Run Cucumber tests."
 task :cuke do
-  puts `cucumber -c features`
+  puts `cucumber --color --format html --out doc/feature_report.html --format pretty`
 end
 
-desc "Run RSpec tests."
-task :spec do
-  puts `rspec -c -fd`
+RSpec::Core::RakeTask.new do |t|
+  t.verbose = false
+  t.rspec_opts = ["--color", "--format html", "--out doc/spec_report.html", "--format documentation"]
 end

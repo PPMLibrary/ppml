@@ -1,3 +1,2 @@
-require_relative '../../lib/preprocessor'
+require_relative '../../lib/macros'
 require_relative '../../lib/parser'
-

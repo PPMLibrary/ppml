@@ -1,16 +1,26 @@
 Feature: preprocessing standard fortran
 
-  Using the client generator as a preprocesor for fortran should not
-  interfere with standard fortran code. All the standard fortran
-  syntax should be ignored by the macro expansion.
+  If the preprocessor is to be used with existing
+  fortran code, it has to be generic
+  a user should be able to preprocess standard fortran
+  which should pass without modification
 
-  Scenario Outline: preprocess fortran
+  Scenario Outline: preprocess standard fortran
     Given the input is standard fortran
-    When I pass "<code>"
+    When I preprocess "<code>"
     Then it should remain unchanged
 
-    Scenarios: top level constructs
+    Examples: top level constructs
       | code                                       |
       | program sample\nend program                |
       | subroutine name(args)\nend subroutine name |
 
+    Examples: variable definition
+      | code                    |
+      | integer :: i            |
+      | real, dimesion(:) array |
+
+    Examples: expressions
+      | code       |
+      | a+2*b      |
+      | l = log(x) |
