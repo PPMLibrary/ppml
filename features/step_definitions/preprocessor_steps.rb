@@ -7,17 +7,17 @@ Given /^the input is standard fortran$/ do
   @macros ||= []
 end
 
-When /^I preprocess "([^"]*)"$/ do |code|
+When /^I preprocess "([^"]*)"$/ do |input|
   p = CG::Preprocessor.new
   p.macros += @macros
-  @code = code
-  @o = p.process(code)
+  @input = input
+  @output = p.process(@input)
 end
 
 Then /^it should remain unchanged$/ do
-  @o.should == @code
+  @output.should == @input
 end
 
 Then /^it should expand into "([^"]*)"$/ do |result|
-  @o.should == result
+  @output.should == result
 end

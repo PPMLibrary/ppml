@@ -5,7 +5,7 @@ require 'rake/clean'
 # temp files
 CLEAN.include("**/*~")
 # generated files
-CLOBBER.include("lib/parser")
+CLOBBER.include("lib/parser/*")
 
 
 desc "Run antlr4ruby to generate the parser."
@@ -13,14 +13,14 @@ task :antlr do
   Dir.mkdir("lib/parser") if !File.directory?("lib/parser")
 end
 # this should be changed to reflect dependencies between grammars
-grammars = FileList.new("lib/grammar/*.g")
+grammars = FileList.new(["lib/grammar/CG.g", "lib/grammar/tree/CG.g"])
 grammars.each do |f|
   task :antlr do
     puts "Generating #{f}"
     `antlr4ruby #{f}`
-    name = f.match(/lib\/grammar\/(.*).g/)[1]
-    `mv lib/grammar/#{name}*.rb lib/parser/`
-    `mv #{name}.tokens lib/parser/`
+    path, name = f.match(/(lib\/grammar\/(?:tree\/)?(.*?)).g/)[1..2]
+    `mv #{path}*.rb lib/parser/`
+    `cp #{name}.tokens lib/parser/`
   end
 end
 

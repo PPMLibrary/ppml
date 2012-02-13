@@ -2,7 +2,12 @@ grammar CG ;
 
 options {
 language = Ruby;
-output =  template;
+output = AST;
+}
+
+tokens{
+FMACRO;
+FLINE;
 }
 
 @header{
@@ -13,29 +18,22 @@ output =  template;
 # goes into initialize
 }
 
-prog : f+=fline (f+=fline)+ { puts $f } ;
+prog	: (fcmacro | fline)* ;
 
-fline : ANYTOK* NEWLINE { puts $fline.text } ;
+fcmacro	: (result=ID '=')? name=ID '()' NEWLINE -> ^(FMACRO $name $result?) ;
+fline	: allowed* NEWLINE -> FLINE ;
 
-//fcmacro : (ID '=')? ID '()' NEWLINE { $fcmacro.text } ;
+ID	: (ALPHA | '_') (ALNUM | '_')* ;
+allowed	: ID ;
 
-ID : (ALPHA | '_') (ALNUM | '_')* ;
-
-fragment
-ALNUM : (ALPHA | DIGIT) ;
-fragment
-ALPHA : 'a'..'z' | 'A'..'Z' ;
-fragment
-DIGIT : '0'..'9' ;
-
-ANYTOK : ANYCHAR+ ;
+WS	: SPORT* { $channel=HIDDEN } ;
+NEWLINE	: '\n';
 
 fragment
-ANYCHAR : ~(SPORT | NEWLINE) ;
-
-WS : SPORT { skip } ;
-
+SPORT	: ' '|'\t';
 fragment
-SPORT : ' '|'\t';
-
-NEWLINE : '\n';
+ALNUM	: (ALPHA | DIGIT) ;
+fragment
+ALPHA	: 'a'..'z' | 'A'..'Z' ;
+fragment
+DIGIT	: '0'..'9' ;

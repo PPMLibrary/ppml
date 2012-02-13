@@ -7,6 +7,7 @@ module CG
     end
 
     def process(input)
+      parser = Parser.new(Lexer.new(input))
       input
     end
 
