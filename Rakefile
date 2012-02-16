@@ -8,26 +8,32 @@ CLEAN.include("**/*~")
 CLOBBER.include("lib/parser/*")
 
 
-desc "Run antlr4ruby to generate the parser."
-task :antlr do
+def antlr(f)
+  puts "Generating #{f}"
   Dir.mkdir("lib/parser") if !File.directory?("lib/parser")
-end
-# this should be changed to reflect dependencies between grammars
-grammars = FileList.new(["lib/grammar/CG.g", "lib/grammar/tree/CG.g"])
-grammars.each do |f|
-  task :antlr do
-    puts "Generating #{f}"
-    `antlr4ruby #{f}`
-    path, name = f.match(/(lib\/grammar\/(?:tree\/)?(.*?)).g/)[1..2]
-    `mv #{path}*.rb lib/parser/`
-    `cp #{name}.tokens lib/parser/`
-  end
+  `antlr4ruby #{f}`
+  path, name = f.match(/(lib\/grammar\/(?:tree\/)?(.*?)).g/)[1..2]
+  `mv #{path}*.rb lib/parser/`
+  `cp #{name}.tokens lib/parser/`
 end
 
+file 'lib/parser/CGParser.rb' => 'lib/grammar/CG.g' do |f|
+  antlr 'lib/grammar/CG.g'
+end
+
+file 'lib/parser/CG.rb' => ['lib/grammar/tree/CG.g', 'lib/parser/CGParser.rb'] do |f|
+  antlr 'lib/grammar/tree/CG.g'
+end
+
+desc "Regenerate ANTLR Parsers"
+task :antlr => 'lib/parser/CG.rb'
+
 desc "Run Cucumber tests."
-task :cuke do
+task :cuke => :antlr do
   puts `cucumber --color --format html --out doc/feature_report.html --format pretty`
 end
+
+task :spec => :antlr
 
 RSpec::Core::RakeTask.new do |t|
   t.verbose = false

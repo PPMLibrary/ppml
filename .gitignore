@@ -1,2 +1,4 @@
 lib/parser/*.rb
 lib/parser/*.tokens
+doc/*
+*.#*

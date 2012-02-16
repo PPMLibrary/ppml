@@ -1,13 +1,20 @@
-Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
-  @macros ||= []
-  @macros << CG::Macro.new(name, body)
-end
-
 Given /^the input is standard fortran$/ do
-  @macros ||= []
+  pending
+  @macros ||= {}
 end
 
-When /^I preprocess "([^"]*)"$/ do |input|
+Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
+  @macros ||= {}
+  @macros[name] = CG::Macro.new(name, body)
+end
+
+Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as "([^"]*)"$/ do |name, args, body| #"
+  @macros ||= {}
+  a = args.split(',')
+  @macros[name] = CG::Macro.new(name, body, a)
+end
+
+When /^I preprocess "([^"]*)"$/ do |input| #"
   p = CG::Preprocessor.new
   p.macros += @macros
   @input = input
@@ -18,6 +25,6 @@ Then /^it should remain unchanged$/ do
   @output.should == @input
 end
 
-Then /^it should expand into "([^"]*)"$/ do |result|
+Then /^it should expand into "([^"]*)"$/ do |result| #"
   @output.should == result
 end

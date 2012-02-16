@@ -11,16 +11,16 @@ Feature: preprocessing standard fortran
     Then it should remain unchanged
 
     Examples: top level constructs
-      | code                                       |
-      | program sample\nend program                |
-      | subroutine name(args)\nend subroutine name |
+      | code                                         |
+      | program sample\nend program\n                |
+      | subroutine name(args)\nend subroutine name\n |
 
     Examples: variable definition
-      | code                    |
-      | integer :: i            |
-      | real, dimesion(:) array |
+      | code                      |
+      | integer :: i\n            |
+      | real, dimesion(:) array\n |
 
     Examples: expressions
-      | code       |
-      | a+2*b      |
-      | l = log(x) |
+      | code         |
+      | a+2*b\n      |
+      | l = log(x)\n |

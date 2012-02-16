@@ -14,8 +14,13 @@ module CG
 
     def get_templates
       ANTLR3::Template::Group.new do
-        define_template( :fcall_macro, <<-'END'.strip )
-        [<% puts "Hello, world!" %>]
+        define_template( :prog, <<-'END'.strip)
+        <%= @lines.join("\n") %>
+        END
+        define_template( :line, "<%= @in %>")
+        define_template( :fortran, "  <%= @in %>")
+        define_template( :fcall_macro, <<-'END' )
+        <%= @name.to_s + " : " + @result.to_s %>
         END
       end
     end
@@ -29,14 +34,10 @@ PROGRAM name
 end program
 HDC
 
-    context "recognize standard fortran" do
-      it "recognizes all fortran code as an fline" do
-        t = parser_for_string(fortran_program)
-        # g = ANTLR3::Template::Group.new(templates)
-        # c = t.create_template(templates)
-        puts t.prog
-        pp t.prog.template
-      end
+    it "playground" do
+      # t = parser_for_string(fortran_program)
+      # t.prog.template
     end
+
   end
 end

@@ -8,26 +8,56 @@ output = AST;
 tokens{
 FMACRO;
 FLINE;
+ARGS;
 }
 
 @header{
 # require 'something'
 }
 
-@init{
-# goes into initialize
+@members{
+attr_accessor :preprocessor
+
+def fmacro_call?
+  if input.peek(2) == TokenData::ASSIGN
+    @preprocessor.macros.has_key?(input.look(3).text)
+  else
+    @preprocessor.macros.has_key?(input.look(1).text)
+  end
+end
 }
 
-prog	: (fcmacro | fline)* ;
+prog : line* ;
 
-fcmacro	: (result=ID '=')? name=ID '()' NEWLINE -> ^(FMACRO $name $result?) ;
-fline	: allowed* NEWLINE -> FLINE ;
+line
+    : ({fmacro_call?}?=> fcmacro
+    | fline)
+    ;
+
+fcmacro
+    : (result=ID ASSIGN)?  name=ID  '(' (args+=ID (',' args+=ID)* )? ')' NEWLINE
+      -> ^(FMACRO $name $result? ^(ARGS $args*))
+    ;
+
+fline
+    : fline_contents NEWLINE
+      -> FLINE[$NEWLINE,$fline_contents.text]
+    ;
+
+fline_contents : allowed* ;
+
+fragment
+ASSIGN: '=' ;
 
 ID	: (ALPHA | '_') (ALNUM | '_')* ;
-allowed	: ID ;
+allowed	: ID | '(' | ')' | NUMBER ;
+
+NUMBER : DIGIT+ ;
 
 WS	: SPORT* { $channel=HIDDEN } ;
 NEWLINE	: '\n';
+
+COMMENT : '!' .* NEWLINE { $channel=HIDDEN } ;
 
 fragment
 SPORT	: ' '|'\t';
