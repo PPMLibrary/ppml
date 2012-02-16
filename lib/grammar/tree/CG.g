@@ -9,8 +9,10 @@ output = template;
 }
 
 //prog	: all+=.*  { $all.each { |t| puts t.text }  } ;
-prog 	: (fcmacro | fline)* ;
+prog 	: (fcmacro | fline)* -> template() "prog template output!";
+//prog 	: (fcmacro | fline)* ;
 
-fcmacro	: ^(FMACRO name=ID result=ID? ) -> fcall_macro(name={$name},res={$result}) ;
+//fcmacro	: ^(FMACRO name=ID result=ID? ) -> fcall_macro(name={$name},res={$result}) ;
+fcmacro	: ^(FMACRO name=ID result=ID? ) {puts $name.text} -> template() "wooohooooo" ;
 fline	: FLINE -> template() "some test text";
 

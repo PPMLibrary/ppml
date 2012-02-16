@@ -35,6 +35,7 @@ HDC
         # g = ANTLR3::Template::Group.new(templates)
         # c = t.create_template(templates)
         puts t.prog
+        pp t.prog.template
       end
     end
   end
