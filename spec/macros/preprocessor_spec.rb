@@ -9,12 +9,12 @@ module CG
     end
 
     context "adding macro definitions" do
-      it "should be possible to add macro definitions" do
+      it "adds macro definitions with .macros <<" do
         @p.macros << @m
         @p.macros.should have_key('test_macro')
       end
 
-      it "should be possible to merge existing macro hashes" do
+      it "merges existing macro hashes with .macros +" do
         h = {'test_macro' => @m}
         @p.macros += h
         @p.macros.should have_key('test_macro')

@@ -26,7 +26,7 @@ Feature: macro substitution
 
     Examples: one argument
        | name  | args | body                   | input      | result           |
-       | alloc | a    | allocate($a,info)      | alloc(b)\n | allocate(b,info) |
+       | alloc | a    | allocate(<%= a %>,info) | alloc(b)\n | allocate(b,info) |
        | log2  | n    | this will never expand | hello(a)\n | hello(a)         |
        | log2  | n    | this will never expand | log(4)\n   | log(4)           |
 

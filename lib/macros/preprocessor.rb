@@ -1,15 +1,30 @@
 module CG
   class Preprocessor
     attr_accessor :macros
+    @@standard_macro_path = 'lib/macro/defs'
+    @@user_macro_path = 'macros/'
 
-    def initialize
+    def self.standard_macro_path=(p)
+      @@standard_macro_path = p
+    end
+    def self.standard_macro_path
+      @@standard_macro_path
+    end
+
+    def initialize(pwd=nil)
       @macros = {}
       def @macros.<<(m)
         self[m.name] = m
       end
       def @macros.+(m)
-        self.merge(m)
+        self.merge!(m)
       end
+      Dir["#{@@standard_macro_path}/*.mac"].each do |f|
+        @macros += Macro.load f
+      end
+      Dir["#{pwd+'/'+@@user_macro_path}/*.mac"].each do |f|
+        @macros += Macro.load f
+      end if pwd
 
       @templates = ANTLR3::Template::Group.new do
         define_template( :prog,        "<%= @lines.join(\"\n\") %>")

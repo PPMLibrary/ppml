@@ -1,0 +1,9 @@
+macro one()
+end macro
+macro two()
+end macro
+macro three()
+end macro
+macro override()
+new body
+end macro
