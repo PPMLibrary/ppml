@@ -1,5 +1,6 @@
 # -*- ruby -*-
 require 'rspec/core/rake_task'
+require 'cucumber/rake/task'
 
 require 'rake/clean'
 # temp files
@@ -28,13 +29,12 @@ end
 desc "Regenerate ANTLR Parsers"
 task :antlr => 'lib/parser/CG.rb'
 
-desc "Run Cucumber tests."
-task :cuke => :antlr do
-  puts `cucumber --color --format html --out doc/feature_report.html --format pretty`
+task :cuke => :antlr
+Cucumber::Rake::Task.new(:cuke) do |task|
+  task.cucumber_opts = ["--color", "--format html", "--out doc/feature_report.html", "--format pretty"]
 end
 
 task :spec => :antlr
-
 RSpec::Core::RakeTask.new do |t|
   t.verbose = false
   t.rspec_opts = ["--color", "--format html", "--out doc/spec_report.html", "--format documentation"]
