@@ -10,9 +10,29 @@ output = template;
 
 @members{
 attr_accessor :preprocessor
+
+def wrap(input, indent, comment)
+  if input.respond_to?(:to_s)
+    string = input.to_s
+  elsif input.respond_to?(:text)
+    string = input.text
+  end
+#  STDERR.puts "received indent : '#{indent.text}' (#{indent.text.length})"
+  if !string.empty?
+    lines = string.split("\n")
+    lines[0] += comment.text if lines[0] and comment
+    lines.map! { |l| indent.text+l } if indent
+    lines.join("\n")
+  else
+    comment
+  end
+end
+
 }
 
-prog 	: (l+=line)* -> prog(lines={$l}) ;
+prog 	: (l+=wrapper)* -> prog(lines={$l}) ;
+
+wrapper : ^(LINE l=line i=INDENT c=COMMENT) -> template(l={wrap($l.st,$i,$c)}) "<%= l %>" ;
 
 line
     : macro=fcmacro -> line(in={$macro.st})
@@ -20,4 +40,4 @@ line
     ;
 
 fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=ID*) ) -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a}) ;
-fline	: FLINE -> fortran(in={$FLINE.text}) ;
+fline	: ^(FLINE c=TEXT) -> fortran(in={$c.text}) ;

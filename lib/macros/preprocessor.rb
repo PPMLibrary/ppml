@@ -1,3 +1,6 @@
+require 'antlr3'
+require_relative '../parser'
+
 module CG
   class Preprocessor
     attr_accessor :macros
@@ -27,7 +30,7 @@ module CG
       end if pwd
 
       @templates = ANTLR3::Template::Group.new do
-        define_template( :prog,        "<%= @lines.join(\"\n\") %>")
+        define_template( :prog,        "<%= @lines.join(\"\n\") %>\n")
         define_template( :line,        "<%= @in %>")
         define_template( :fortran,     "<%= @in %>")
         define_template( :fcall_macro, "<%= @p.expand(@name, @result, @args) %>" )
@@ -35,6 +38,7 @@ module CG
     end
 
     def process(input)
+#      print_lexer_tokens input
       parser = parser_for_string(input)
       parser.prog.template.to_s
     end
@@ -45,24 +49,19 @@ module CG
 
     private
 
-    def print_lexer_tokens(string)
-      puts ''
-      puts ''
-      Lexer.new(string).each { |t| pp t if !t.hidden? }
-      puts ''
-      puts ''
+    def print_lexer_tokens string
+      Lexer.new(string).each { |t| STDERR.puts t.inspect }
     end
 
     def parser_for_string(string)
       # print_lexer_tokens(string)
-      # STDOUT.flush
       p = Parser.new(Lexer.new(string))
       p.preprocessor = self
-      t = TreeParser.new(ANTLR3::AST::CommonTreeNodeStream.new(p.prog.tree),
-                         {templates: @templates})
+      s = ANTLR3::AST::CommonTreeNodeStream.new(p.prog.tree)
+#      s.each { |t| STDERR.puts t.inspect }
+      t = TreeParser.new(s, {templates: @templates})
       t.preprocessor = self
       t
-
     end
   end
 end

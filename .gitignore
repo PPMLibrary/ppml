@@ -2,3 +2,7 @@ lib/parser/*.rb
 lib/parser/*.tokens
 doc/*
 *.#*
+examples/testdata/output
+examples/testproject/build
+pkg/*
+*.tokens

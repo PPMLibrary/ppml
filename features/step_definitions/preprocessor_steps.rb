@@ -1,5 +1,4 @@
 Given /^the input is standard fortran$/ do
-  pending
   @macros ||= {}
 end
 

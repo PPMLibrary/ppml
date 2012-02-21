@@ -19,8 +19,14 @@ Feature: preprocessing standard fortran
       | code                      |
       | integer :: i\n            |
       | real, dimesion(:) array\n |
+      | type(ptr_t) :: p\n        |
 
     Examples: expressions
       | code         |
       | a+2*b\n      |
       | l = log(x)\n |
+
+    Examples: loops
+      | code                      |
+      | do i=1,N\nj = i+1\nend do\n |
+

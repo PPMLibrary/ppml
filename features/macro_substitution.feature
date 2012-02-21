@@ -15,8 +15,8 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: simple replacement
-      | name      | body                   | input           | result             |
-      | example   | call example(args)     | example()\n     | call example(args) |
+      | name    | body               | input       | result               |
+      | example | call example(args) | example()\n | call example(args)\n |
 #     | commented | this will never expand | ! commented()\n | ! commented()      |
 
   Scenario Outline: function call syntax with argument substitution
@@ -25,8 +25,8 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: one argument
-       | name  | args | body                    | input      | result           |
-       | alloc | a    | allocate(<%= a %>,info) | alloc(b)\n | allocate(b,info) |
-       | log2  | n    | this will never expand  | hello(a)\n | hello(a)         |
-       | log2  | n    | this will never expand  | log(4)\n   | log(4)           |
+       | name  | args | body                    | input      | result             |
+       | alloc | a    | allocate(<%= a %>,info) | alloc(b)\n | allocate(b,info)\n |
+       | log2  | n    | this will never expand  | hello(a)\n | hello(a)\n         |
+       | log2  | n    | this will never expand  | log(4)\n   | log(4)\n           |
 
