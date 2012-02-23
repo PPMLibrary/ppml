@@ -15,9 +15,9 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: simple replacement
-      | name    | body               | input       | result               |
-      | example | call example(args) | example()\n | call example(args)\n |
-#     | commented | this will never expand | ! commented()\n | ! commented()      |
+      | name      | body                   | input           | result               |
+      | example   | call example(args)     | example()\n     | call example(args)\n |
+      | commented | this will never expand | ! commented()\n | ! commented()\n      |
 
   Scenario Outline: function call syntax with argument substitution
     Given a macro "<name>" with argument list ("<args>") is defined as "<body>"
@@ -25,8 +25,11 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: one argument
-       | name  | args | body                    | input      | result             |
-       | alloc | a    | allocate(<%= a %>,info) | alloc(b)\n | allocate(b,info)\n |
-       | log2  | n    | this will never expand  | hello(a)\n | hello(a)\n         |
-       | log2  | n    | this will never expand  | log(4)\n   | log(4)\n           |
-
+       | name  | args      | body                                      | input           | result                    |
+       | alloc | a         | allocate(<%= a %>,info)                   | alloc(b)\n      | allocate(b,info)\n        |
+       | fail  | t=default | call ppm_error(<%= t %>)                  | fail()\n        | call ppm_error(default)\n |
+       | fail  | t=default | call ppm_error(<%= t %>)                  | fail(special)\n | call ppm_error(special)\n |
+       | check | t=nil     | <% if t %>hello<% else %>goodbye<% end %> | check()\n       | goodbye\n                 |
+       | check | t=nil     | <% if t %>hello<% else %>goodbye<% end %> | check(a)\n      | hello\n                   |
+       | log2  | n         | this will never expand                    | hello(a)\n      | hello(a)\n                |
+       | log2  | n         | this will never expand                    | log(4)\n        | log(4)\n                  |

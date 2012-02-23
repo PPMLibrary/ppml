@@ -12,7 +12,7 @@ describe "ppm" do
 program test
   integer, dimension(50) :: a,b,c
   integer :: x,i=2,j=49
-  ! omar will be happy
+!             Int. J. Numer. Meth. Engng 2003; 56:935-960.
   forall (x=i:j)
     a(x)=b(x)+c(x) ! All these assignments are performed after the
     c(x)=b(x)-a(x) ! assignments in the preceding statement
@@ -21,9 +21,9 @@ end program
 HEREDOC
     end
     it "takes '-o file' and puts result to 'file'" do
-      `./bin/ppm pp examples/testdata/fortran.f -o examples/testdata/preprocessed.f`
-      o = `cat examples/testdata/preprocessed.f | md5`
-      g = `cat examples/testdata/preprocessed_gold.f | md5`
+      `./bin/ppm pp examples/testdata/fortran.f -o examples/testdata/output/preprocessed.f`
+      o = `cat examples/testdata/output/preprocessed.f | md5`
+      g = `cat examples/testdata/fortran_gold.f | md5`
       o.should == g
     end
   end

@@ -4,7 +4,7 @@ require_relative '../parser'
 module CG
   class Preprocessor
     attr_accessor :macros
-    @@standard_macro_path = 'lib/macro/defs'
+    @@standard_macro_path = 'lib/macros/defs/'
     @@user_macro_path = 'macros/'
 
     def self.standard_macro_path=(p)
@@ -33,7 +33,7 @@ module CG
         define_template( :prog,        "<%= @lines.join(\"\n\") %>\n")
         define_template( :line,        "<%= @in %>")
         define_template( :fortran,     "<%= @in %>")
-        define_template( :fcall_macro, "<%= @p.expand(@name, @result, @args) %>" )
+        define_template( :fcall_macro, "<%= @p.expand(@name, @result, @args, @namedargs, @namedvalues) %>" )
       end
     end
 

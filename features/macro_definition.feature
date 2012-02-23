@@ -6,7 +6,7 @@ Feature: macro definition
   define his own, or replace an existing macro.
 
   There should be one file per macro (with extension .mac)
-  The system macros are in lib/macro/defs
+  The system macros are in lib/macros/defs
   User files are in macros/
 
 

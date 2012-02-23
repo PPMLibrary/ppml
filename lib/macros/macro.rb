@@ -4,20 +4,36 @@ module CG
   class Macro
     attr_accessor :name
     attr_reader :args, :body
-    NAME = "(?:[a-zA-Z_][a-zA-Z_0-9]*)"
-    ARGS = "(?: *#{NAME} *(?:, *#{NAME} *)*)?"
+    NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
+    VAL = '(?:"[^"]*"|[^,]*?)'
+    ARG = "#{NAME}(?: *= *#{VAL})?"
+    ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
     MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
     MACRO_STOP = /^ *end +macro *$/
+    REGMAGIC = /(?:^|,) *(?<name>[^=,]*)(?: *(?:=) *(?<value>".*?(?<!\\)"|[^,]*))? */
 
     def initialize(name, body, args=nil)
-      @name, @body, @args = name, body, args
+      @name, @body = name, body
+      if args
+        @args = parse_arglist args
+      end
     end
 
-    def expand(result=nil, args=nil)
-      map = {}
-      if args and @args
-        [args.size, @args.size].min.times do |i|
-          map[@args[i]] = args[i]
+    def expand(result=nil, args=nil, namedargs=nil, namedvalues=nil)
+      if @args
+        map = @args.clone
+        if args
+          [args.size, @args.keys.size].min.times do |i|
+            map[map.keys[i]] = args[i]
+          end
+        end
+        if namedargs
+          namedargs.each_with_index do
+            |name,i|
+            if map.has_key? name
+              map[name] = namedvalues[i]
+            end
+          end
         end
       end
       data = OpenStruct.new(map)
@@ -25,6 +41,16 @@ module CG
       template = ERB.new @body
       template.result data.get_binding
     end
+
+    def parse_arglist args
+      result = {}
+      args.scan(REGMAGIC) do
+        |name, value|
+        result[name] = (value and value != 'nil') ? value : nil
+      end
+      result
+    end
+
 
     private
 
@@ -38,9 +64,8 @@ module CG
         while l=file.gets
           if l =~ MACRO_START
             name = $~[:name]
-            args = $~[:args].split(',').map(&:strip) if $~[:args]
             body = read_body(file)
-            macros[name] = Macro.new(name, body, args)
+            macros[name] = Macro.new(name, body, $~[:args])
           end
         end
         macros
@@ -48,7 +73,7 @@ module CG
 
       private
 
-      def read_body(file)
+      def read_body file
         body = ''
         while l=file.gets
           raise "Nested macro definitions are not allowed" if l =~ MACRO_START

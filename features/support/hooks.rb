@@ -1,5 +1,3 @@
-ENV['PATH'] = ENV['PATH'] + ":#{Dir.pwd}/bin"
-
 Before do
   @old_pwd = Dir.pwd
 end

@@ -1,3 +1,13 @@
+Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
+  @macros ||= {}
+  @macros[name] = CG::Macro.new(name, body)
+end
+
+Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as "([^"]*)"$/ do |name, args, body| #"
+  @macros ||= {}
+  @macros[name] = CG::Macro.new(name, body, args)
+end
+
 Given /^a file with the following structure$/ do |string|
   @file = string
 end
@@ -13,7 +23,7 @@ Then /^a macro named "([^"]*)" should be created$/ do |name|
 end
 
 Then /^the macro should have arguments "([^"]*)"$/ do |args|
-  al = args.split(',').map(&:strip)
+  al = @macros[@name].parse_arglist args
   @macros[@name].args.should == al
 end
 

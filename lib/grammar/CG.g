@@ -5,7 +5,7 @@ language = Ruby;
 output = AST;
 }
 
-tokens{
+tokens {
 FMACRO;
 FLINE;
 TEXT;
@@ -13,9 +13,10 @@ ARGS;
 LINE;
 INDENT;
 COMMENT;
+NAMEDARGS;
 }
 
-@header{
+@header {
 # require 'something'
 }
 
@@ -50,16 +51,20 @@ indent_string = hidden_tokens.map(&:text).join('')
 {
 previous_token = @input.look(-2)
 next_token = @input.look(-1)
-#STDERR.puts "prev : #{previous_token.inspect}"
-#STDERR.puts "next : #{next_token.inspect}"
-previous_token = previous_token.to_i + 1
+# STDERR.puts "prev : #{previous_token.inspect}"
+# STDERR.puts "next : #{next_token.inspect}"
+if previous_token.nil?
+  previous_token = 0
+else
+  previous_token = previous_token.to_i + 1
+end
 next_token = next_token.to_i - 1
-#STDERR.puts "prev : #{previous_token}"
-#STDERR.puts "next : #{next_token}"
+# STDERR.puts "prev : #{previous_token}"
+# STDERR.puts "next : #{next_token}"
 hidden_tokens = @input.tokens(previous_token, next_token)
-#STDERR.puts "hidd : #{hidden_tokens}"
+# STDERR.puts "hidd : #{hidden_tokens}"
 comment_string = hidden_tokens.map(&:text).join('')
-#STDERR.puts "comm : '#{comment_string}'"
+# STDERR.puts "comm : '#{comment_string}'"
 }
         -> ^(LINE $l { @adaptor.create_from_type(INDENT, indent_string) }
                      { @adaptor.create_from_type(COMMENT, comment_string) });
@@ -70,8 +75,8 @@ line
     ;
 
 fcmacro
-    : (result=ID ASSIGN)?  name=ID  LPAREN (args+=ID (COMMA args+=ID)* )? RPAREN NEWLINE
-      -> ^(FMACRO $name $result? ^(ARGS $args*))
+    : (result=ID ASSIGN)?  name=ID  LPAREN (args+=ID (COMMA args+=ID)* (names+=ID ASSIGN values+=value)* )? RPAREN NEWLINE
+      -> ^(FMACRO $name $result? ^(ARGS $args*) ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
     ;
 
 fline
@@ -83,6 +88,13 @@ fline_contents : allowed* ;
 
 ID	: (ALPHA | '_') (ALNUM | '_')* ;
 allowed	: ID | ANY_CHAR | NUMBER | LPAREN | RPAREN | COMMA | ASSIGN ;
+
+value : ID | NUMBER | STRING ;
+
+STRING
+    : '"' ('\\"'|~'"')* '"' 
+    | '\'' ('\\\''|~'\'')* '\''
+    ;
 
 NUMBER : DIGIT+ ;
 

@@ -10,7 +10,7 @@ Feature: command line utility
     Given the cwd is "examples/testdata"
     And user defined macros in "macros/"
     When I run "ppm pp fortran.f -o output/preprocessed.f"
-    Then the result file is equal to "preprocessed_gold.f"
+    Then the result file is equal to "fortran_gold.f"
 
   Scenario: compiling client generator files
     Given the cwd is "examples/testproject"

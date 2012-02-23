@@ -1,0 +1,5 @@
+macro fail(test, message, type=ppm_err_generic)
+if (<%= test %>) then
+  call ppm_error(<%= type %>, <%= message %>, <%= source_line %>)
+end if
+end macro

@@ -12,7 +12,7 @@ class PPM < Thor
     o = p.process(input.read)
     # STDERR.puts o
     if options[:outfile]
-      File.open(options[:outfile], 'w') do |f|
+      File.open(options[:outfile], 'w+') do |f|
         f.puts o
       end
     else

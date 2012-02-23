@@ -39,5 +39,8 @@ line
     | fortran=fline -> line(in={$fortran.st})
     ;
 
-fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=ID*) ) -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a}) ;
+fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=ID*) ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
+          -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
 fline	: ^(FLINE c=TEXT) -> fortran(in={$c.text}) ;
+
+value : ID | NUMBER | STRING ;

@@ -7,7 +7,7 @@ module CG
 
     context "macro expansion" do
       it "returns the body with arguments replaced" do
-        m = Macro.new("test",<<-'BODY',['a','b','c'])
+        m = Macro.new("test",<<-'BODY','a,b,c')
         plain text line
         substituting <%= a %>, <%= b %> and <%= c %>
         more text

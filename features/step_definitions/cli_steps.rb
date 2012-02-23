@@ -11,7 +11,7 @@ When /^I run "([^"]*)"$/ do |cmd|
 end
 
 Then /^the result file is equal to "([^"]*)"$/ do |target|
-  s = `cat preprocessed.f | md5`
+  s = `cat output/preprocessed.f | md5`
   $?.exitstatus.should == 0
   t = `cat #{target} | md5`
   $?.exitstatus.should == 0
