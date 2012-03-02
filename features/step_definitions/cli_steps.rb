@@ -45,3 +45,7 @@ end
 Then /^I get a prompt to enter the missing configuration options$/ do
   pending # express the regexp above with the code you wish you had
 end
+
+Then /^the project skeleton is created in "([^"]*)"$/ do |arg1|
+  pending # express the regexp above with the code you wish you had
+end

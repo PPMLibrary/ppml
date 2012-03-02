@@ -3,6 +3,15 @@ Given /^the input is standard fortran$/ do
 end
 
 When /^I preprocess "([^"]*)"$/ do |input| #"
+  puts input
+  p = CG::Preprocessor.new
+  p.macros += @macros
+  @input = input
+  @output = p.process(@input)
+end
+
+When /^I preprocess$/ do |input|
+  puts input
   p = CG::Preprocessor.new
   p.macros += @macros
   @input = input
@@ -14,5 +23,9 @@ Then /^it should remain unchanged$/ do
 end
 
 Then /^it should expand into "([^"]*)"$/ do |result| #"
+  @output.should == result
+end
+
+Then /^it should expand into$/ do |result|
   @output.should == result
 end

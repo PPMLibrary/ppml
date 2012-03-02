@@ -12,33 +12,38 @@ Feature: command line utility
     When I run "ppm pp fortran.f -o output/preprocessed.f"
     Then the result file is equal to "fortran_gold.f"
 
-  Scenario: compiling client generator files
-    Given the cwd is "examples/testproject"
-    When I run "ppm build"
-    Then I get an executable simulation
+  # Scenario: creating a project skeleton
+  #   Given the cwd is "examples"
+  #   When I run "ppm newproject project_1"
+  #   Then the project skeleton is created in "examples/project_1"
 
-  Scenario: running simulations
-    Given the cwd is "examples/testproject"
-    When I run "ppm run"
-    Then the simulation is executed
+  # Scenario: compiling client generator files
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm build"
+  #   Then I get an executable simulation
 
-  Scenario: cleaning the project directory
-    Given the cwd is "examples/testproject"
-    When I run "ppm clean"
-    Then the build directory is deleted
+  # Scenario: running simulations
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm run"
+  #   Then the simulation is executed
 
-  Scenario: setting configuration options
-    Given the cwd is "examples/testproject"
-    When I run "ppm config compiler=gfortran"
-    Then the configuration option "compiler" is set to "gfortran"
+  # Scenario: cleaning the project directory
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm clean"
+  #   Then the build directory is deleted
 
-  Scenario: reading configuration options
-    Given the cwd is "examples/testproject"
-    And the config option "compiler" is set to "gfortran"
-    When I run "ppm config compiler"
-    Then the command outputs "gfortran"
+  # Scenario: setting configuration options
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm config compiler=gfortran"
+  #   Then the configuration option "compiler" is set to "gfortran"
 
-  Scenario: prompt for missing options interactively
-    Given the cwd is "examples/testproject"
-    When I run "ppm run"
-    Then I get a prompt to enter the missing configuration options
+  # Scenario: reading configuration options
+  #   Given the cwd is "examples/testproject"
+  #   And the config option "compiler" is set to "gfortran"
+  #   When I run "ppm config compiler"
+  #   Then the command outputs "gfortran"
+
+  # Scenario: prompt for missing options interactively
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm run"
+  #   Then I get a prompt to enter the missing configuration options

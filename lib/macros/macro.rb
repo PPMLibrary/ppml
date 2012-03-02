@@ -4,6 +4,7 @@ module CG
   class Macro
     attr_accessor :name
     attr_reader :args, :body
+
     NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
     VAL = '(?:"[^"]*"|[^,]*?)'
     ARG = "#{NAME}(?: *= *#{VAL})?"
@@ -22,24 +23,15 @@ module CG
     def expand(result=nil, args=nil, namedargs=nil, namedvalues=nil)
       if @args
         map = @args.clone
-        if args
-          [args.size, @args.keys.size].min.times do |i|
-            map[map.keys[i]] = args[i]
-          end
-        end
-        if namedargs
-          namedargs.each_with_index do
-            |name,i|
-            if map.has_key? name
-              map[name] = namedvalues[i]
-            end
-          end
-        end
+        [args.size, @args.keys.size].min.times do |i|
+          map[map.keys[i]] = args[i]
+        end if args
+        namedargs.each_with_index do
+          |name,i|
+          map[name] = namedvalues[i] if map.has_key? name
+        end if namedargs
       end
-      data = OpenStruct.new(map)
-      def data.get_binding; binding end
-      template = ERB.new @body
-      template.result data.get_binding
+      ERB.new(@body).result(Macro.binding_from_map(map))
     end
 
     def parse_arglist args
@@ -71,6 +63,12 @@ module CG
         macros
       end
 
+      def binding_from_map map
+        data = OpenStruct.new(map)
+        def data.get_binding; binding end
+        data.get_binding
+      end
+
       private
 
       def read_body file
@@ -82,6 +80,12 @@ module CG
         end
         raise "EOF while reading body!"
       end
-    end
-  end
+
+      def recursive_fcall_macro_syntax
+        
+      end
+
+    end # class << self
+
+  end # class Macro
 end

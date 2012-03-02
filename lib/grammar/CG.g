@@ -75,7 +75,7 @@ line
     ;
 
 fcmacro
-    : (result=ID ASSIGN)?  name=ID  LPAREN (args+=ID (COMMA args+=ID)* (names+=ID ASSIGN values+=value)* )? RPAREN NEWLINE
+    : (result=ID ASSIGN)?  name=ID  LPAREN (args+=value (COMMA args+=value)* (names+=ID ASSIGN values+=value)* )? RPAREN NEWLINE
       -> ^(FMACRO $name $result? ^(ARGS $args*) ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
     ;
 

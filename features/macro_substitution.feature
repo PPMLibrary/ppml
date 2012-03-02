@@ -24,12 +24,21 @@ Feature: macro substitution
     When I preprocess "<input>"
     Then it should expand into "<result>"
 
-    Examples: one argument
+    Examples: simple replacement
        | name  | args      | body                                      | input           | result                    |
        | alloc | a         | allocate(<%= a %>,info)                   | alloc(b)\n      | allocate(b,info)\n        |
+
+    Examples: default value
+       | name  | args      | body                                      | input           | result                    |
        | fail  | t=default | call ppm_error(<%= t %>)                  | fail()\n        | call ppm_error(default)\n |
        | fail  | t=default | call ppm_error(<%= t %>)                  | fail(special)\n | call ppm_error(special)\n |
+
+    Examples: presence test
+       | name  | args      | body                                      | input           | result                    |
        | check | t=nil     | <% if t %>hello<% else %>goodbye<% end %> | check()\n       | goodbye\n                 |
        | check | t=nil     | <% if t %>hello<% else %>goodbye<% end %> | check(a)\n      | hello\n                   |
+
+    Examples: fortran functions pass unchanged
+       | name  | args      | body                                      | input           | result                    |
        | log2  | n         | this will never expand                    | hello(a)\n      | hello(a)\n                |
        | log2  | n         | this will never expand                    | log(4)\n        | log(4)\n                  |

@@ -1,0 +1,4 @@
+require 'autotest'
+require 'autotest/fsevent'
+require 'autotest/restart'
+require 'autotest/timestamp'

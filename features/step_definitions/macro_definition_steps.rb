@@ -8,6 +8,12 @@ Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as "([^"]*
   @macros[name] = CG::Macro.new(name, body, args)
 end
 
+Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as$/ do |name, args, body| #"
+  @macros ||= {}
+  @macros[name] = CG::Macro.new(name, body, args)
+end
+
+
 Given /^a file with the following structure$/ do |string|
   @file = string
 end

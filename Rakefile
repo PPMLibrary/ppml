@@ -34,7 +34,6 @@ task :antlr => 'lib/parser/CG.rb'
 
 task :cuke => :antlr
 Cucumber::Rake::Task.new(:cuke) do |task|
-  task.cucumber_opts = ["--color", "--format html", "--out doc/feature_report.html", "--format pretty"]
 end
 
 task :spec => :antlr

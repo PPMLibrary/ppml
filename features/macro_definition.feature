@@ -5,7 +5,7 @@ Feature: macro definition
   predefined macros, but it should also be possible for a user to
   define his own, or replace an existing macro.
 
-  There should be one file per macro (with extension .mac)
+  Macro files should have an extesion .mac
   The system macros are in lib/macros/defs
   User files are in macros/
 
