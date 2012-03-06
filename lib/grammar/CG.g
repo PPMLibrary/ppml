@@ -87,7 +87,7 @@ fline
 fline_contents : allowed* ;
 
 ID	: (ALPHA | '_') (ALNUM | '_')* ;
-allowed	: ID | ANY_CHAR | NUMBER | LPAREN | RPAREN | COMMA | ASSIGN ;
+allowed	: ID | ANY_CHAR | NUMBER | LPAREN | RPAREN | COMMA | ASSIGN | STRING ;
 
 value : ID | NUMBER | STRING ;
 
