@@ -3,7 +3,6 @@ Given /^the input is standard fortran$/ do
 end
 
 When /^I preprocess "([^"]*)"$/ do |input| #"
-  puts input
   p = CG::Preprocessor.new
   p.macros += @macros
   @input = input
@@ -11,7 +10,6 @@ When /^I preprocess "([^"]*)"$/ do |input| #"
 end
 
 When /^I preprocess$/ do |input|
-  puts input
   p = CG::Preprocessor.new
   p.macros += @macros
   @input = input

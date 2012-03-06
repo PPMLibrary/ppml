@@ -25,8 +25,8 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: simple replacement
-       | name  | args      | body                                      | input           | result                    |
-       | alloc | a         | allocate(<%= a %>,info)                   | alloc(b)\n      | allocate(b,info)\n        |
+       | name   | args | body                    | input                        | result                        |
+       | alloc  | a    | allocate(<%= a %>,info) | alloc(b)\n                   | allocate(b,info)\n            |
 
     Examples: default value
        | name  | args      | body                                      | input           | result                    |
@@ -42,3 +42,22 @@ Feature: macro substitution
        | name  | args      | body                                      | input           | result                    |
        | log2  | n         | this will never expand                    | hello(a)\n      | hello(a)\n                |
        | log2  | n         | this will never expand                    | log(4)\n        | log(4)\n                  |
+
+  Scenario: String arguments
+    Given a macro "fail" with argument list ("msg") is defined as
+    """
+    ppm_error(<%= msg %>)
+
+    """
+    When I preprocess
+    """
+    fail("string, argument, list")
+
+    """
+    Then it should expand into
+    """
+    ppm_error("string, argument, list")
+    
+    """
+
+

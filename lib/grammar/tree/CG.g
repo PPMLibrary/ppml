@@ -27,7 +27,6 @@ def wrap(input, indent, comment)
     comment
   end
 end
-
 }
 
 prog 	: (l+=wrapper)* -> prog(lines={$l}) ;
@@ -39,8 +38,13 @@ line
     | fortran=fline -> line(in={$fortran.st})
     ;
 
-fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=ID*) ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
+fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value*) ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
           -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
+
 fline	: ^(FLINE c=TEXT) -> fortran(in={$c.text}) ;
 
-value : ID | NUMBER | STRING ;
+value
+    : i=ID     -> template(i={$i}) "<%= i %>"
+    | n=NUMBER -> template(n={$n}) "<%= n %>"
+    | s=STRING -> template(s={$s}) "<%= s %>"
+    ;

@@ -16,33 +16,44 @@ module CG
     def initialize(name, body, args=nil)
       @name, @body = name, body
       if args
-        @args = parse_arglist args
+        @args = Macro.parse_arglist args
       end
     end
 
-    def expand(result=nil, args=nil, namedargs=nil, namedvalues=nil)
+    def expand(result=nil, args=nil, named=nil)
       if @args
         map = @args.clone
         [args.size, @args.keys.size].min.times do |i|
           map[map.keys[i]] = args[i]
         end if args
-        namedargs.each_with_index do
-          |name,i|
-          map[name] = namedvalues[i] if map.has_key? name
-        end if namedargs
+        map.merge! named if named
       end
       ERB.new(@body).result(Macro.binding_from_map(map))
     end
 
-    def parse_arglist args
-      result = {}
-      args.scan(REGMAGIC) do
-        |name, value|
-        result[name] = (value and value != 'nil') ? value : nil
+    def expand_recursive_calls macros
+      @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
+        indent = $~[:indent]
+        name = $~[:name]
+        args = Macro.parse_arglist($~[:args])
+        positional = []
+        named = {}
+        args.each do
+          |name, value|
+          if value.nil?
+            positional.push name
+          elsif name == "<%"
+            positional.push "<%=#{value}"
+          else
+            named[name] = value
+          end
+        end
+        macros[name].expand(nil,positional,named).gsub!(/^(.*)$/) do
+          |m|
+          indent + m
+        end if macros.has_key? name
       end
-      result
     end
-
 
     private
 
@@ -69,6 +80,15 @@ module CG
         data.get_binding
       end
 
+      def parse_arglist args
+        result = {}
+        args.scan(REGMAGIC) do
+          |name, value|
+          result[name] = (value and value != 'nil') ? value : nil
+        end
+        result
+      end
+
       private
 
       def read_body file
@@ -79,10 +99,6 @@ module CG
           body << l
         end
         raise "EOF while reading body!"
-      end
-
-      def recursive_fcall_macro_syntax
-        
       end
 
     end # class << self

@@ -3,7 +3,7 @@ call define_args
 call parse_args(info)
 $fail(info.ne.0, "Parse args failed.")
 call MPI_Init()
-$fail(info.ne.0, "Parse args failed.")
+$fail(info.ne.0, "MPI_Init failed.")
 call ppm_init()
-$fail(info.ne.0, "Parse args failed.")
+$fail(info.ne.0, "ppm_init failed.")
 end macro

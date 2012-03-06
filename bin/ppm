@@ -3,14 +3,16 @@
 require 'thor'
 
 class PPM < Thor
+
   desc 'pp FILE?', 'Preprocess a fortran FILE and perform macro substitution. If FILE not provided read from STDIN'
   method_option :outfile, :aliases => '-o', :type => :string, :desc => 'Put results in OUTFILE'
   def pp file=nil
     require_relative '../lib/macros'
     input = file ? File.new(file) : STDIN
+
     p = CG::Preprocessor.new
     o = p.process(input.read)
-    # STDERR.puts o
+
     if options[:outfile]
       File.open(options[:outfile], 'w+') do |f|
         f.puts o
@@ -18,6 +20,7 @@ class PPM < Thor
     else
       puts o
     end
+
   end
 
   desc 'build', 'Build the simulation binary'
