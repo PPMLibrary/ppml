@@ -27,6 +27,7 @@ Feature: macro substitution
     Examples: simple replacement
        | name   | args | body                    | input                        | result                        |
        | alloc  | a    | allocate(<%= a %>,info) | alloc(b)\n                   | allocate(b,info)\n            |
+       | alloc  | a    | allocate(<%= a %>,info) | alloc(b%data)\n              | allocate(b%data,info)\n       |
 
     Examples: default value
        | name  | args      | body                                      | input           | result                    |

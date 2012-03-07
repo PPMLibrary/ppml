@@ -86,10 +86,11 @@ fline
 
 fline_contents : allowed* ;
 
-ID	: (ALPHA | '_') (ALNUM | '_')* ;
 allowed	: ID | ANY_CHAR | NUMBER | LPAREN | RPAREN | COMMA | ASSIGN | STRING ;
 
 value : ID | NUMBER | STRING ;
+
+ID	: (ALPHA | '_') (ALNUM | '_' | '%')* ;
 
 STRING
     : '"' ('\\"'|~'"')* '"' 
@@ -108,10 +109,10 @@ COMMENT : '!' (~NEWLINE)* { $channel=:hidden } ;
 fragment
 COMPARISSON : '<' | '>' ;
 
-ASSIGN : '=' ;
-LPAREN : '(' ;
-RPAREN : ')' ;
-COMMA  : ',' ;
+ASSIGN       : '=' ;
+LPAREN       : '(' ;
+RPAREN       : ')' ;
+COMMA        : ',' ;
 
 fragment
 SPORT	: ' ' | '\t';
