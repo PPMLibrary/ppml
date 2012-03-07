@@ -4,7 +4,7 @@ require_relative '../parser'
 module CG
   class Preprocessor
     attr_accessor :macros
-    @@standard_macro_path = 'lib/macros/defs/'
+    @@standard_macro_path = File.dirname(__FILE__)+'/defs/'
     @@user_macro_path = 'macros/'
 
     def self.standard_macro_path=(p)
