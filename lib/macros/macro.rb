@@ -7,11 +7,11 @@ module CG
 
     NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
     VAL = '(?:"[^"]*"|[^,]*?)'
-    ARG = "#{NAME}(?: *= *#{VAL})?"
+    ARG = "#{NAME}(?: *(?<!%)= *#{VAL})?"
     ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
     MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
     MACRO_STOP = /^ *end +macro *$/
-    REGMAGIC = /(?:^|,) *(?<name>[^=,]*)(?: *(?:=) *(?<value>".*?(?<!\\)"|[^,]*))? */
+    REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)*?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/
 
     def initialize(name, body, args=nil)
       @name, @body = name, body
@@ -42,8 +42,6 @@ module CG
           |name, value|
           if value.nil?
             positional.push name
-          elsif name == "<%"
-            positional.push "<%=#{value}"
           else
             named[name] = value
           end

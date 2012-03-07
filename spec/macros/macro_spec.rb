@@ -20,6 +20,21 @@ module CG
       end
     end
 
+    context "utilities" do
+      describe "#binding_from_map" do
+        it "transforms hash key-value pairs into variables in a binding" do
+          b = Macro.binding_from_map({var: "value"})
+          eval("var",b).should == "value"
+        end
+      end
+      describe "#parse_arglist" do
+        it "turns an arguments string into a map" do
+          Macro.parse_arglist("a,b,c").should == {'a'=>nil, 'b'=>nil, 'c'=>nil}
+          Macro.parse_arglist("a=b,c=d,e").should == {'a'=>'b', 'c'=>'d', 'e'=>nil}
+        end
+      end
+    end
+
     context "macro loading" do
       describe "#load" do
         it "creates Macro instances for all macro defintions in a file path" do
