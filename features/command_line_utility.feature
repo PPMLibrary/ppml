@@ -35,7 +35,7 @@ Feature: command line utility
   # Scenario: setting configuration options
   #   Given the cwd is "examples/testproject"
   #   When I run "ppm config compiler=gfortran"
-  #   Then the configuration option "compiler" is set to "gfortran"
+  #   Then the config option "compiler" is set to "gfortran"
 
   # Scenario: reading configuration options
   #   Given the cwd is "examples/testproject"

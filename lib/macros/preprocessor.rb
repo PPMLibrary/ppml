@@ -45,7 +45,6 @@ module CG
     end
 
     def process(input)
-      # print_lexer_tokens input
       parser = parser_for_string(input)
       parser.prog.template.to_s
     end
@@ -57,17 +56,30 @@ module CG
     private
 
     def print_lexer_tokens string
-      Lexer.new(string).each { |t| STDERR.puts t.inspect }
+      STDERR.puts "\n\nPrinting Lexer Tokens:\n\n"
+      Lexer.new(string).each_with_index { |t,i| STDERR.puts "\t#{i} : #{t.inspect}" }
+    end
+
+    def print_tree_tokens string
+      STDERR.puts "\n\nPrinting Tree Tokens\n\n"
+      p = Parser.new Lexer.new(string)
+      p.preprocessor = self
+      s = ANTLR3::AST::CommonTreeNodeStream.new p.prog.tree
+      s.each { |t| STDERR.puts "#{t.name}\t| #{t.start_index}\t| #{t.stop_index}\t| inspect:\t#{t.inspect}" }
     end
 
     def parser_for_string(string)
-      # print_lexer_tokens(string)
-      p = Parser.new(Lexer.new(string))
+      # STDERR.puts "Parsing String\n\n#{string}"
+      # print_lexer_tokens string
+      # print_tree_tokens string
+      l = Lexer.new string
+      token_stream = ANTLR3::CommonTokenStream.new l
+      p = Parser.new token_stream
       p.preprocessor = self
-      s = ANTLR3::AST::CommonTreeNodeStream.new(p.prog.tree)
-      # s.each { |t| STDERR.puts t.inspect }
-      t = TreeParser.new(s, {templates: @templates})
+      s = ANTLR3::AST::CommonTreeNodeStream.new p.prog.tree
+      t = TreeParser.new s, {templates: @templates}
       t.preprocessor = self
+      # t.stream = token_stream
       t
     end
   end
