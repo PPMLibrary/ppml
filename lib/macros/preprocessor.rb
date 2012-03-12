@@ -79,7 +79,7 @@ module CG
       s = ANTLR3::AST::CommonTreeNodeStream.new p.prog.tree
       t = TreeParser.new s, {templates: @templates}
       t.preprocessor = self
-      # t.stream = token_stream
+      t.stream = token_stream
       t
     end
   end

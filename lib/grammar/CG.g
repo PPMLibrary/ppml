@@ -10,14 +10,11 @@ FMACRO;
 FLINE;
 TEXT;
 ARGS;
-LINE;
-INDENT;
-COMMENT;
 NAMEDARGS;
 }
 
 @header {
-# require 'something'
+require_relative 'scope'
 }
 
 @members{
@@ -32,42 +29,7 @@ def fmacro_call?
 end
 }
 
-prog : wrapper* ;
-
-wrapper : {
-previous_token = @input.look(-1).to_i
-next_token = @input.look(1).to_i
-hidden_tokens = []
-if !(previous_token == 0 and next_token == 0)
-  previous_token = previous_token + 1
-  next_token = next_token - 1
-  hidden_tokens = @input.tokens(previous_token, next_token)
-end
-#STDERR.puts "hidden_tokens : #{hidden_tokens}"
-indent_string = hidden_tokens.map(&:text).join('')
-#STDERR.puts "indent string : '#{indent_string}' (#{indent_string.length})"
-}
-        l=line
-{
-previous_token = @input.look(-2)
-next_token = @input.look(-1)
-# STDERR.puts "prev : #{previous_token.inspect}"
-# STDERR.puts "next : #{next_token.inspect}"
-if previous_token.nil?
-  previous_token = 0
-else
-  previous_token = previous_token.to_i + 1
-end
-next_token = next_token.to_i - 1
-# STDERR.puts "prev : #{previous_token}"
-# STDERR.puts "next : #{next_token}"
-hidden_tokens = @input.tokens(previous_token, next_token)
-# STDERR.puts "hidd : #{hidden_tokens}"
-comment_string = hidden_tokens.map(&:text).join('')
-# STDERR.puts "comm : '#{comment_string}'"
-}
-        -> ^(LINE $l { @adaptor.create_from_type(INDENT, indent_string) }
-                     { @adaptor.create_from_type(COMMENT, comment_string) });
+prog : line* ;
 
 line
     : ({fmacro_call?}?=> fcmacro
@@ -81,7 +43,7 @@ fcmacro
 
 fline
     : fline_contents NEWLINE
-      -> ^(FLINE TEXT[$NEWLINE,$fline_contents.text])
+      -> ^(FLINE TEXT[$fline_contents.start,$fline_contents.text])
     ;
 
 fline_contents : allowed* ;

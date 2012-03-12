@@ -8,34 +8,66 @@ output = template;
 //rewrite = true;
 }
 
-@members{
-attr_accessor :preprocessor
+@members {
+attr_accessor :preprocessor, :stream
 
-def wrap(input, indent, comment)
-  if input.respond_to?(:to_s)
+def find_hidden
+  tree   = @input.look
+  start  = tree.start_index
+  stop   = tree.stop_index
+
+  find_leading  start
+  find_trailing stop
+end
+
+def find_leading i
+  i -= 1
+  if !@stream[i].nil? and @stream[i].channel == :hidden
+    @current_indent = @stream[i].text
+    i -= 1
+  else
+    @current_indent = ''
+  end
+  hidden = []
+end
+
+def find_trailing i
+  i -= 1
+  hidden = []
+  @trailing = ''
+  if ! @stream[i].nil? and @stream[i].channel == :hidden
+    i -= 1
+    if ! @stream[i].nil? and @stream[i].channel == :hidden
+      @trailing = @stream[i].text
+    end
+    @trailing += @stream[i+1].text
+  end
+end
+
+def wrap input
+  if input.respond_to? :to_s
     string = input.to_s
-  elsif input.respond_to?(:text)
+  elsif input.respond_to? :text
     string = input.text
   end
-#  STDERR.puts "received indent : '#{indent.text}' (#{indent.text.length})"
   if !string.empty?
     lines = string.split("\n")
-    lines[0] += comment.text if lines[0] and comment
-    lines.map! { |l| indent.text+l } if indent
+    lines[0] += @trailing
+    lines.map! { |l| @current_indent+l }
     lines.join("\n")
   else
-    comment
+    @trailing
   end
 end
 }
 
-prog 	: (l+=wrapper)* -> prog(lines={$l}) ;
-
-wrapper : ^(LINE l=line i=INDENT c=COMMENT) -> template(l={wrap($l.st,$i,$c)}) "<%= l %>" ;
+prog 	: (l+=line)* -> prog(lines={$l}) ;
 
 line
-    : macro=fcmacro -> line(in={$macro.st})
-    | fortran=fline -> line(in={$fortran.st})
+    : { find_hidden }
+        ( macro=fcmacro -> line(in={wrap($macro.st)})
+        | fortran=fline -> line(in={wrap($fortran.st)})
+        )
     ;
 
 fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value*) ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
