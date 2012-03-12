@@ -12,13 +12,13 @@ Feature: Scope Detection
   Scenario: program statement
     When I preprocess
     """
-    program sample
-    end program
+      program sample ! some comment for omar
+      end program
 
     """
     Then it should expand into
     """
-    program sample
-    end program
+      program sample ! some comment for omar
+      end program
 
     """

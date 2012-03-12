@@ -6,6 +6,9 @@ output = AST;
 }
 
 tokens {
+PROGRAM;
+SCOPE_START;
+SCOPE_END;
 FMACRO;
 FLINE;
 TEXT;
@@ -14,14 +17,14 @@ NAMEDARGS;
 }
 
 @header {
-require_relative 'scope'
+#require_relative 'scope'
 }
 
-@members{
+@members {
 attr_accessor :preprocessor
 
 def fmacro_call?
-  if input.peek(2) == TokenData::ASSIGN
+  if input.peek(2) == TokenData::EQUALS_T
     @preprocessor.macros.has_key?(input.look(3).text)
   else
     @preprocessor.macros.has_key?(input.look(1).text)
@@ -29,7 +32,24 @@ def fmacro_call?
 end
 }
 
-prog : line* ;
+prog
+    : program_statement
+    | naked_code
+    ;
+
+program_statement
+    : open=program_start
+        ({@input.peek(2) != PROGRAM_T}? body+=line)*
+      close=program_end
+      -> ^(PROGRAM $open $close $body*)
+    ;
+
+program_start : PROGRAM_T progname=ID NEWLINE
+        -> ^(SCOPE_START $progname TEXT[$program_start.start,$program_start.text]) ;
+program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) NEWLINE
+        -> ^(SCOPE_END TEXT[$program_end.start,$program_end.text]) ;
+
+naked_code : line* ;
 
 line
     : ({fmacro_call?}?=> fcmacro
@@ -37,7 +57,12 @@ line
     ;
 
 fcmacro
-    : (result=ID ASSIGN)?  name=ID  LPAREN (args+=value (COMMA args+=value)* (names+=ID ASSIGN values+=value)* )? RPAREN NEWLINE
+    : (result=ID EQUALS_T)? 
+       name=ID  LEFT_PAREN_T
+                (args+=value (COMMA args+=value)*
+                (names+=ID EQUALS_T values+=value)* )?
+                RIGHT_PAREN_T
+       NEWLINE
       -> ^(FMACRO $name $result? ^(ARGS $args*) ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
     ;
 
@@ -48,11 +73,21 @@ fline
 
 fline_contents : allowed* ;
 
-allowed	: ID | ANY_CHAR | NUMBER | LPAREN | RPAREN | COMMA | ASSIGN | STRING ;
+allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA | EQUALS_T | STRING | END_T ;
 
 value : ID | NUMBER | STRING ;
 
+// Fortran Keywords
+
+PROGRAM_T    : 'PROGRAM'    | 'program' ;
+ENDPROGRAM_T : 'ENDPROGRAM' | 'endprogram' ;
+END_T        : 'END'        | 'end';
+
+// Identifiers
+
 ID	: (ALPHA | '_') (ALNUM | '_' | '%')* ;
+
+// Constants
 
 STRING
     : '"' ('\\"'|~'"')* '"' 
@@ -61,23 +96,25 @@ STRING
 
 NUMBER : DIGIT+ ;
 
-WS	: SPORT* { $channel=:hidden } ;
-NEWLINE	: '\n';
+// Whitespace
 
-COMMENT : '!' (~NEWLINE)* { $channel=:hidden } ;
+NEWLINE	: '\r'? '\n' ;
+WS	: (' '|'\r'|'\t'|'\u000C')* { $channel=:hidden } ;
+
+COMMENT : '!' ~('\n'|'\r')* { $channel=:hidden } ;
 
 //MULTILINE : '&' WS NEWLINE { skip } ;
+
+// Fragments
 
 fragment
 COMPARISSON : '<' | '>' ;
 
-ASSIGN       : '=' ;
-LPAREN       : '(' ;
-RPAREN       : ')' ;
-COMMA        : ',' ;
+EQUALS_T      : '=' ;
+LEFT_PAREN_T  : '(' ;
+RIGHT_PAREN_T : ')' ;
+COMMA         : ',' ;
 
-fragment
-SPORT	: ' ' | '\t';
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;
 fragment

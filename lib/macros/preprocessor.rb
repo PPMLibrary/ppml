@@ -37,9 +37,9 @@ module CG
       @macros.each { |name,m| m.expand_recursive_calls(@macros) }
 
       @templates = ANTLR3::Template::Group.new do
-        define_template( :prog,        "<%= @lines.join(\"\n\") %>\n")
-        define_template( :line,        "<%= @in %>")
-        define_template( :fortran,     "<%= @in %>")
+        define_template( :join,        "<%= @lines.join(\"\n\") %>\n")
+        define_template( :scoped,      "<%= @open %>\n<%= !@body.empty? ? @body.join(\"\n\") + \"\n\" : '' %><%= @close %>\n")
+        define_template( :verbatim,    "<%= @in %>")
         define_template( :fcall_macro, "<%= @p.expand(@name, @result, @args, Hash[*@namedargs.zip(@namedvalues).flatten]) %>" )
       end
     end
@@ -69,9 +69,9 @@ module CG
     end
 
     def parser_for_string(string)
-      # STDERR.puts "Parsing String\n\n#{string}"
-      # print_lexer_tokens string
-      # print_tree_tokens string
+      STDERR.puts "Parsing String\n\n#{string}"
+      print_lexer_tokens string
+      print_tree_tokens string
       l = Lexer.new string
       token_stream = ANTLR3::CommonTokenStream.new l
       p = Parser.new token_stream
