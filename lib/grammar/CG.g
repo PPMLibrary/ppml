@@ -50,6 +50,8 @@ prog
       )
     ;
 
+// Scope detection - top level statements
+
 program_statement
     : ((NEWLINE)=>NEWLINE)*
       open=program_start
@@ -80,6 +82,10 @@ module_statement
                   $i)
     ;
 
+naked_code : line* ;
+
+// Scope detecion - start and end lines
+
 program_start : PROGRAM_T name=ID NEWLINE
         -> ^(SCOPE_START $name TEXT[$program_start.start,$program_start.text]) ;
 program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID? NEWLINE
@@ -94,6 +100,8 @@ subroutine_start : SUBROUTINE_T name=ID allowed* NEWLINE
         -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
 subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
+
+// Scope detection - body
 
 inner_stuff
     : ((NEWLINE)=>NEWLINE)*
@@ -124,7 +132,7 @@ use_statement
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
-naked_code : line* ;
+// Actual code
 
 line
     : ({fmacro_call?}?=> fcmacro
