@@ -10,8 +10,8 @@ class PPM < Thor
     require_relative '../lib/macros'
     input = file ? File.new(file) : STDIN
 
-    p = CG::Preprocessor.new
-    o = p.process(input.read)
+    configatron.comment_mode = false
+    o = CG::Preprocessor.instance.process(input.read)
 
     if options[:outfile]
       File.open(options[:outfile], 'w+') do |f|

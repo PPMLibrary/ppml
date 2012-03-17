@@ -2,7 +2,7 @@ require 'ostruct'
 
 module CG
   class Macro
-    attr_accessor :name
+    attr_accessor :name, :p
     attr_reader :args, :body
 
     NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
@@ -18,9 +18,11 @@ module CG
       if args
         @args = Macro.parse_arglist args
       end
+      @recursive_expanded = false
     end
 
     def expand(result=nil, args=nil, named=nil)
+      map = {}
       if @args
         map = @args.clone
         [args.size, @args.keys.size].min.times do |i|
@@ -28,10 +30,13 @@ module CG
         end if args
         map.merge! named if named
       end
-      ERB.new(@body).result(Macro.binding_from_map(map))
+      expand_recursive_calls if !@recursive_expanded
+      erb = ERB.new @body
+      erb.result Macro.binding_from_map(map)
     end
 
-    def expand_recursive_calls macros
+    def expand_recursive_calls
+      m = Preprocessor.instance.macros
       @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
         indent = $~[:indent]
         name = $~[:name]
@@ -46,11 +51,12 @@ module CG
             named[name] = value
           end
         end
-        macros[name].expand(nil,positional,named).gsub!(/^(.*)$/) do
-          |m|
-          indent + m
-        end if macros.has_key? name
+        m[name].expand(nil,positional,named).gsub!(/^(.*)$/) do
+          |line|
+          indent + line
+        end if m.has_key? name
       end
+      @recursive_expanded = true
     end
 
     private
@@ -65,7 +71,7 @@ module CG
         while l=file.gets
           if l =~ MACRO_START
             name = $~[:name]
-            body = read_body(file)
+            body = read_body file
             macros[name] = Macro.new(name, body, $~[:args])
           end
         end

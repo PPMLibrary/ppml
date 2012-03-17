@@ -1,3 +1,7 @@
-Given /^comment mode is turned on$/ do
-  pending # express the regexp above with the code you wish you had
+require 'configatron'
+
+Given /^setting (\w*) is (on|off)$/ do
+  |name, value|
+  value = value == 'on'
+  configatron.configure_from_hash({ name.to_sym => value })
 end

@@ -7,8 +7,14 @@ output = AST;
 
 tokens {
 PROGRAM;
+MODULE;
+SUBROUTINE;
 SCOPE_START;
 SCOPE_END;
+INNER_STUFF;
+USE;
+IMPLICIT;
+CONTAINS;
 FMACRO;
 FLINE;
 TEXT;
@@ -21,33 +27,102 @@ NAMEDARGS;
 }
 
 @members {
-attr_accessor :preprocessor
-
 def fmacro_call?
+  m = Preprocessor.instance.macros
   if input.peek(2) == TokenData::EQUALS_T
-    @preprocessor.macros.has_key?(input.look(3).text)
+    m.has_key?(input.look(3).text)
   else
-    @preprocessor.macros.has_key?(input.look(1).text)
+    m.has_key?(input.look(1).text)
   end
 end
 }
 
 prog
-    : program_statement
-    | naked_code
+    : (naked_code)=>naked_code
+    | (
+            ((module_statement)=>module_statement
+            |(subroutine_statement)=>subroutine_statement
+            )*
+            program_statement?
+            (module_statement
+            |subroutine_statement
+            )*
+      )
     ;
 
 program_statement
-    : open=program_start
-        ({@input.peek(2) != PROGRAM_T}? body+=line)*
+    : ((NEWLINE)=>NEWLINE)*
+      open=program_start
+        i=inner_stuff
       close=program_end
-      -> ^(PROGRAM $open $close $body*)
+      ((NEWLINE)=>NEWLINE)*
+      -> ^(PROGRAM $open $close
+                   $i)
     ;
 
-program_start : PROGRAM_T progname=ID NEWLINE
-        -> ^(SCOPE_START $progname TEXT[$program_start.start,$program_start.text]) ;
-program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) NEWLINE
+subroutine_statement
+    : ((NEWLINE)=>NEWLINE)*
+      open=subroutine_start
+        i=inner_stuff
+      close=subroutine_end
+      ((NEWLINE)=>NEWLINE)*
+      -> ^(SUBROUTINE $open $close
+                      $i)
+    ;
+
+module_statement
+    : ((NEWLINE)=>NEWLINE)*
+      open=module_start
+        i=inner_stuff
+      close=module_end
+      ((NEWLINE)=>NEWLINE)*
+      -> ^(MODULE $open $close
+                  $i)
+    ;
+
+program_start : PROGRAM_T name=ID NEWLINE
+        -> ^(SCOPE_START $name TEXT[$program_start.start,$program_start.text]) ;
+program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$program_end.start,$program_end.text]) ;
+
+module_start : MODULE_T name=ID NEWLINE
+        -> ^(SCOPE_START $name TEXT[$module_start.start,$module_start.text]) ;
+module_end   : ( ENDMODULE_T | END_T MODULE_T ) ID? NEWLINE
+        -> ^(SCOPE_END TEXT[$module_end.start,$module_end.text]) ;
+
+subroutine_start : SUBROUTINE_T name=ID allowed* NEWLINE
+        -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
+subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
+        -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
+
+inner_stuff
+    : ((NEWLINE)=>NEWLINE)*
+      use+=use_statement*
+      ((NEWLINE)=>NEWLINE)*
+      (imp=implicit_none)?
+      ({@input.peek(2) != PROGRAM_T}? body+=line)*
+      (con=contains
+       sub+=subroutine_statement+)?
+       -> ^(INNER_STUFF
+            ^(USE $use*)
+            $imp?
+            $con?
+            $sub*
+            $body*)
+    ;
+
+implicit_none
+    : IMPLICIT_T NONE_T NEWLINE
+      -> ^(IMPLICIT TEXT[$implicit_none.start,$implicit_none.text])
+    ;
+contains
+    : CONTAINS_T NEWLINE 
+      -> ^(CONTAINS TEXT[$contains.start,$contains.text])
+    ;
+use_statement
+    : USE_T allowed* NEWLINE
+      -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
+    ;
 
 naked_code : line* ;
 
@@ -79,9 +154,17 @@ value : ID | NUMBER | STRING ;
 
 // Fortran Keywords
 
-PROGRAM_T    : 'PROGRAM'    | 'program' ;
-ENDPROGRAM_T : 'ENDPROGRAM' | 'endprogram' ;
-END_T        : 'END'        | 'end';
+PROGRAM_T       : 'PROGRAM'       | 'program'       ;
+ENDPROGRAM_T    : 'ENDPROGRAM'    | 'endprogram'    ;
+MODULE_T        : 'MODULE'        | 'module'        ;
+ENDMODULE_T     : 'ENDMODULE'     | 'endmodule'     ;
+SUBROUTINE_T    : 'SUBROUTINE'    | 'subroutine'    ;
+ENDSUBROUTINE_T : 'ENDSUBROUTINE' | 'endsubroutine' ;
+END_T           : 'END'           | 'end'           ;
+USE_T           : 'USE'           | 'use'           ;
+IMPLICIT_T      : 'IMPLICIT'      | 'implicit'      ;
+NONE_T          : 'NONE'          | 'none'          ;
+CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
 
 // Identifiers
 

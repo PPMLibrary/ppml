@@ -5,7 +5,6 @@ language = Ruby;
 tokenVocab = CG;
 ASTLabelType = CommonTree;
 output = template;
-//rewrite = true;
 }
 
 @header {
@@ -13,44 +12,81 @@ require_relative 'scope'
 }
 
 @members {
-attr_accessor :preprocessor, :stream
-
-def find_hidden
+def find_hidden(lines=false)
   tree   = @input.look
   start  = tree.start_index
   stop   = tree.stop_index
 
-  find_leading  start
+  i = find_leading start
+  find_empty_lines i if lines
   find_trailing stop
 
-  STDERR.puts "looking before: #{start}"
-  STDERR.puts "  found indent: #{@current_indent}"
-  STDERR.puts "looking after: #{stop}"
-  STDERR.puts "  found comment: #{@trailing}"
+#  STDERR.puts "\n\nlooking before: #{start}" if lines
+#  STDERR.puts "  found indent: '#{@current_indent}'"
+#  STDERR.puts "  found empty lines: '#{@empty_lines}'" if lines
+#  STDERR.puts "looking after: #{stop}"
+#  STDERR.puts "  found comment: #{@trailing}"
 end
 
 def find_leading i
+  t = Preprocessor.instance.tokens
   i -= 1
-  if !@stream[i].nil? and @stream[i].channel == :hidden
-    @current_indent = @stream[i].text
+  if !t[i].nil? and t[i].channel == :hidden
+    @current_indent = t[i].text
     i -= 1
   else
     @current_indent = ''
   end
-  hidden = []
+  return i
 end
 
 def find_trailing i
+  t = Preprocessor.instance.tokens
   i -= 1
-  hidden = []
   @trailing = ''
-  if ! @stream[i].nil? and @stream[i].channel == :hidden
+  if !t[i].nil? and t[i].channel == :hidden
     i -= 1
-    if ! @stream[i].nil? and @stream[i].channel == :hidden
-      @trailing = @stream[i].text
+    if !t[i].nil? and t[i].channel == :hidden
+      @trailing = t[i].text
     end
-    @trailing += @stream[i+1].text
+    @trailing += t[i+1].text
   end
+end
+
+class Line
+  attr_accessor :start, :end, :text
+  attr_writer :empty
+  def empty?
+    @empty
+  end
+  def initialize e
+    @empty, @start, @end, @text = false, e, e, ''
+  end
+end
+
+def find_empty_lines i
+  t = Preprocessor.instance.tokens
+  @empty_lines = ''
+  l = previous_line i
+  while l.empty?
+    @empty_lines = l.text + @empty_lines
+    l = previous_line(l.start - 1)
+  end
+end
+
+def previous_line i
+  t = Preprocessor.instance.tokens
+  l = Line.new i
+  return l if i<0 or t[i].nil?
+  i -= 1
+  l.empty = true
+  while !t[i].nil? and t[i].type != NEWLINE
+    l.empty = false if t[i].channel != :hidden
+    l.start = i
+    i -= 1
+  end
+  l.text = t[l.start..l.end].map { |tok| tok.text }.join('')
+  l
 end
 
 def wrap input
@@ -84,38 +120,79 @@ def indent input
   end
 end
 
+def setup_scope
+  find_hidden line=true
+end
+
+def cleanup_scope
+  find_hidden line=true
+end
+
 }
 
 prog
-    : ( code=program_statement
-      | code=naked_code ) -> verbatim(in={$code.st})
+    : (naked_code)=> code=naked_code -> verbatim(in={$code.st})
+    | (
+            ((module_statement)=>pre+=module_statement
+            |(subroutine_statement)=>pre+=subroutine_statement
+            )*
+            program=program_statement?
+            (post+=module_statement
+            |post+=subroutine_statement
+            )*
+            -> prog(pre={$pre},prog={$program.st},post={$post})
+      )
     ;
 
 naked_code : (l+=line)* -> join(lines={$l}) ;
 
 program_statement
-    : ^(PROGRAM o=scope_start c=scope_end b+=line*) -> scoped(open={$o.st},close={$c.st},body={$b})
+    : ^(PROGRAM o=scope_start
+                c=scope_end
+            i=inner_stuff)
+            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+    ;
+
+module_statement
+    : ^(MODULE o=scope_start
+               c=scope_end
+            i=inner_stuff)
+            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+    ;
+
+subroutine_statement
+    : ^(SUBROUTINE o=scope_start
+                   c=scope_end
+            i=inner_stuff)
+            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+    ;
+
+inner_stuff
+    : { find_hidden }
+        ^(INNER_STUFF
+            ^(USE u+=line*)
+            ( ^(IMPLICIT i=TEXT) )?
+            ( ^(CONTAINS n=TEXT)
+              s+=subroutine_statement+ )?
+          { @first_line = nil }
+            b+=line*)
+        -> inner(use={$u},implicit={$i},contains={$n},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
 scope_start
-    : { find_hidden }
+    : { setup_scope }
       ^(SCOPE_START name=ID text=TEXT)
-      -> verbatim(in={indent($text)})
+      -> verbatim(in={@empty_lines + indent($text)})
     ;
 
 scope_end
-    : { find_hidden }
+    : { cleanup_scope }
       ^(SCOPE_END text=TEXT)
-      -> verbatim(in={indent($text)})
-    ;
-
-indented
-    : { find_hidden }
-        t=TEXT -> verbatim(in={wrap($t.text)})
+      -> verbatim(in={@empty_lines + indent($text)})
     ;
 
 line
-    : { find_hidden }
+    : { find_hidden; @first_line ||= @current_indent }
         ( macro=fcmacro -> verbatim(in={wrap($macro.st)})
         | fortran=fline -> verbatim(in={wrap($fortran.st)})
         )

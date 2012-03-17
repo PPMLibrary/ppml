@@ -7,7 +7,7 @@ Given /^user defined macros in "([^"]*)"$/ do |macro_dir| #"
 end
 
 Given /^the project path is "([^"]*)"$/ do |path| #"
-  @project = path
+  CG::Preprocessor.instance.cwd path
 end
 
 Given /^the input is standard fortran$/ do
@@ -15,12 +15,12 @@ Given /^the input is standard fortran$/ do
 end
 
 When /^the preprocessor object is created$/ do
-  @p = CG::Preprocessor.new(@project?@project:nil)
+  @p = CG::Preprocessor.instance
 end
 
 When /^I preprocess$/ do |input|
   @macros ||= {}
-  p = CG::Preprocessor.new
+  p = CG::Preprocessor.instance
   p.macros += @macros
   @input = input
   @output = p.process(@input)

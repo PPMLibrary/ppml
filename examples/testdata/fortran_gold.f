@@ -1,4 +1,5 @@
 program test
+  implicit none
   integer, dimension(50) :: a,b,c
   integer :: x,i=2,j=49
 !             Int. J. Numer. Meth. Engng 2003; 56:935-960.

@@ -11,9 +11,10 @@ Feature: preprocessing standard fortran
     Then it should remain unchanged
 
     Examples: top level constructs
-      | code                                         |
-      | program sample\nend program\n                |
-      | subroutine name(args)\nend subroutine name\n |
+      | code                                                        |
+      | program sample\nimplicit none\nend program\n                |
+      | subroutine name(args)\nimplicit none\nend subroutine name\n |
+      | module name\nimplicit none\nend module name\n               |
 
     Examples: variable definition
       | code                      |
@@ -27,6 +28,6 @@ Feature: preprocessing standard fortran
       | l = log(x)\n |
 
     Examples: loops
-      | code                      |
+      | code                        |
       | do i=1,N\nj = i+1\nend do\n |
 
