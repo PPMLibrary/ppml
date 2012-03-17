@@ -105,10 +105,12 @@ end
 
 def setup_scope
   find_hidden line=true
+  @scope = CG::Scope.new(@input.look(3).text,@scope)
 end
 
 def cleanup_scope
   find_hidden line=true
+  @scope = @scope.parent
 end
 
 }
@@ -131,22 +133,22 @@ naked_code : (l+=line)* -> join(lines={$l}) ;
 
 program_statement
     : ^(PROGRAM o=scope_start
-                c=scope_end
-            i=inner_stuff)
+                i=inner_stuff
+                c=scope_end)
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
 module_statement
     : ^(MODULE o=scope_start
-               c=scope_end
-            i=inner_stuff)
+               i=inner_stuff
+               c=scope_end)
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
 subroutine_statement
     : ^(SUBROUTINE o=scope_start
-                   c=scope_end
-            i=inner_stuff)
+                   i=inner_stuff
+                   c=scope_end)
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
@@ -159,7 +161,7 @@ inner_stuff
               s+=subroutine_statement+ )?
           { @first_line = nil }
             b+=line*)
-        -> inner(use={$u},implicit={$i},contains={$n},subroutines={$s},body={$b},indent={@first_line || ''})
+        -> inner(context={@scope},use={$u},implicit={$i},contains={$n},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
 scope_start
@@ -182,7 +184,7 @@ line
     ;
 
 fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value* ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*)))
-          -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
+          -> fcall_macro(p={@preprocessor},name={$n},context={@scope},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
 
 fline	: ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
 

@@ -1,9 +1,29 @@
-macro ppm_init()
-call define_args
+macro ppm_init(debug_level=0)
+% scope.var("comm"  => "INTEGER    :: comm")
+% scope.var("rank"  => "INTEGER    :: rank")
+% scope.var("nproc" => "INTEGER    :: nproc")
+% scope.var("info"  => "INTEGER    :: info")
+
+call define_args()
 call parse_args(info)
 $fail(info.ne.0, "Parse args failed.")
-call MPI_Init()
+
+% if configatron.mpi
+call MPI_Init(info)
 $fail(info.ne.0, "MPI_Init failed.")
-call ppm_init()
+
+comm = MPI_COMM_WORLD
+
+call MPI_Comm_Size(comm,nproc,info)
+$fail(info.ne.0, "MPI_Comm_Size failed.")
+
+call MPI_Comm_Rank(comm,rank,info)
+$fail(info.ne.0, "MPI_Comm_Rank failed.")
+% end
+
+call ppm_init(ndim,<%= configatron.ppm.prec %>, &
+              <%= configatron.ppm.tolexp %>,comm,&
+              <%= debug_level %>,info)
 $fail(info.ne.0, "ppm_init failed.")
+
 end macro

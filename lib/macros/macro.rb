@@ -21,21 +21,22 @@ module CG
       @recursive_expanded = false
     end
 
-    def expand(result=nil, args=nil, named=nil)
+    def expand(scope, result=nil, args=nil, named=nil)
       map = {}
       if @args
         map = @args.clone
-        [args.size, @args.keys.size].min.times do |i|
+        [args.size, map.keys.size].min.times do |i|
           map[map.keys[i]] = args[i]
         end if args
         map.merge! named if named
       end
-      expand_recursive_calls if !@recursive_expanded
-      erb = ERB.new @body
+      map["scope"] = scope
+      expand_recursive_calls(scope) if !@recursive_expand
+      erb = ERB.new @body, nil, "%"
       erb.result Macro.binding_from_map(map)
     end
 
-    def expand_recursive_calls
+    def expand_recursive_calls(scope)
       m = Preprocessor.instance.macros
       @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
         indent = $~[:indent]
@@ -51,7 +52,7 @@ module CG
             named[name] = value
           end
         end
-        m[name].expand(nil,positional,named).gsub!(/^(.*)$/) do
+        m[name].expand(scope,nil,positional,named).gsub!(/^(.*)$/) do
           |line|
           indent + line
         end if m.has_key? name

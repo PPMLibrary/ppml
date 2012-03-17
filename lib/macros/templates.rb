@@ -28,8 +28,11 @@ ENDTEMPLATE
 % end
 % if configatron.comment_mode
 %   _erbout += "#{@indent}! interfaces\n"
+% end
+% if configatron.comment_mode
 %   _erbout += "#{@indent}! variable definitions\n"
 % end
+% _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" if !@context.variables.empty?
 % _erbout += @body.join("\n") + "\n" if !@body.empty?
 % _erbout += @indent + @contains.text if !@contains.nil?
 % _erbout += "#{@indent}! subroutines\n" if configatron.comment_mode
@@ -39,7 +42,7 @@ ENDTEMPLATE
         define_template( :verbatim,    "<%= @in %>")
 
         define_template( :fcall_macro, <<-'ENDTEMPLATE')
-<%= CG::Preprocessor.instance.expand(@name, @result, @args,
+<%= CG::Preprocessor.instance.expand(@name, @context, @result, @args,
         Hash[*@namedargs.zip(@namedvalues).flatten]) %>
 ENDTEMPLATE
       end
