@@ -139,14 +139,37 @@ line
     | fline)
     ;
 
+// foreach
+//     : FOREACH_T it=ID IN_T name=ID a=arglist?
+//         (DOT_T modifiers+=ID arglists+=arglist)*
+//       NEWLINE
+//         (bodies+=foreach_body
+//         |   ((bname+=ID | bname+=DEFAULT_T) COLON_T
+//             bodies+=foreach_body*
+//             )+
+//         )
+//       (ENDFOREACH_T | END_T FOREACH_T) NEWLINE
+//         -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers $arglists))
+//     ;
+
+// foreach_body
+//     : ({@input.peek(2) != FOREACH_T}? body+=line)*
+//       -> ^(BODY $body*)
+//     ;
+
 fcmacro
-    : (result=ID EQUALS_T)? 
-       name=ID  LEFT_PAREN_T
-                (args+=value (COMMA args+=value)*
-                (names+=ID EQUALS_T values+=value)* )?
-                RIGHT_PAREN_T
-       NEWLINE
-      -> ^(FMACRO $name $result? ^(ARGS $args*) ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
+    : (result=ID EQUALS_T)?
+       name=ID args=arglist NEWLINE
+      -> ^(FMACRO $name $result? $args)
+    ;
+
+arglist
+    : LEFT_PAREN_T
+       ( args+=value (COMMA args+=value)*
+        (names+=ID EQUALS_T values+=value)*
+       )?
+      RIGHT_PAREN_T
+      -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
     ;
 
 fline

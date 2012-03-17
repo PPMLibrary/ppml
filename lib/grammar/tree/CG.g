@@ -181,7 +181,7 @@ line
         )
     ;
 
-fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value*) ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
+fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value* ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*)))
           -> fcall_macro(p={@preprocessor},name={$n},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
 
 fline	: ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
