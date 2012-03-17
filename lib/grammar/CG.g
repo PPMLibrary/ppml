@@ -142,11 +142,9 @@ fcmacro
     ;
 
 fline
-    : fline_contents NEWLINE
-      -> ^(FLINE TEXT[$fline_contents.start,$fline_contents.text])
+    : allowed* NEWLINE
+      -> ^(FLINE TEXT[$fline.start,$fline.text])
     ;
-
-fline_contents : allowed* ;
 
 allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA | EQUALS_T | STRING | END_T ;
 

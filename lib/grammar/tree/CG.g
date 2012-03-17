@@ -89,22 +89,6 @@ def previous_line i
   l
 end
 
-def wrap input
-  if input.respond_to? :to_s
-    string = input.to_s
-  elsif input.respond_to? :text
-    string = input.text
-  end
-  if !string.empty?
-    lines = string.split("\n")
-    lines[0] += @trailing
-    lines.map! { |l| @current_indent+l }
-    lines.join("\n")
-  else
-    @trailing
-  end
-end
-
 def indent input
   if input.respond_to? :to_s
     string = input.to_s
@@ -113,10 +97,9 @@ def indent input
   end
   if !string.empty?
     lines = string.split("\n")
+    lines = [''] if lines.empty?
     lines.map! { |l| @current_indent+l }
     lines.join("\n")
-  else
-    @trailing
   end
 end
 
@@ -193,8 +176,8 @@ scope_end
 
 line
     : { find_hidden; @first_line ||= @current_indent }
-        ( macro=fcmacro -> verbatim(in={wrap($macro.st)})
-        | fortran=fline -> verbatim(in={wrap($fortran.st)})
+        ( macro=fcmacro -> verbatim(in={indent($macro.st)})
+        | fortran=fline -> verbatim(in={indent($fortran.st)})
         )
     ;
 
