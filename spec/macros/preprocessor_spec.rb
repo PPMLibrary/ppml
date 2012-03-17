@@ -5,6 +5,7 @@ module CG
     before :each  do
       @p = Preprocessor.instance
       @m = mock('test_macro')
+      @scope = mock('test_scope')
       @m.stub(:name => 'test_macro')
     end
 
@@ -27,14 +28,14 @@ module CG
 
     context "expanding macros" do
       it "expands existing macro definitions" do
-        arglist = ['some', :args]
+        arglist = [@scope,'some', :args]
         @m.should_receive(:expand).with(*arglist).and_return('body')
         @p.macros << @m
         @p.expand('test_macro', *arglist).should == 'body'
       end
 
       it "returns nil if macro is not defined" do
-        @p.expand('test_macro', nil).should be_nil
+        @p.expand('test_macro', @scope).should be_nil
       end
     end
   end

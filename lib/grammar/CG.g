@@ -56,8 +56,7 @@ program_statement
         i=inner_stuff
       close=program_end
       ((NEWLINE)=>NEWLINE)*
-      -> ^(PROGRAM $open $close
-                   $i)
+      -> ^(PROGRAM $open $i $close)
     ;
 
 subroutine_statement
@@ -66,8 +65,7 @@ subroutine_statement
         i=inner_stuff
       close=subroutine_end
       ((NEWLINE)=>NEWLINE)*
-      -> ^(SUBROUTINE $open $close
-                      $i)
+      -> ^(SUBROUTINE $open $i $close)
     ;
 
 module_statement
@@ -76,8 +74,7 @@ module_statement
         i=inner_stuff
       close=module_end
       ((NEWLINE)=>NEWLINE)*
-      -> ^(MODULE $open $close
-                  $i)
+      -> ^(MODULE $open $i $close)
     ;
 
 program_start : PROGRAM_T name=ID NEWLINE

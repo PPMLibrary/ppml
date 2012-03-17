@@ -12,7 +12,7 @@ module CG
         substituting <%= a %>, <%= b %> and <%= c %>
         more text
         BODY
-        m.expand(nil,['e','"string, args"','g']).should == <<-REPLACEMENT
+        m.expand(nil,nil,['e','"string, args"','g']).should == <<-REPLACEMENT
         plain text line
         substituting e, "string, args" and g
         more text

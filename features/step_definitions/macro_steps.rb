@@ -1,6 +1,10 @@
-Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
+Given /^a macro "([^"]*)" is defined as$/ do |name, body|
   @macros ||= {}
   @macros[name] = CG::Macro.new(name, body)
+end
+
+Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
+  step "a macro \"#{name}\" is defined as",body
 end
 
 Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as$/ do |name, args, body|
