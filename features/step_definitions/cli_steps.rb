@@ -38,6 +38,12 @@ Then /^I get a prompt to enter the missing configuration options$/ do
   pending # express the regexp above with the code you wish you had
 end
 
-Then /^the project skeleton is created in "([^"]*)"$/ do |arg1| #"
-  pending # express the regexp above with the code you wish you had
+Then /^the project skeleton is created in "([^"]*)"$/ do |target| #"
+  project = File.basename(target)
+  Dir.exists?(project).should == true
+  Dir.exists?("#{project}/macros").should == true
+  Dir.exists?("#{project}/gen").should == true
+  Dir.exists?("#{project}/run").should == true
+  File.exists?("#{project}/#{project}.ppm").should == true
+  File.exists?("#{project}/#{project}.config").should == true
 end

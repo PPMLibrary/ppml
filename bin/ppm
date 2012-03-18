@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'thor'
+require 'thor/group'
 
 class PPM < Thor
 
@@ -23,8 +24,57 @@ class PPM < Thor
 
   end
 
+  desc 'newproject NAME [-d | --defaults]', 'Create a new project in NAME'
+  def newproject(*args)
+    invoke NewProject, args
+  end
+
   desc 'build', 'Build the simulation binary'
   def build
+  end
+
+end
+  
+class NewProject < Thor::Group
+  include Thor::Actions
+  argument :name
+  class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  def create_dirs
+    # The project directory
+    empty_directory name
+    # where user defined macros are created
+    empty_directory "#{name}/macros"
+    # where the generated fortran code is placed
+    empty_directory "#{name}/gen"
+    # where the run is executed
+    empty_directory "#{name}/run"
+  end
+
+  def create_client_skel
+    template "../lib/templates/client.tt", "#{name}/#{name}.ppm"
+  end
+
+  def create_client_config
+ 
+    # defaults
+    @ppm_base_path = '/usr/local'
+    @mpi_state = "enabled"
+
+    if !options[:defaults]
+      @ppm_base_path = ask("Please point me to the PPM core base path:")
+      if yes?("Are you using MPI? (Y/n)")
+        @mpi_state = "enabled"
+      else
+        @mpi_state = "disabled"
+      end
+    end
+    
+    template "../lib/templates/config.tt", "#{name}/#{name}.config"
+
   end
 end
 

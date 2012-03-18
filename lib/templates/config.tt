@@ -1,0 +1,4 @@
+configatron.mpi = <%= @mpi_state %>
+configatron.ppm.base_path = <%= @ppm_base_path %>
+configatron.ppm.prec
+configatron.ppm.tolexp
