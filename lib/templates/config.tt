@@ -1,4 +1,8 @@
+configatron.build.compiler = <%= @compiler %>
+configatron.build.optflags =
 configatron.mpi = <%= @mpi_state %>
+configatron.metis.base_path = <%= @metis_base_path %>
 configatron.ppm.base_path = <%= @ppm_base_path %>
-configatron.ppm.prec
-configatron.ppm.tolexp
+configatron.ppm.prec =
+configatron.ppm.tolexp =
+configatron.ppm.numerics.base_path = <%= @ppmnumerics_base_path %>

@@ -46,4 +46,5 @@ Then /^the project skeleton is created in "([^"]*)"$/ do |target| #"
   Dir.exists?("#{project}/run").should == true
   File.exists?("#{project}/#{project}.ppm").should == true
   File.exists?("#{project}/#{project}.config").should == true
+  FileUtils.rm_rf project # cleanup
 end

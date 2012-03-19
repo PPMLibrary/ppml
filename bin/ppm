@@ -63,13 +63,20 @@ class NewProject < Thor::Group
     # defaults
     @ppm_base_path = '/usr/local'
     @mpi_state = "enabled"
+    @compiler = "mpif90"
+    @ppmnumerics_base_path = "/usr/local"
+    @metis_base_path = "/usr/local"
 
     if !options[:defaults]
       @ppm_base_path = ask("Please point me to the PPM core base path:")
+      @ppmnumerics_base_path = ask("Please point me to the PPM numerics base path:")
+      @metis_base_path = ask("Now, if I only knew where METIS is:")
       if yes?("Are you using MPI? (Y/n)")
         @mpi_state = "enabled"
+        say("OK, so I'll be using mpif90 as the Fortran compiler.")
       else
         @mpi_state = "disabled"
+        @compiler = ask("What compiler command would you like to use:")
       end
     end
     
