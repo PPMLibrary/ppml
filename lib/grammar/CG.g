@@ -166,8 +166,8 @@ fcmacro
 
 arglist
     : LEFT_PAREN_T
-       ( args+=value (COMMA_T args+=value)*
-        (names+=ID EQUALS_T values+=value)*
+       ( (args+=value | names+=ID EQUALS_T values+=value)
+         (COMMA_T (args+=value | names+=ID EQUALS_T values+=value))*
        )?
       RIGHT_PAREN_T
       -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))

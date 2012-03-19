@@ -2,7 +2,7 @@ require 'configatron'
 
 module CG
   class Templates
-    def self.get_all p
+    def self.get_all
       ANTLR3::Template::Group.new do
         define_template( :join,        "<%= @lines.join(\"\n\") %>\n")
 
@@ -43,7 +43,7 @@ ENDTEMPLATE
 
         define_template( :fcall_macro, <<-'ENDTEMPLATE')
 <%= CG::Preprocessor.instance.expand(@name, @context, @result, @args,
-        Hash[*@namedargs.zip(@namedvalues).flatten]) %>
+        Hash[*@namedargs.map(&:to_s).zip(@namedvalues).flatten]) %>
 ENDTEMPLATE
       end
     end

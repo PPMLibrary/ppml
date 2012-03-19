@@ -191,7 +191,10 @@ line
         )
     ;
 
-fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value* ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*)))
+fcmacro	: ^(FMACRO n=ID r=ID?
+            ^(ARGS a+=value*
+              ^(NAMEDARGS na+=ID*)
+              ^(NAMEDARGS v+=value*)))
           -> fcall_macro(p={@preprocessor},name={$n},context={@scope},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
 
 // foreach : ^(FOREACH n=ID it=ID a=arglist? ^(MODIFIERS m+=ID* ma+=arglist*) b+=foreach_body*) ;
