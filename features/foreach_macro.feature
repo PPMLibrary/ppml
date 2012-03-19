@@ -5,7 +5,7 @@ Feature: Foreach Macros
 
   Scenario: basic foreach macro
     Given a foreach macro named "particles"
-    And with argument list "(P)" and body
+    And argument list (P) and body
     """
     do <%= iterator %>=1,<%= P %>%Npart
       <%= b %>
@@ -23,6 +23,6 @@ Feature: Foreach Macros
     """
     do i=1,P%Npart
       ! do something to p
-      end do
+    end do
 
     """

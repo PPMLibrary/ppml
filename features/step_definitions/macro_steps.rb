@@ -1,4 +1,6 @@
-# Function call macros
+########################
+# Function call macros #
+########################
 
 Given /^a macro "([^"]*)" is defined as$/ do |name, body| #"
   @macros ||= {}
@@ -17,6 +19,10 @@ end
 Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as "([^"]*)"$/ do |name, args, body| #"
   step "a macro \"#{name}\" with argument list (\"#{args}\") is defined as", body
 end
+
+#################
+# General steps #
+#################
 
 Given /^a file with the following structure$/ do |string|
   @file = string
@@ -41,12 +47,15 @@ Then /^the body of the macro should be$/ do |body|
   @macros[@name].body.should == body
 end
 
-# Foreach macros
+##################
+# Foreach macros #
+##################
 
 Given /^a foreach macro named "([^"]*)"$/ do |name| #"
-  pending # express the regexp above with the code you wish you had
+  @macros ||= {}
+  @temp_name
 end
 
-Given /^with argument list "([^"]*)" and body$/ do |args, body| #"
-  pending # express the regexp above with the code you wish you had
+Given /^argument list \(([^\)]*)\) and body$/ do |args, body|
+  @macros[@temp_name] = CG::ForeachMacro.new @temp_name, args, body
 end

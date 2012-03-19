@@ -5,8 +5,6 @@ Feature: Scope Detection
   locations and make them available in the calling macro code.
 
   Background: running in comment mode
-    Comment mode makes the scope object print a comment line in all
-    target locations.
     Given setting comment_mode is on
 
   Scenario: program statement
