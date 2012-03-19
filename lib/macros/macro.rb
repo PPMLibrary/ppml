@@ -108,5 +108,12 @@ module CG
 
     end # class << self
 
-  end # class Macro
+  end # Macro
+
+  class FunctionMacro < Macro
+  end # FunctionMacro
+
+  class ForeachMacro < Macro
+  end # ForeachMacro
+
 end

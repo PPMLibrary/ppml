@@ -115,6 +115,8 @@ end
 
 }
 
+// Entry point
+
 prog
     : (naked_code)=> code=naked_code -> verbatim(in={$code.st})
     | (
@@ -128,6 +130,8 @@ prog
             -> prog(pre={$pre},prog={$program.st},post={$post})
       )
     ;
+
+// Top level constructs
 
 naked_code : (l+=line)* -> join(lines={$l}) ;
 
@@ -152,6 +156,14 @@ subroutine_statement
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
+// Scope handling
+
+scope_start
+    : { setup_scope }
+      ^(SCOPE_START name=ID text=TEXT)
+      -> verbatim(in={@empty_lines + indent($text)})
+    ;
+
 inner_stuff
     : { find_hidden }
         ^(INNER_STUFF
@@ -164,17 +176,13 @@ inner_stuff
         -> inner(context={@scope},use={$u},implicit={$i},contains={$n},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
-scope_start
-    : { setup_scope }
-      ^(SCOPE_START name=ID text=TEXT)
-      -> verbatim(in={@empty_lines + indent($text)})
-    ;
-
 scope_end
     : { cleanup_scope }
       ^(SCOPE_END text=TEXT)
       -> verbatim(in={@empty_lines + indent($text)})
     ;
+
+// Actual code
 
 line
     : { find_hidden; @first_line ||= @current_indent }
@@ -185,6 +193,15 @@ line
 
 fcmacro	: ^(FMACRO n=ID r=ID? ^(ARGS a+=value* ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*)))
           -> fcall_macro(p={@preprocessor},name={$n},context={@scope},result={$r},args={$a},namedargs={$na},namedvalues={$v}) ;
+
+// foreach : ^(FOREACH n=ID it=ID a=arglist? ^(MODIFIERS m+=ID* ma+=arglist*) b+=foreach_body*) ;
+
+// foreach_body : ^(BODY b+=line*) ;
+
+// arglist returns [args]
+//     : ^(ARGS a+=value* ^(NAMEDARGS na+=ID*) ^(NAMEDARGS v+=value*))
+//         { $args = $a }
+//     ;
 
 fline	: ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
 
