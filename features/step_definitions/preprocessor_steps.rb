@@ -44,7 +44,7 @@ end
 
 Then /^it includes all macros from the standard path$/ do
   @p.macros.keys.should include "simple"
-  @p.macros.keys.should include "with_ruby"
+  @p.macros.keys.should include "fail"
   @p.macros.keys.should include "override"
   @p.macros.keys.length.should == 3
 end

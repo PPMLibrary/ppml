@@ -48,6 +48,22 @@ Feature: macro substitution
        | name  | args    | body              | input        | result |
        | named | a=1,b=2 | <%= a %>,<%= b %> | named(b=3)\n | 1,3\n  |
 
+  Scenario: Full example of named args
+    Given the standard macro path is "examples/testdata/macros"
+    When I preprocess
+    """
+    fail("topoid not valid",ppm_err_argument,exit_point=8888)
+
+    """
+    Then it should expand into
+    """
+    call ppm_error(ppm_err_argument, &
+      "topoid not valid",&
+      caller, 100000 , info)
+    goto 8888
+
+    """
+
   Scenario: String arguments
     Given a macro "fail" with argument list ("msg") is defined as
     """
