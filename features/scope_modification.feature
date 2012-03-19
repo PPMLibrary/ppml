@@ -32,4 +32,28 @@ Feature: scope modification
     
     """
 
+  Scenario: Declaring module uses
+    Given a macro "ppm_init" is defined as
+    """
+    % scope.use "ppm_module_init"
+    call ppm_init(2,eps,tol,0,info)
+
+    """
+    When I preprocess
+    """
+    program test
+      ppm_init()
+    end program test
+
+    """
+    Then it should expand into
+    """
+    program test
+      use ppm_module_init
+      implicit none
+      call ppm_init(2,eps,tol,0,info)
+    end program test
+
+    """
+
 
