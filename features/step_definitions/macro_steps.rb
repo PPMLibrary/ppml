@@ -1,10 +1,12 @@
-Given /^a macro "([^"]*)" is defined as$/ do |name, body|
+# Function call macros
+
+Given /^a macro "([^"]*)" is defined as$/ do |name, body| #"
   @macros ||= {}
   @macros[name] = CG::Macro.new(name, body)
 end
 
 Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
-  step "a macro \"#{name}\" is defined as",body
+  step "a macro \"#{name}\" is defined as", body
 end
 
 Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as$/ do |name, args, body|
@@ -30,11 +32,21 @@ Then /^a macro named "([^"]*)" should be created$/ do |name| #"
   @macros[name].name.should == name
 end
 
-Then /^the macro should have arguments "([^"]*)"$/ do |args|
+Then /^the macro should have arguments "([^"]*)"$/ do |args| #"
   al = CG::Macro.parse_arglist args
   @macros[@name].args.should == al
 end
 
 Then /^the body of the macro should be$/ do |body|
   @macros[@name].body.should == body
+end
+
+# Foreach macros
+
+Given /^a foreach macro named "([^"]*)"$/ do |name| #"
+  pending # express the regexp above with the code you wish you had
+end
+
+Given /^with argument list "([^"]*)" and body$/ do |args, body| #"
+  pending # express the regexp above with the code you wish you had
 end

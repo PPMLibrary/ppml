@@ -16,6 +16,9 @@ USE;
 IMPLICIT;
 CONTAINS;
 FMACRO;
+FOREACH;
+MODIFIERS;
+BODY;
 FLINE;
 TEXT;
 ARGS;
@@ -136,23 +139,24 @@ line
     | fline)
     ;
 
-// foreach
-//     : FOREACH_T it=ID IN_T name=ID a=arglist?
-//         (DOT_T modifiers+=ID arglists+=arglist)*
-//       NEWLINE
-//         (bodies+=foreach_body
-//         |   ((bname+=ID | bname+=DEFAULT_T) COLON_T
-//             bodies+=foreach_body*
-//             )+
-//         )
-//       (ENDFOREACH_T | END_T FOREACH_T) NEWLINE
-//         -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers $arglists))
-//     ;
+foreach
+    : FOREACH_T it=ID IN_T name=ID a=arglist?
+        (DOT_T modifiers+=ID arglists+=arglist)*
+      NEWLINE
+        bodies+=foreach_body
+        // ((foreach_body)=>bodies+=foreach_body
+        // |   {@input.peek(2) == COLON_T}?=>((bname+=ID | bname+=DEFAULT_T) COLON_T NEWLINE
+        //       (foreach_body)=>bodies+=foreach_body*
+        //     )+
+        // )
+      (ENDFOREACH_T | END_T FOREACH_T) NEWLINE
+        -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers $arglists) $bodies*)
+    ;
 
-// foreach_body
-//     : ({@input.peek(2) != FOREACH_T}? body+=line)*
-//       -> ^(BODY $body*)
-//     ;
+foreach_body
+    : ({@input.peek(2) != FOREACH_T}? body+=line)*
+      -> ^(BODY $body*)
+    ;
 
 fcmacro
     : (result=ID EQUALS_T)?
@@ -162,21 +166,34 @@ fcmacro
 
 arglist
     : LEFT_PAREN_T
-       ( args+=value (COMMA args+=value)*
+       ( args+=value (COMMA_T args+=value)*
         (names+=ID EQUALS_T values+=value)*
        )?
       RIGHT_PAREN_T
       -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
     ;
 
+// Catchall
+
 fline
     : allowed* NEWLINE
       -> ^(FLINE TEXT[$fline.start,$fline.text])
     ;
 
-allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA | EQUALS_T | STRING | END_T ;
+allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA_T | EQUALS_T | STRING | END_T | DOUBLE_COLON_T | COLON_T ;
 
 value : ID | NUMBER | STRING ;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Lexer Rules
+////////////////////////////////////////////////////////////////////////////////
+
+// PPM Keywords
+
+FOREACH_T       : 'FOREACH'       | 'foreach'       ;
+ENDFOREACH_T    : 'ENDFOREACH'    | 'endforeach'    ;
+IN_T            : 'IN'            | 'in'            ;
 
 // Fortran Keywords
 
@@ -191,6 +208,7 @@ USE_T           : 'USE'           | 'use'           ;
 IMPLICIT_T      : 'IMPLICIT'      | 'implicit'      ;
 NONE_T          : 'NONE'          | 'none'          ;
 CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
+DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 // Identifiers
 
@@ -219,10 +237,13 @@ COMMENT : '!' ~('\n'|'\r')* { $channel=:hidden } ;
 fragment
 COMPARISSON : '<' | '>' ;
 
-EQUALS_T      : '=' ;
-LEFT_PAREN_T  : '(' ;
-RIGHT_PAREN_T : ')' ;
-COMMA         : ',' ;
+EQUALS_T       : '='  ;
+LEFT_PAREN_T   : '('  ;
+RIGHT_PAREN_T  : ')'  ;
+DOUBLE_COLON_T : '::' ;
+COLON_T        : ':'  ;
+COMMA_T        : ','  ;
+DOT_T          : '.'  ;
 
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;
