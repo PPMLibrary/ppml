@@ -44,6 +44,10 @@ Feature: macro substitution
        | log2  | n         | this will never expand                    | hello(a)\n      | hello(a)\n                |
        | log2  | n         | this will never expand                    | log(4)\n        | log(4)\n                  |
 
+    Examples: named arguments
+       | name  | args    | body              | input        | result |
+       | named | a=1,b=2 | <%= a %>,<%= b %> | named(b=3)\n | 1,3\n  |
+
   Scenario: String arguments
     Given a macro "fail" with argument list ("msg") is defined as
     """

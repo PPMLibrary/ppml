@@ -16,6 +16,9 @@ USE;
 IMPLICIT;
 CONTAINS;
 FMACRO;
+FOREACH;
+MODIFIERS;
+BODY;
 FLINE;
 TEXT;
 ARGS;
@@ -50,6 +53,8 @@ prog
       )
     ;
 
+// Scope detection - top level statements
+
 program_statement
     : ((NEWLINE)=>NEWLINE)*
       open=program_start
@@ -77,6 +82,10 @@ module_statement
       -> ^(MODULE $open $i $close)
     ;
 
+naked_code : line* ;
+
+// Scope detecion - start and end lines
+
 program_start : PROGRAM_T name=ID NEWLINE
         -> ^(SCOPE_START $name TEXT[$program_start.start,$program_start.text]) ;
 program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID? NEWLINE
@@ -91,6 +100,8 @@ subroutine_start : SUBROUTINE_T name=ID allowed* NEWLINE
         -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
 subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
+
+// Scope detection - body
 
 inner_stuff
     : ((NEWLINE)=>NEWLINE)*
@@ -121,33 +132,68 @@ use_statement
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
-naked_code : line* ;
+// Actual code
 
 line
     : ({fmacro_call?}?=> fcmacro
     | fline)
     ;
 
-fcmacro
-    : (result=ID EQUALS_T)? 
-       name=ID  LEFT_PAREN_T
-                (args+=value (COMMA args+=value)*
-                (names+=ID EQUALS_T values+=value)* )?
-                RIGHT_PAREN_T
-       NEWLINE
-      -> ^(FMACRO $name $result? ^(ARGS $args*) ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
+foreach
+    : FOREACH_T it=ID IN_T name=ID a=arglist?
+        (DOT_T modifiers+=ID arglists+=arglist)*
+      NEWLINE
+        bodies+=foreach_body
+        // ((foreach_body)=>bodies+=foreach_body
+        // |   {@input.peek(2) == COLON_T}?=>((bname+=ID | bname+=DEFAULT_T) COLON_T NEWLINE
+        //       (foreach_body)=>bodies+=foreach_body*
+        //     )+
+        // )
+      (ENDFOREACH_T | END_T FOREACH_T) NEWLINE
+        -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers $arglists) $bodies*)
     ;
+
+foreach_body
+    : ({@input.peek(2) != FOREACH_T}? body+=line)*
+      -> ^(BODY $body*)
+    ;
+
+fcmacro
+    : (result=ID EQUALS_T)?
+       name=ID args=arglist NEWLINE
+      -> ^(FMACRO $name $result? $args)
+    ;
+
+arglist
+    : LEFT_PAREN_T
+       ( (args+=value | names+=ID EQUALS_T values+=value)
+         (COMMA_T (args+=value | names+=ID EQUALS_T values+=value))*
+       )?
+      RIGHT_PAREN_T
+      -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
+    ;
+
+// Catchall
 
 fline
-    : fline_contents NEWLINE
-      -> ^(FLINE TEXT[$fline_contents.start,$fline_contents.text])
+    : allowed* NEWLINE
+      -> ^(FLINE TEXT[$fline.start,$fline.text])
     ;
 
-fline_contents : allowed* ;
-
-allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA | EQUALS_T | STRING | END_T ;
+allowed	: ID | ANY_CHAR | NUMBER | LEFT_PAREN_T | RIGHT_PAREN_T | COMMA_T | EQUALS_T | STRING | END_T | DOUBLE_COLON_T | COLON_T ;
 
 value : ID | NUMBER | STRING ;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Lexer Rules
+////////////////////////////////////////////////////////////////////////////////
+
+// PPM Keywords
+
+FOREACH_T       : 'FOREACH'       | 'foreach'       ;
+ENDFOREACH_T    : 'ENDFOREACH'    | 'endforeach'    ;
+IN_T            : 'IN'            | 'in'            ;
 
 // Fortran Keywords
 
@@ -162,6 +208,7 @@ USE_T           : 'USE'           | 'use'           ;
 IMPLICIT_T      : 'IMPLICIT'      | 'implicit'      ;
 NONE_T          : 'NONE'          | 'none'          ;
 CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
+DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 // Identifiers
 
@@ -190,10 +237,13 @@ COMMENT : '!' ~('\n'|'\r')* { $channel=:hidden } ;
 fragment
 COMPARISSON : '<' | '>' ;
 
-EQUALS_T      : '=' ;
-LEFT_PAREN_T  : '(' ;
-RIGHT_PAREN_T : ')' ;
-COMMA         : ',' ;
+EQUALS_T       : '='  ;
+LEFT_PAREN_T   : '('  ;
+RIGHT_PAREN_T  : ')'  ;
+DOUBLE_COLON_T : '::' ;
+COLON_T        : ':'  ;
+COMMA_T        : ','  ;
+DOT_T          : '.'  ;
 
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;

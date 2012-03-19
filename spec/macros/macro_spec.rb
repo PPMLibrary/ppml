@@ -2,24 +2,6 @@ require_relative "../spec_helper"
 
 module CG
   describe Macro do
-    it "takes name, body and args (optional) as arguments" do
-    end
-
-    context "macro expansion" do
-      it "returns the body with arguments replaced" do
-        m = Macro.new("test",<<-'BODY','a,b,c')
-        plain text line
-        substituting <%= a %>, <%= b %> and <%= c %>
-        more text
-        BODY
-        m.expand(nil,nil,['e','"string, args"','g']).should == <<-REPLACEMENT
-        plain text line
-        substituting e, "string, args" and g
-        more text
-        REPLACEMENT
-      end
-    end
-
     context "utilities" do
       describe "#binding_from_map" do
         it "transforms hash key-value pairs into variables in a binding" do
@@ -57,5 +39,28 @@ module CG
         end
       end
     end
+  end
+
+  describe FunctionMacro do
+    it "takes name, body and args (optional) as arguments" do
+    end
+
+    context "macro expansion" do
+      it "returns the body with arguments replaced" do
+        m = Macro.new("test",<<-'BODY','a,b,c')
+        plain text line
+        substituting <%= a %>, <%= b %> and <%= c %>
+        more text
+        BODY
+        m.expand(nil,nil,['e','"string, args"','g']).should == <<-REPLACEMENT
+        plain text line
+        substituting e, "string, args" and g
+        more text
+        REPLACEMENT
+      end
+    end
+  end
+
+  describe ForeachMacro do
   end
 end

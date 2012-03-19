@@ -14,6 +14,7 @@ module CG
 
     def self.standard_macro_path= p
       @@standard_macro_path = p
+      Preprocessor.instance.reload_macros
     end
 
     def self.standard_macro_path
@@ -23,17 +24,21 @@ module CG
     def initialize
       initialize_macros_hash
 
-      load_macros_from_glob "#{@@standard_macro_path}/*.mac"
-      load_macros_from_glob Dir.pwd + '/' + @@user_macro_path + '/*.mac'
-      # @macros.each { |name,m| m.expand_recursive_calls }
+      @working_dir = Dir.pwd
+      reload_macros
 
-      @templates = Templates.get_all self
+      @templates = Templates.get_all
     end
 
     def cwd path
+      @working_dir = path
+      reload_macros
+    end
+
+    def reload_macros
       @macros.clear
       load_macros_from_glob "#{@@standard_macro_path}/*.mac"
-      load_macros_from_glob "#{path+'/'+@@user_macro_path}/*.mac"
+      load_macros_from_glob "#{@working_dir+'/'+@@user_macro_path}/*.mac"
       # @macros.each { |name,m| m.expand_recursive_calls }
     end
 
