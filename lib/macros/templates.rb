@@ -22,6 +22,7 @@ ENDTEMPLATE
         define_template( :inner,       <<-'ENDTEMPLATE')
 % _erbout += @use.join("\n") + "\n" unless @use.empty?
 % _erbout += "#{@indent}! use statements\n" if configatron.comment_mode
+% _erbout += @indent + @context.use_statements.join("\n#{@indent}") + "\n" if !@context.use_statements.empty?
 % unless @implicit.nil?
 %   _erbout += @implicit.to_s + "\n"
 % else

@@ -12,16 +12,16 @@ Feature: command line utility
     When I run "ppm pp fortran.f -o output/preprocessed.f"
     Then the result file is equal to "fortran_gold.f"
 
-  Scenario: big fortran
-    Given the cwd is "examples/testdata"
-    And user defined macros in "macros/"
-    When I run "ppm pp big_fortran.f -o output/preprocessed.f"
-    Then the result file is equal to "big_fortran_gold.f"
+  # Scenario: big fortran
+  #   Given the cwd is "examples/testdata"
+  #   And user defined macros in "macros/"
+  #   When I run "ppm pp big_fortran.f -o output/preprocessed.f"
+  #   Then the result file is equal to "big_fortran_gold.f"
 
-   Scenario: creating a project skeleton
-     Given the cwd is "examples"
-     When I run "ppm newproject project_1 -d"
-     Then the project skeleton is created in "examples/project_1"
+   # Scenario: creating a project skeleton
+   #   Given the cwd is "examples"
+   #   When I run "ppm newproject project_1 -d"
+   #   Then the project skeleton is created in "examples/project_1"
 
   #  Scenario: generating fortran source from client generator files
   #    Given the cwd is "examples/testproject"
