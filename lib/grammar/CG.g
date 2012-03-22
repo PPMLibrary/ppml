@@ -117,12 +117,14 @@ inner_stuff
       (imp=implicit_none)?
       ({@input.peek(2) != PROGRAM_T}? body+=line)*
       (con=contains
-       sub+=subroutine_statement+)?
+            (sub+=subroutine_statement
+            |sub+=function_statement
+            )+ )?
        -> ^(INNER_STUFF
             ^(USE $use*)
             $imp?
-            $con?
-            $sub*
+            ^(CONTAINS $con?
+                $sub*)
             $body*)
     ;
 
@@ -143,6 +145,8 @@ use_statement
 
 line
     : {fmacro_call?}?=> fcmacro
+    | subroutine_statement
+    | function_statement
     | foreach
     | fline
     ;
@@ -196,7 +200,7 @@ allowed
     | ANY_CHAR
     | NUMBER | STRING
     | LEFT_PAREN_T | RIGHT_PAREN_T
-    | COMMA_T | DOT_T | EQUALS_T | DOUBLE_COLON_T | COLON_T
+    | COMMA_T | DOT_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
     | END_T | IN_T
     | boolean | logical | comparison
     ;
@@ -275,7 +279,8 @@ NUMBER : DIGIT+ ;
 
 // Whitespace
 
-EMPTY_LINE : {column==0}?=> WS_SPEC COMMENT_SPEC? '\r'? '\n' { $channel=:hidden } ;
+EMPTY_LINE     : {column==0}?=> WS_SPEC COMMENT_SPEC? '\r'? '\n' { $channel=:hidden } ;
+CONTINUED_LINE : AMPERSAND_T (WS_SPEC '\r'? '\n')+ WS_SPEC AMPERSAND_T? { $channel=:hidden } ;
 
 NEWLINE	: '\r'? '\n' ;
 
@@ -297,6 +302,7 @@ COMPARISSON : '<' | '>' ;
 EQUALS_T       : '='  ;
 LEFT_PAREN_T   : '('  ;
 RIGHT_PAREN_T  : ')'  ;
+AMPERSAND_T    : '&'  ;
 DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;

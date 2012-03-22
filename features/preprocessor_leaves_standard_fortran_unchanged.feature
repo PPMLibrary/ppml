@@ -31,3 +31,7 @@ Feature: preprocessing standard fortran
       | code                        |
       | do i=1,N\nj = i+1\nend do\n |
 
+    Examples: continued line
+      | code                            |
+      | i=10 &\n  +2\n                  |
+      | j=30 &\n & +i\n                 |

@@ -132,8 +132,10 @@ inner_stuff
         ^(INNER_STUFF
             ^(USE u+=line*)
             ( i=implicit_line )?
-            ( c=contains_line
-              s+=subroutine_statement+ )?
+            ^(CONTAINS c=contains_line?
+                (s+=subroutine_statement
+                |s+=function_statement
+                )*)
           { @first_line = nil }
             b+=line*)
         -> inner(context={@scope},use={$u},implicit={$i.st},contains={$c.st},subroutines={$s},body={$b},indent={@first_line || ''})
@@ -155,7 +157,9 @@ line
        @first_line ||= @current_indent }
         ( macro=fcmacro -> verbatim(in={@empty_lines + indent($macro.st.to_s)})
         | loop=foreach  -> verbatim(in={@empty_lines + indent($foreach.st.to_s)})
-        | fortran=fline -> verbatim(in={@empty_lines + indent($fortran.st.to_s)})
+        | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
+        | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
+        | sub=subroutine_statement -> verbatim(in={@empty_lines + $sub.st.to_s})
         )
     ;
 

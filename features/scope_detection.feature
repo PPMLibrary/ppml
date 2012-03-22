@@ -130,11 +130,11 @@ Feature: Scope Detection
 
       ! leading comment
       
-        subroutine nested
+        integer function nested
           use stuff
           integer k
           k = 13
-        end subroutine
+        end function
       
       ! leading comment
       
@@ -164,7 +164,7 @@ Feature: Scope Detection
 
       ! leading comment
       
-        subroutine nested
+        integer function nested
           use stuff
           ! use statements
           implicit none
@@ -173,7 +173,7 @@ Feature: Scope Detection
           integer k
           k = 13
           ! subroutines
-        end subroutine
+        end function
       
       ! leading comment
       
