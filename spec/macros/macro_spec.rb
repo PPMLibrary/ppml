@@ -24,7 +24,7 @@ module CG
           macros = Macro.load(path)
           macros.keys.size.should == 3
           macros.keys.should include "simple"
-          macros.keys.should include "with_ruby"
+          macros.keys.should include "fail"
           macros.keys.should include "override"
         end
       end
@@ -34,7 +34,7 @@ module CG
           macros = Macro.load_file File.open(path)
           macros.keys.size.should == 3
           macros.keys.should include "simple"
-          macros.keys.should include "with_ruby"
+          macros.keys.should include "fail"
           macros.keys.should include "override"
         end
       end

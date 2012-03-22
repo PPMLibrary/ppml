@@ -42,9 +42,20 @@ module CG
       # @macros.each { |name,m| m.expand_recursive_calls }
     end
 
-    def process(input)
-      init_parser input
-      @tree_parser.prog.template.to_s
+    def process string
+      # STDERR.puts "Parsing String\n\n#{string}"
+      # print_lexer_tokens string
+      # print_tree_tokens string
+      @lexer = Lexer.new string
+      @tokens = ANTLR3::CommonTokenStream.new @lexer
+      unless all_hidden? @tokens
+        @parser = Parser.new @tokens
+        @tree_tokens = ANTLR3::AST::CommonTreeNodeStream.new @parser.prog.tree
+        @tree_parser = TreeParser.new @tree_tokens, {templates: @templates}
+        @tree_parser.prog.template.to_s
+      else
+        @tokens.map(&:text).join ''
+      end
     end
 
     def expand(name, *args)
@@ -75,15 +86,10 @@ module CG
       end
     end
 
-    def init_parser string
-      # STDERR.puts "Parsing String\n\n#{string}"
-      # print_lexer_tokens string
-      # print_tree_tokens string
-      @lexer = Lexer.new string
-      @tokens = ANTLR3::CommonTokenStream.new @lexer
-      @parser = Parser.new @tokens
-      @tree_tokens = ANTLR3::AST::CommonTreeNodeStream.new @parser.prog.tree
-      @tree_parser = TreeParser.new @tree_tokens, {templates: @templates}
+    def all_hidden? toks
+      ah = true
+      toks.each { |t| ah = false unless t.channel == :hidden }
+      return ah
     end
 
     def print_lexer_tokens string

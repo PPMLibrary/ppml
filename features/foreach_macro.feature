@@ -15,8 +15,8 @@ Feature: Foreach Macros
     When I preprocess
     """
     foreach p in particles(P)
-      ! do something to p
-    end
+      p = 10
+    end foreach
 
     """
     Then it should expand into

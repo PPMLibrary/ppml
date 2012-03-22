@@ -14,11 +14,17 @@ Feature: Scope Detection
       ! leading comment
       
       program sample ! some comment for omar
+        ! more comments
         use something
+        ! more comments
         implicit none
+        ! more comments
         integer :: i
+        ! more comments
         i = 42
+        ! more comments
       end program
+      ! more comments
 
     """
     Then it should expand into
@@ -27,15 +33,21 @@ Feature: Scope Detection
       ! leading comment
       
       program sample ! some comment for omar
+        ! more comments
         use something
         ! use statements
+        ! more comments
         implicit none
         ! interfaces
         ! variable definitions
+        ! more comments
         integer :: i
+        ! more comments
         i = 42
         ! subroutines
+        ! more comments
       end program
+      ! more comments
 
     """
 
@@ -176,6 +188,32 @@ Feature: Scope Detection
           ! subroutines
         end subroutine
       end program
+
+    """
+
+  Scenario: function statements
+    When I preprocess
+    """
+    integer function test(a)
+      use something
+      implicit none
+      integer :: i
+      i = 42
+    end function test
+
+    """
+    Then it should expand into
+    """
+    integer function test(a)
+      use something
+      ! use statements
+      implicit none
+      ! interfaces
+      ! variable definitions
+      integer :: i
+      i = 42
+      ! subroutines
+    end function test
 
     """
 

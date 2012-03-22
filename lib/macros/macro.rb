@@ -2,7 +2,7 @@ require 'ostruct'
 
 module CG
   class Macro
-    attr_accessor :name, :p
+    attr_accessor :name
     attr_reader :args, :body
 
     NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
