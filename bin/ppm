@@ -96,8 +96,10 @@ class NewProjectGroup < Thor::Group
 end
 
 class BenchmarkGroup < Thor::Group
+
   include Thor::Actions
   class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+
   def self.source_root
     File.dirname(__FILE__)
   end
@@ -119,6 +121,7 @@ class BenchmarkGroup < Thor::Group
     @nprocs = conf.bench.nprocs
     @nreps = conf.bench.nreps
     template "../lib/templates/benchmark_script.tt", "bench/job.sh"
+    chmod 'bench/job.sh', 0755
   end
 
   def bench_it
@@ -127,21 +130,25 @@ class BenchmarkGroup < Thor::Group
       command_template = conf.bench.to_hash[@target.to_sym][:exec]
       erb = ERB.new command_template
       command = erb.result
-      run command
+      answer = run command
+
+      until File.exists? 'DONE'
+        sleep 10
+      end
     end
 
   end
 
   def analyze
-    benchmark = CG::Benchmark.newb
+    @benchmark = CG::Benchmark.new
     @nprocs.each do |np|
-      @nreps.each do |nr|
-        File.open "proc_%06d/run_%03d" % [np,nr] do |csv_data|
-          benchmark.append csv_data,np
+      (1..@nreps).each do |nr|
+        File.open "bench/proc_%06d/run%03d/time.dat" % [np,nr] do |csv_data|
+          @benchmark.append csv_data,np
         end
       end
     end
-
+    template "../lib/templates/efficiency_chart.tt", "bench/efficiency.html"
   end
 end
 

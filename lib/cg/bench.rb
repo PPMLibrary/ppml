@@ -71,7 +71,6 @@ module CG
       @timings.keys.sort.each do |key|
         nprocs << key
         t = avg_time_per_step key
-        puts t.avg
         eff << minproct.avg / t.avg
       end
       [nprocs,eff]
@@ -104,6 +103,8 @@ module CG
         @data_sets[key].add_time_series nproc,val
       end
     end
+
+
   end
 
 end

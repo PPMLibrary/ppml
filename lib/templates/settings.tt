@@ -22,3 +22,6 @@ bsub -n <%%= conf.bench.nprocs.max %> -W 01:00 -R \"select[model==Opteron8380]\"
 conf.bench.cbl1.exec = """
 qsub -n <%%= conf.bench.nprocs.max %> job.pbs
 """
+conf.bench.local.exec = """
+./job.sh
+"""
