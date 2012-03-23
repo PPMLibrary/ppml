@@ -1,7 +1,10 @@
 #!/usr/bin/env ruby
 
+require 'erb'
 require 'thor'
 require 'thor/group'
+require_relative '../lib/settings'
+require_relative '../lib/cg'
 
 class PPM < Thor
 
@@ -26,16 +29,21 @@ class PPM < Thor
 
   desc 'newproject NAME [-d | --defaults]', 'Create a new project in NAME'
   def newproject(*args)
-    invoke NewProject, args
+    invoke NewProjectGroup, args
   end
 
   desc 'build', 'Build the simulation binary'
   def build
   end
 
+  desc 'bench', 'Run a benchmark'
+  def bench(*args)
+    invoke BenchmarkGroup, args
+  end
+
 end
   
-class NewProject < Thor::Group
+class NewProjectGroup < Thor::Group
   include Thor::Actions
   argument :name
   class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
@@ -50,6 +58,8 @@ class NewProject < Thor::Group
     empty_directory "#{name}/macros"
     # where the generated fortran code is placed
     empty_directory "#{name}/gen"
+    # where the executable is placed
+    empty_directory "#{name}/bin"
     # where the run is executed
     empty_directory "#{name}/run"
   end
@@ -62,7 +72,7 @@ class NewProject < Thor::Group
  
     # defaults
     @ppm_base_path = '/usr/local'
-    @mpi_state = "enabled"
+    @mpi_state = "true"
     @compiler = "mpif90"
     @ppmnumerics_base_path = "/usr/local"
     @metis_base_path = "/usr/local"
@@ -72,15 +82,65 @@ class NewProject < Thor::Group
       @ppmnumerics_base_path = ask("Please point me to the PPM numerics base path:")
       @metis_base_path = ask("Now, if I only knew where METIS is:")
       if yes?("Are you using MPI? (Y/n)")
-        @mpi_state = "enabled"
+        @mpi_state = "true"
         say("OK, so I'll be using mpif90 as the Fortran compiler.")
       else
-        @mpi_state = "disabled"
+        @mpi_state = "false"
         @compiler = ask("What compiler command would you like to use:")
       end
     end
     
-    template "../lib/templates/config.tt", "#{name}/#{name}.config"
+    template "../lib/templates/settings.tt", "#{name}/#{configuration_file_name}"
+
+  end
+end
+
+class BenchmarkGroup < Thor::Group
+  include Thor::Actions
+  class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  def get_configuration
+    read_configuration
+    @client = conf.project_name
+  end
+
+  def create_dirs
+    # The benchmark directory
+    empty_directory "bench"
+
+  end
+
+  def copy_files
+    FileUtils.copy "bin/#{@client}", "bench/"
+    FileUtils.copy "Ctrl", "bench/"
+    @nprocs = conf.bench.nprocs
+    @nreps = conf.bench.nreps
+    template "../lib/templates/benchmark_script.tt", "bench/job.sh"
+  end
+
+  def bench_it
+    inside 'bench/' do
+      @target = conf.bench.target
+      command_template = conf.bench.to_hash[@target.to_sym][:exec]
+      erb = ERB.new command_template
+      command = erb.result
+      run command
+    end
+
+  end
+
+  def analyze
+    benchmark = CG::Benchmark.newb
+    @nprocs.each do |np|
+      @nreps.each do |nr|
+        File.open "proc_%06d/run_%03d" % [np,nr] do |csv_data|
+          benchmark.append csv_data,np
+        end
+      end
+    end
 
   end
 end
