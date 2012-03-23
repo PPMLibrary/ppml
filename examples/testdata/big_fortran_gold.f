@@ -671,67 +671,83 @@ MODULE ppm_module_ctrl
      !---------------------------------------------------------------------
      ! scalar
      LOGICAL FUNCTION INTEGER_func(variable)
+       implicit none
        INTEGER, POINTER :: variable
      END FUNCTION INTEGER_func
 
      LOGICAL FUNCTION LONGINT_func(variable)
+       implicit none
        INTEGER(8), POINTER :: variable
      END FUNCTION LONGINT_func
 
      LOGICAL FUNCTION SINGLE_func(variable)
+       implicit none
        REAL(KIND(1.0E0)), POINTER :: variable
      END FUNCTION SINGLE_func
 
      LOGICAL FUNCTION DOUBLE_func(variable)
+       implicit none
        REAL(KIND(1.0D0)), POINTER :: variable
      END FUNCTION DOUBLE_func
 
      LOGICAL FUNCTION LOGICAL_func(variable)
+       implicit none
        LOGICAL, POINTER :: variable
      END FUNCTION LOGICAL_func
 
      LOGICAL FUNCTION STRING_func(variable)
+       implicit none
        CHARACTER(LEN=*), POINTER :: variable
      END FUNCTION STRING_func
 
      LOGICAL FUNCTION COMPLEX_func(variable)
+       implicit none
        COMPLEX(KIND(1.0E0)), POINTER :: variable
      END FUNCTION COMPLEX_func
 
      LOGICAL FUNCTION DCOMPLEX_func(variable)
+       implicit none
        COMPLEX(KIND(1.0D0)), POINTER :: variable
      END FUNCTION DCOMPLEX_func
 
      ! array
      LOGICAL FUNCTION INTEGER_array_func(variable)
+       implicit none
        INTEGER, DIMENSION(:), POINTER :: variable
      END FUNCTION INTEGER_array_func
 
      LOGICAL FUNCTION LONGINT_array_func(variable)
+       implicit none
        INTEGER(8), DIMENSION(:), POINTER :: variable
      END FUNCTION LONGINT_array_func
 
      LOGICAL FUNCTION SINGLE_array_func(variable)
+       implicit none
        REAL(KIND(1.0E0)), DIMENSION(:), POINTER :: variable
      END FUNCTION SINGLE_array_func
 
      LOGICAL FUNCTION DOUBLE_array_func(variable)
+       implicit none
        REAL(KIND(1.0D0)), DIMENSION(:), POINTER :: variable
      END FUNCTION DOUBLE_array_func
 
      LOGICAL FUNCTION LOGICAL_array_func(variable)
+       implicit none
        LOGICAL, DIMENSION(:), POINTER :: variable
      END FUNCTION LOGICAL_array_func
 
      LOGICAL FUNCTION STRING_array_func(variable)
+       implicit none
        CHARACTER(LEN=*), DIMENSION(:), POINTER :: variable
      END FUNCTION STRING_array_func
 
      LOGICAL FUNCTION COMPLEX_array_func(variable)
+       implicit none
        COMPLEX(KIND(1.0E0)), DIMENSION(:), POINTER :: variable
      END FUNCTION COMPLEX_array_func
 
      LOGICAL FUNCTION DCOMPLEX_array_func(variable)
+       implicit none
        COMPLEX(KIND(1.0D0)), DIMENSION(:), POINTER :: variable
      END FUNCTION DCOMPLEX_array_func
 
@@ -813,6 +829,7 @@ CONTAINS
   !  Master procedure
   !------------------------------------------------------------------------
   SUBROUTINE parse_args(info)
+    implicit none
     !----------------------------------------------------------------------
     !  Arguments
     !----------------------------------------------------------------------
@@ -966,6 +983,7 @@ CONTAINS
   !  Cleanup
   !------------------------------------------------------------------------
   SUBROUTINE deallocate_memory(all)
+    implicit none
     LOGICAL, INTENT(IN   ) :: all
     IF (all) THEN
        IF (ASSOCIATED(cmd_args))         DEALLOCATE(cmd_args)
@@ -998,6 +1016,7 @@ CONTAINS
   END SUBROUTINE deallocate_memory
 
   SUBROUTINE reset
+    implicit none
 !!! Debugging and testing routine. Resets all module variables.
     CALL deallocate_memory(.TRUE.)
     ! scalar
@@ -1032,6 +1051,7 @@ CONTAINS
   !  Apply defaults
   !-------------------------------------------------------------------------
   SUBROUTINE apply_defaults(info)
+    implicit none
     INTEGER, INTENT(  OUT) :: info
     INTEGER                :: i
     info = 0
@@ -1122,6 +1142,7 @@ CONTAINS
   !  Read in command line args
   !------------------------------------------------------------------------
   SUBROUTINE read_cmd_args(info)
+    implicit none
     INTEGER, INTENT(  OUT)          :: info
     CHARACTER(LEN=ppm_char)         :: cbuf
     INTEGER                         :: i, start, nargc
@@ -1148,6 +1169,7 @@ CONTAINS
   !  Parse command line
   !-------------------------------------------------------------------------
   SUBROUTINE parse_cmd_line(info)
+    implicit none
     INTEGER, INTENT(  OUT)      :: info
     CHARACTER(LEN=*), PARAMETER :: caller = 'parse_cmd_line'
     CHARACTER(LEN=ppm_char)     :: cvar
@@ -1686,6 +1708,7 @@ CONTAINS
   !  Parse Control file
   !------------------------------------------------------------------------
   SUBROUTINE parse_ctrl_file(info)
+    implicit none
     INTEGER, INTENT(  OUT)      :: info
     CHARACTER(LEN=*), PARAMETER :: caller='parse_ctrl_file'
     CHARACTER(LEN=ppm_char)     :: cbuf, cvalue, carg, cvar
@@ -2035,6 +2058,7 @@ CONTAINS
   !  Call default funcs
   !------------------------------------------------------------------------
   SUBROUTINE call_default_funcs(info)
+    implicit none
     INTEGER, INTENT(  OUT)      :: info
     CHARACTER(LEN=*), PARAMETER :: caller = 'call_default_funcs'
     INTEGER                     :: i
@@ -2269,6 +2293,7 @@ CONTAINS
   !  Check min max
   !------------------------------------------------------------------------
   SUBROUTINE check_minmax(info)
+    implicit none
     INTEGER, INTENT(  OUT)      :: info
     CHARACTER(LEN=*), PARAMETER :: caller = 'check_minmax'
     CHARACTER(LEN=ppm_char)     :: cvar
@@ -2461,6 +2486,7 @@ CONTAINS
   !  Call validator functions
   !------------------------------------------------------------------------
   SUBROUTINE call_validator_funcs(info)
+    implicit none
     INTEGER, INTENT(  OUT)      :: info
     CHARACTER(LEN=*), PARAMETER :: caller = 'call_validator_funcs'
     CHARACTER(LEN=ppm_char)     :: cvar
@@ -2649,16 +2675,19 @@ CONTAINS
   !  Special args
   !------------------------------------------------------------------------
   SUBROUTINE disable_help
+    implicit none
 !!! Turns of help flag parsing.
     help_enabled = .FALSE.
   END SUBROUTINE disable_help
 
   SUBROUTINE disable_ctrl
+    implicit none
 !!! Turns of control file parsing.
     ctrl_enabled = .FALSE.
   END SUBROUTINE disable_ctrl
 
   SUBROUTINE set_ctrl_name(name)
+    implicit none
 !!! Sets the control file name.
     CHARACTER(LEN=*), INTENT(IN   )  :: name
 !!! Name of the control file.
@@ -2668,6 +2697,7 @@ CONTAINS
   !  Set command line args (usefull for running tests)
   !------------------------------------------------------------------------
   SUBROUTINE add_cmd(arg, value)
+    implicit none
 !!! Debugging and testing procedure. First call replaces the actual
 !!! command arguments with the supplied values. Can be called many
 !!! times to incrementally build the fake argument list.
@@ -2718,6 +2748,7 @@ CONTAINS
   !  Look-up flags
   !-------------------------------------------------------------------------
   SUBROUTINE find_flag(flag, success, value, err)
+    implicit none
 !!! Returns the value supplied with the flag _flag_.
     CHARACTER(LEN=*), INTENT(IN   )             :: flag
 !!! Flag string (eg. _'-f'_ or _'--flag'_).
@@ -2762,6 +2793,7 @@ CONTAINS
   !  Get arg count
   !------------------------------------------------------------------------
   INTEGER FUNCTION arg_count()
+    implicit none
 !!! Returns the number of positional arguments found.
     arg_count = cmd_i
   END FUNCTION arg_count
@@ -2769,6 +2801,7 @@ CONTAINS
   !  Look-up args (after all flags have been read!!!)
   !------------------------------------------------------------------------
   SUBROUTINE find_arg(position, success, value)
+    implicit none
 !!! Returns a positional argument at _position_.
     INTEGER,          INTENT(IN   )  :: position
 !!! Index of the positional argument, 1 based.
@@ -2795,6 +2828,7 @@ CONTAINS
   !  Argument groups
   !------------------------------------------------------------------------
   SUBROUTINE arg_group(name)
+    implicit none
 !!! Defines an argument group.
     CHARACTER(LEN=*), INTENT(IN   )            :: name
 !!! Group name
@@ -2845,6 +2879,7 @@ CONTAINS
   !  Help string break
   !------------------------------------------------------------------------
   SUBROUTINE break_help(ht, w, prefix, unit, skip_first_line)
+    implicit none
     ! args
     CHARACTER(LEN=*),  INTENT(IN   ) :: ht
     INTEGER,           INTENT(IN   ) :: w
@@ -2904,6 +2939,7 @@ CONTAINS
   !  Print command line help
   !------------------------------------------------------------------------
   SUBROUTINE print_help
+    implicit none
 !!! Prints usage information to the standard output.
     INTEGER  :: i, j, k, l
     CHARACTER(LEN=ppm_char) :: scratch
@@ -3600,6 +3636,7 @@ CONTAINS
   !  Print sample control file
   !------------------------------------------------------------------------
   SUBROUTINE print_ctrl
+    implicit none
 !!! Prints a sample control file to standard output.
     INTEGER  :: i, j, k, l
     CHARACTER(LEN=ppm_char) :: scratch
@@ -4971,6 +5008,7 @@ CONTAINS
 !     END DO
 !   END SUBROUTINE dump_defines
   SUBROUTINE dump_args
+    implicit none
 !!! Debugging procedure. Prints all supplied command line args.
     INTEGER :: i
     WRITE (*,'(//A/)') 'DUMPING COMMAND ARGS'
@@ -4993,6 +5031,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5116,6 +5155,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5239,6 +5279,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5362,6 +5403,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5485,6 +5527,7 @@ CONTAINS
                                  type, &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5602,6 +5645,7 @@ CONTAINS
 !        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5722,6 +5766,7 @@ CONTAINS
        &                         default,                                    &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5830,6 +5875,7 @@ CONTAINS
        &                         default,                                    &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -5941,6 +5987,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6065,6 +6112,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6189,6 +6237,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6313,6 +6362,7 @@ CONTAINS
        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6436,6 +6486,7 @@ CONTAINS
        &                         default,                                    &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6546,6 +6597,7 @@ CONTAINS
 !        &                         min, max,                                   &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6667,6 +6719,7 @@ CONTAINS
        &                         default,                                    &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments
@@ -6776,6 +6829,7 @@ CONTAINS
        &                         default,                                    &
                                  default_func, validator, &
                                  help)
+     implicit none
 !!! Adds a new arg definition.
     !----------------------------------------------------------------------
     !  Arguments

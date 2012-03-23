@@ -124,7 +124,7 @@ function_statement
 scope_start
     : { setup_scope }
       ^(SCOPE_START name=ID text=TEXT)
-      -> verbatim(in={@empty_lines + indent($text.text)})
+      -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
 inner_stuff
@@ -141,13 +141,13 @@ inner_stuff
         -> inner(context={@scope},use={$u},implicit={$i.st},contains={$c.st},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
-implicit_line : { find_hidden } ^(IMPLICIT i=TEXT) -> verbatim(in={@empty_lines + indent($i.text)}) ;
-contains_line : { find_hidden } ^(CONTAINS c=TEXT) -> verbatim(in={@empty_lines + indent($c.text)}) ;
+implicit_line : { find_hidden } ^(IMPLICIT i=TEXT) -> verbatim(in={@empty_lines + @current_indent + $i.text}) ;
+contains_line : { find_hidden } ^(CONTAINS c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 
 scope_end
     : { cleanup_scope }
       ^(SCOPE_END text=TEXT)
-      -> verbatim(in={@empty_lines + indent($text.text)})
+      -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
 // Actual code
@@ -157,7 +157,7 @@ line
        @first_line ||= @current_indent }
         ( macro=fcmacro -> verbatim(in={@empty_lines + indent($macro.st.to_s)})
         | loop=foreach  -> verbatim(in={@empty_lines + indent($foreach.st.to_s)})
-        | fortran=fline -> verbatim(in={@empty_lines + indent($fortran.st.to_s)})
+        | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
         | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
         | sub=subroutine_statement -> verbatim(in={@empty_lines + $sub.st.to_s})
         )
