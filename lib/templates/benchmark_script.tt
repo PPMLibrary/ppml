@@ -10,4 +10,5 @@ mpirun -np <%= p %> ../../<%= @client %>
 cd ..
 <%   end %>
 cd ..
+touch DONE
 <% end %>

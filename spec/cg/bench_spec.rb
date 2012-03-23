@@ -62,7 +62,7 @@ module CG
       end
     end
 
-    describe "#avg_time_series" do
+    describe "# " do
       it "returns the average time series over all runs" do
         @dataset.add_time_series 1,@timings1
         @dataset.add_time_series 1,@timings2
