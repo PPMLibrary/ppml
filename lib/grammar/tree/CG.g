@@ -52,7 +52,7 @@ def indent string
     lines = string.split("\n")
     lines = [''] if lines.empty?
     lines.map! { |l| @current_indent + l }
-    lines.join("\n")
+    lines.join("\n") + "\n"
   end
 end
 
@@ -157,7 +157,7 @@ line
        @first_line ||= @current_indent }
         ( macro=fcmacro -> verbatim(in={@empty_lines + indent($macro.st.to_s)})
         | loop=foreach  -> verbatim(in={@empty_lines + indent($foreach.st.to_s)})
-        | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
+        | fortran=fline -> verbatim(in={@empty_lines + indent($fortran.st.to_s)})
         | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
         | sub=subroutine_statement -> verbatim(in={@empty_lines + $sub.st.to_s})
         )
