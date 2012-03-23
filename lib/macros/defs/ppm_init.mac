@@ -8,7 +8,7 @@ call define_args()
 call parse_args(info)
 $fail(info.ne.0, "Parse args failed.")
 
-% if configatron.mpi
+% if conf.mpi
 call MPI_Init(info)
 $fail(info.ne.0, "MPI_Init failed.")
 
@@ -21,8 +21,8 @@ call MPI_Comm_Rank(comm,rank,info)
 $fail(info.ne.0, "MPI_Comm_Rank failed.")
 % end
 
-call ppm_init(ndim,<%= configatron.ppm.prec %>, &
-              <%= configatron.ppm.tolexp %>,comm,&
+call ppm_init(ndim,<%= conf.ppm.prec %>, &
+              <%= conf.ppm.tolexp %>,comm,&
               <%= debug_level %>,info)
 $fail(info.ne.0, "ppm_init failed.")
 
