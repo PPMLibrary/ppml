@@ -119,6 +119,12 @@ class BenchmarkGroup < Thor::Group
     FileUtils.copy "bin/#{@client}", "bench/"
     FileUtils.copy "Ctrl", "bench/"
     @nprocs = conf.bench.nprocs
+    if conf.bench.runargs.nil?
+      @runargs = {}
+      @nprocs.each { |p| @runargs[p] = '' }
+    else
+      @runargs = conf.bench.runargs
+    end
     @nreps = conf.bench.nreps
     template "../lib/templates/benchmark_script.tt", "bench/job.sh"
     chmod 'bench/job.sh', 0755

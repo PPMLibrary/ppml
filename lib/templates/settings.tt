@@ -16,6 +16,7 @@ conf.ppm.tolexp = 10
 conf.bench.target = "brutus"
 conf.bench.nprocs = [1,2,4,8,16]
 conf.bench.nreps = 5
+conf.bench.runargs = {1 => '',2 => '',4 => '',8 => '',16 => ''}
 conf.bench.brutus.exec = """
 bsub -n <%%= conf.bench.nprocs.max %> -W 01:00 -R \"select[model==Opteron8380]\" -R \"span[ptile=16]\" < job.sh
 """
