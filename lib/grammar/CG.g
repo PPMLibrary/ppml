@@ -100,12 +100,14 @@ module_start : MODULE_T name=ID NEWLINE
 module_end   : ( ENDMODULE_T | END_T MODULE_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$module_end.start,$module_end.text]) ;
 
-subroutine_start : SUBROUTINE_T name=ID arglist? NEWLINE
+subroutine_start : RECURSIVE_T? SUBROUTINE_T name=ID arglist? NEWLINE
         -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
 subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
 
-function_start : ID FUNCTION_T name=ID arglist? NEWLINE
+function_start : (ID FUNCTION_T name=ID arglist? NEWLINE
+               | FUNCTION_T name=ID arglist? 
+                 RESULT_T LEFT_PAREN_T ID RIGHT_PAREN_T NEWLINE)
         -> ^(SCOPE_START $name TEXT[$function_start.start,$function_start.text]) ;
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
@@ -234,6 +236,8 @@ IMPLICIT_T      : 'IMPLICIT'      | 'implicit'      ;
 NONE_T          : 'NONE'          | 'none'          ;
 CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
 PROCEDURE_T     : 'PROCEDURE'     | 'procedure'     ;
+RECURSIVE_T     : 'RECURSIVE'     | 'recursive'     ;
+RESULT_T        : 'RESULT'        | 'result'        ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 // True/False
