@@ -192,7 +192,7 @@ arglist
 fline
     : (allowed*
       | MODULE_T PROCEDURE_T ID
-      | PROCEDURE_T LEFT_PAREN_T ID RIGHT_PAREN_T allowed*
+      | PROCEDURE_T allowed*
       ) NEWLINE
       -> ^(FLINE TEXT[$fline.start,$fline.text])
     ;

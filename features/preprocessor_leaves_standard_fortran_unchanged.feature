@@ -17,10 +17,11 @@ Feature: preprocessing standard fortran
       | module name\nimplicit none\nend module name\n               |
 
     Examples: variable definition
-      | code                      |
-      | integer :: i\n            |
-      | real, dimesion(:) array\n |
-      | type(ptr_t) :: p\n        |
+      | code                        |
+      | integer :: i\n              |
+      | real, dimesion(:) array\n   |
+      | type(ptr_t) :: p\n          |
+      | procedure :: proc => impl\n |
 
     Examples: expressions
       | code         |
