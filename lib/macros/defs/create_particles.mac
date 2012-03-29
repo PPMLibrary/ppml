@@ -1,0 +1,3 @@
+macro create_particles(np_global,topology,strategy)
+
+end macro

@@ -1,0 +1,11 @@
+macro ppm_finalize()
+% scope.var("info"  => "INTEGER    :: info")
+
+call ppm_finalize(info)
+$fail(info.ne.0, "ppm_finalize failed.")
+
+% if configatron.mpi
+call MPI_Finalize(info)
+$fail(info.ne.0, "MPI_Finalize failed.")
+
+end macro
