@@ -289,7 +289,9 @@ STRING
     | '\'' ('\\\''|~'\'')* '\''
     ;
 
-NUMBER : DIGIT+;
+NUMBER : (DIGIT+
+       | DIGIT+ DOT_T DIGIT*
+       | DIGIT+ DOT_T DIGIT* '_' (ID | DIGIT+));
 
 // Whitespace
 
