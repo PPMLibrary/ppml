@@ -165,8 +165,8 @@ line
 
 fcmacro
     : ^(FMACRO n=ID r=ID?
-            a=arglist)
-          -> fcall_macro(name={$n},context={@scope},result={$r},args={a})
+            a=arglist d=ID?)
+          -> fcall_macro(name={$n},context={@scope},result={$r},args={a},dotarg={$d})
     ;
 
 foreach

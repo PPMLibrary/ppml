@@ -25,11 +25,18 @@ Feature: macro substitution
     Then it should expand into "<result>"
 
     Examples: simple replacement
-       | name   | args | body                    | input                        | result                        |
-       | alloc  | a    | allocate(<%= a %>,info) | alloc(b)\n                   | allocate(b,info)\n            |
-       | alloc  | a    | allocate(<%= a %>,info) | alloc(b%data)\n              | allocate(b%data,info)\n       |
+       | name   | args | body                              | input           | result                   |
+       | alloc  | a    | allocate(<%= a %>,info)           | alloc(b)\n      | allocate(b,info)\n       |
+       | alloc  | a    | allocate(<%= a %>,info)           | alloc(b%data)\n | allocate(b%data,info)\n  |
+       | alloc  | a,n  | allocate(<%= a %>(<%= n %>),info) | alloc(xp,10)\n  | allocate(xp(10),info)\n  |
 
-    Examples: default value
+    Examples: argument1 dot macro style calling
+       | name    | args | body                       | input           | result             |
+       | append  | x,a  | call <%=x%>%append(<%=a%>) | append(c,b)\n   | call c%append(b)\n |
+       | append  | x,a  | call <%=x%>%append(<%=a%>) | c.append(b)\n   | call c%append(b)\n |
+
+
+  Examples: default value
        | name  | args      | body                                      | input           | result                    |
        | fail  | t=default | call ppm_error(<%= t %>)                  | fail()\n        | call ppm_error(default)\n |
        | fail  | t=default | call ppm_error(<%= t %>)                  | fail(special)\n | call ppm_error(special)\n |

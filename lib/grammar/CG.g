@@ -34,9 +34,17 @@ NAMEDARGS;
 def fmacro_call?
   m = Preprocessor.instance.macros
   if input.peek(2) == TokenData::EQUALS_T
-    m.has_key?(input.look(3).text)
+    if input.peek(4) == TokenData::DOT_T
+        m.has_key?(input.look(5).text)
+    else
+        m.has_key?(input.look(3).text)
+    end
   else
-    m.has_key?(input.look(1).text)
+    if input.peek(2) == TokenData::DOT_T
+        m.has_key?(input.look(3).text)
+    else
+        m.has_key?(input.look(1).text)
+    end
   end
 end
 }
@@ -106,7 +114,7 @@ subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
 
 function_start : (ID FUNCTION_T name=ID arglist? NEWLINE
-               | FUNCTION_T name=ID arglist? 
+               | FUNCTION_T name=ID arglist?
                  RESULT_T LEFT_PAREN_T ID RIGHT_PAREN_T NEWLINE)
         -> ^(SCOPE_START $name TEXT[$function_start.start,$function_start.text]) ;
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID? NEWLINE
@@ -173,9 +181,8 @@ foreach_body
     ;
 
 fcmacro
-    : (result=ID EQUALS_T)?
-       name=ID args=arglist NEWLINE
-      -> ^(FMACRO $name $result? $args)
+    : (result=ID EQUALS_T)? ((name=ID) | (dotarg=ID DOT_T name=ID)) args=arglist NEWLINE
+      -> ^(FMACRO $name $result? $args $dotarg?)
     ;
 
 arglist
@@ -202,7 +209,7 @@ allowed
     | ANY_CHAR
     | NUMBER | STRING
     | LEFT_PAREN_T | RIGHT_PAREN_T
-    | COMMA_T | DOT_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
+    | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
     | END_T | IN_T
     | boolean | logical | comparison
     ;
@@ -240,6 +247,9 @@ RECURSIVE_T     : 'RECURSIVE'     | 'recursive'     ;
 RESULT_T        : 'RESULT'        | 'result'        ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
+// Before logical operators to give it precedence
+DOT_T          : '.' ;
+
 // True/False
 
 boolean : TRUE_T | FALSE_T ;
@@ -251,7 +261,7 @@ FALSE_T : '.FALSE.' | '.false.' ;
 
 logical : AND_T | OR_T | NOT_T | EQV_T | NEQV_T ;
 
-AND_T  : '.AND.'  | '.and.'  ;
+AND_T  : '.AND.'  | '.nd.'  ;
 OR_T   : '.OR.'   | '.or.'   ;
 NOT_T  : '.NOT.'  | '.not.'  ;
 EQV_T  : '.EQV.'  | '.eqv.'  ;
@@ -279,7 +289,7 @@ STRING
     | '\'' ('\\\''|~'\'')* '\''
     ;
 
-NUMBER : DIGIT+ ;
+NUMBER : DIGIT+;
 
 // Whitespace
 
@@ -310,7 +320,6 @@ AMPERSAND_T    : '&'  ;
 DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;
-DOT_T          : '.'  ;
 
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;

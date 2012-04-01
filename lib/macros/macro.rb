@@ -21,8 +21,9 @@ module CG
       @recursive_expanded = false
     end
 
-    def expand(scope, result=nil, args=nil, named=nil)
+    def expand(scope, result=nil, args=nil, named=nil, dotarg=nil)
       map = {}
+      args.insert 0,dotarg if !dotarg.nil?
       if @args
         map = @args.clone
         [args.size, map.keys.size].min.times do |i|
