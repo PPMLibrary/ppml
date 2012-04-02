@@ -46,7 +46,7 @@ Then /^it includes all macros from the standard path$/ do
   @p.macros.keys.should include "simple"
   @p.macros.keys.should include "fail"
   @p.macros.keys.should include "override"
-  @p.macros.keys.length.should == 3
+  @p.macros.keys.length.should == 5
 end
 
 Then /^it includes all user defined macros$/ do
@@ -54,7 +54,7 @@ Then /^it includes all user defined macros$/ do
   @p.macros.keys.should include "two"
   @p.macros.keys.should include "three"
   @p.macros.keys.should include "override"
-  @p.macros.keys.length.should == 6
+  @p.macros.keys.length.should == 8
 end
 
 Then /^predefined macros with the same names are replaced$/ do

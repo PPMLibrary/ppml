@@ -1,0 +1,6 @@
+macro function_call()
+body
+end macro
+
+foreach macro looping()
+end macro

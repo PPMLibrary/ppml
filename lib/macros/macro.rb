@@ -5,35 +5,20 @@ module CG
     attr_accessor :name
     attr_reader :args, :body
 
-    NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
+    NAME = '(?:[a-z_][a-z_0-9]*)'
     VAL = '(?:"[^"]*"|[^,]*?)'
     ARG = "#{NAME}(?: *(?<!%)= *#{VAL})?"
     ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
-    MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
-    MACRO_STOP = /^ *end +macro *$/
+    MACRO_START = /^ *(?<foreach>foreach)? *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
+    MACRO_STOP = /^ *end +macro *$/i
     REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)*?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/
 
-    def initialize(name, body, args=nil)
+    def initialize name, body, args=nil
       @name, @body = name, body
       if args
         @args = Macro.parse_arglist args
       end
       @recursive_expanded = false
-    end
-
-    def expand(scope, result=nil, args=nil, named=nil)
-      map = {}
-      if @args
-        map = @args.clone
-        [args.size, map.keys.size].min.times do |i|
-          map[map.keys[i]] = args[i]
-        end if args
-        map.merge! named if named
-      end
-      map["scope"] = scope
-      expand_recursive_calls(scope) if !@recursive_expand
-      erb = ERB.new @body, nil, "%"
-      erb.result Macro.binding_from_map(map)
     end
 
     def expand_recursive_calls(scope)
@@ -73,7 +58,11 @@ module CG
           if l =~ MACRO_START
             name = $~[:name]
             body = read_body file
-            macros[name] = Macro.new(name, body, $~[:args])
+            if $~[:foreach]
+              macros[name] = ForeachMacro.new(name, body, $~[:args])
+            else
+              macros[name] = FunctionMacro.new(name, body, $~[:args])
+            end
           end
         end
         macros
@@ -94,6 +83,18 @@ module CG
         result
       end
 
+      def resolve_args default, positional, named
+        result = {}
+        if default
+          result = default.clone
+          [positional.size, result.keys.size].min.times do |i|
+            result[result.keys[i]] = positional[i]
+          end if positional
+          result.merge! named if named
+        end
+        return result
+      end
+
       private
 
       def read_body file
@@ -111,9 +112,39 @@ module CG
   end # Macro
 
   class FunctionMacro < Macro
+    def expand(scope, result=nil, args=nil, named=nil)
+      map = Macro.resolve_args @args, args, named
+      map["scope"] = scope
+      expand_recursive_calls(scope) unless @recursive_expand
+      erb = ERB.new @body, nil, "%-"
+      erb.result Macro.binding_from_map(map)
+    end
   end # FunctionMacro
 
   class ForeachMacro < Macro
+    def initialize name, body, args=nil
+      super name, body, args
+      # STDERR.puts "FOREACH MACRO : #{name}\n#{body}\nDONE"
+    end
+
+    def expand context, iter, args, named, mods, modargs, bodies
+      # STDERR.puts "\nexpand called!\n\n"
+      # STDERR.puts "      iter : #{iter}"
+      # STDERR.puts "      args : #{args}"
+      # STDERR.puts "named args : #{named}"
+      # STDERR.puts "      mods : #{mods}"
+      # STDERR.puts "  mod args : #{modargs}"
+      # STDERR.puts "    bodies : #{bodies}"
+      map = Macro.resolve_args @args, args, named
+      map["scope"] = context
+      map["body"] = bodies[0]
+      map["iter"] = iter
+      # expand_recursive_calls(scope) unless @recursive_expand
+      erb = ERB.new @body, nil, "%-"
+      r = erb.result Macro.binding_from_map(map)
+      # STDERR.puts "RESULT\n#{r}\nDONE"
+      r
+    end
   end # ForeachMacro
 
 end

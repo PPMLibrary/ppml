@@ -4,7 +4,7 @@
 
 Given /^a macro "([^"]*)" is defined as$/ do |name, body| #"
   @macros ||= {}
-  @macros[name] = CG::Macro.new(name, body)
+  @macros[name] = CG::FunctionMacro.new(name, body)
 end
 
 Given /^a macro "([^"]*)" is defined as "([^"]*)"$/ do |name, body|
@@ -13,7 +13,7 @@ end
 
 Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as$/ do |name, args, body|
   @macros ||= {}
-  @macros[name] = CG::Macro.new(name, body, args)
+  @macros[name] = CG::FunctionMacro.new(name, body, args)
 end
 
 Given /^a macro "([^"]*)" with argument list \("([^"]*)"\) is defined as "([^"]*)"$/ do |name, args, body| #"
@@ -34,7 +34,7 @@ end
 
 Then /^a macro named "([^"]*)" should be created$/ do |name| #"
   @name = name
-  @macros[name].should be_a(CG::Macro)
+  @macros[name].should be_a(CG::FunctionMacro)
   @macros[name].name.should == name
 end
 
@@ -53,9 +53,9 @@ end
 
 Given /^a foreach macro named "([^"]*)"$/ do |name| #"
   @macros ||= {}
-  @temp_name
+  @temp_name = name
 end
 
 Given /^argument list \(([^\)]*)\) and body$/ do |args, body|
-  @macros[@temp_name] = CG::ForeachMacro.new @temp_name, args, body
+  @macros[@temp_name] = CG::ForeachMacro.new @temp_name, body, args
 end

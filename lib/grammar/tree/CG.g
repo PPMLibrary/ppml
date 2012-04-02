@@ -28,6 +28,8 @@ def find_hidden
   end
 
   find_empty_lines i
+
+  return @current_indent, @empty_lines
 end
 
 def find_empty_lines i
@@ -47,11 +49,12 @@ def trailing_lines
   @trailing = t.extract_text(i+1,stop) if i < stop
 end
 
-def indent string
+def indent string, prefix=nil
+  prefix ||= @current_indent
   if !string.empty?
     lines = string.split("\n")
     lines = [''] if lines.empty?
-    lines.map! { |l| @current_indent + l }
+    lines.map! { |l| prefix + l }
     lines.join("\n") + "\n"
   end
 end
@@ -153,10 +156,10 @@ scope_end
 // Actual code
 
 line
-    : { find_hidden
-       @first_line ||= @current_indent }
+    : { my_indent, my_empty = find_hidden
+       @first_line ||= my_indent }
         ( macro=fcmacro -> verbatim(in={@empty_lines + indent($macro.st.to_s)})
-        | loop=foreach  -> verbatim(in={@empty_lines + indent($foreach.st.to_s)})
+        | loop=foreach  -> verbatim(in={my_empty + indent($foreach.st.to_s, my_indent)})
         | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
         | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
         | sub=subroutine_statement -> verbatim(in={@empty_lines + $sub.st.to_s})
@@ -173,10 +176,10 @@ foreach
     : ^(FOREACH n=ID it=ID a=arglist?
             ^(MODIFIERS m+=ID* ma+=arglist*)
             b+=foreach_body*)
-      -> foreach(context={@scope},name={$n},iter={$it},args={a},ms={$m},ma={$ma},bodies={$b})
+      -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={$ma},bodies={$b})
     ;
 
-foreach_body : ^(BODY b+=line*) ;
+foreach_body : ^(BODY l+=line*) -> join(lines={$l}) ;
 
 arglist returns [pos,named]
     :  ^(ARGS a+=value*
