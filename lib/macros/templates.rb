@@ -41,6 +41,17 @@ ENDTEMPLATE
 % _erbout += @subroutines.join("")       unless @subroutines.empty?
 ENDTEMPLATE
 
+        define_template( :type_inner,       <<-'ENDTEMPLATE')
+% if configatron.comment_mode
+%   #_erbout += "#{@indent}! type member definitions\n"
+% end
+% _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
+% _erbout += @body.join("")              unless @body.empty?
+% _erbout += @contains.to_s              unless @contains.nil?
+% #_erbout += "#{@indent}! procedures\n" if configatron.comment_mode
+% _erbout += @procedures.join("")       unless @procedures.empty?
+        ENDTEMPLATE
+
         define_template( :verbatim,    "<%= @in %>")
 
         define_template( :fcall_macro, <<-'ENDTEMPLATE')

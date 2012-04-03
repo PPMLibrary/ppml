@@ -10,9 +10,12 @@ PROGRAM;
 MODULE;
 SUBROUTINE;
 FUNCTION;
+PROCEDURE;
+TYPE;
 SCOPE_START;
 SCOPE_END;
 INNER_STUFF;
+TYPE_BODY;
 USE;
 IMPLICIT;
 CONTAINS;
@@ -93,6 +96,13 @@ function_statement
       -> ^(FUNCTION $open $i $close)
     ;
 
+type_statement
+    : open=type_start
+        i=type_body
+      close=type_end
+      -> ^(TYPE $open $i $close)
+    ;
+
 
 naked_code : line* ;
 
@@ -120,6 +130,11 @@ function_start : (ID FUNCTION_T name=ID arglist? NEWLINE
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID? NEWLINE
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
 
+type_start : TYPE_T (COMMA_T EXTENDS_T LEFT_PAREN_T ID RIGHT_PAREN_T)? DOUBLE_COLON_T name=ID NEWLINE
+        -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
+type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID? NEWLINE
+        -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
+
 // Scope detection - body
 
 inner_stuff
@@ -138,6 +153,17 @@ inner_stuff
             $body*)
     ;
 
+type_body
+    : ({@input.peek(2) != TYPE_T}? body+=line)*
+      (con=contains
+        (sub+=procedure_statement)+ )?
+      -> ^(TYPE_BODY
+          ^(CONTAINS $con?
+                     $sub*)
+           $body*)
+    ;
+
+
 implicit_none
     : IMPLICIT_T NONE_T NEWLINE
       -> ^(IMPLICIT TEXT[$implicit_none.start,$implicit_none.text])
@@ -151,12 +177,18 @@ use_statement
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
+procedure_statement
+    : PROCEDURE_T allowed* NEWLINE
+      -> ^(PROCEDURE TEXT[$procedure_statement.start,$procedure_statement.text])
+    ;
+
 // Actual code
 
 line
     : {fmacro_call?}?=> fcmacro
     | subroutine_statement
     | function_statement
+    | (type_statement)=>type_statement
     | foreach
     | fline
     ;
@@ -208,9 +240,9 @@ allowed
     : ID
     | ANY_CHAR
     | NUMBER | STRING
-    | LEFT_PAREN_T | RIGHT_PAREN_T
+    | LEFT_PAREN_T | RIGHT_PAREN_T | ARROW_T
     | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
-    | END_T | IN_T
+    | END_T | IN_T | TYPE_T
     | boolean | logical | comparison
     ;
 
@@ -245,6 +277,9 @@ CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
 PROCEDURE_T     : 'PROCEDURE'     | 'procedure'     ;
 RECURSIVE_T     : 'RECURSIVE'     | 'recursive'     ;
 RESULT_T        : 'RESULT'        | 'result'        ;
+TYPE_T          : 'TYPE'          | 'type'          ;
+ENDTYPE_T       : 'ENDTYPE'       | 'endtype'       ;
+EXTENDS_T       : 'EXTENDS'       | 'extends'       ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 // Before logical operators to give it precedence
@@ -290,8 +325,8 @@ STRING
     ;
 
 NUMBER : (DIGIT+
-       | DIGIT+ DOT_T DIGIT*
-       | DIGIT+ DOT_T DIGIT* '_' (ID | DIGIT+));
+       | DIGIT+ DOT_T DIGIT+
+       | DIGIT+ DOT_T DIGIT+ '_' (ID | DIGIT+));
 
 // Whitespace
 
@@ -322,6 +357,7 @@ AMPERSAND_T    : '&'  ;
 DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;
+ARROW_T        : '=>' ;
 
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;

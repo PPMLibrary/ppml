@@ -218,6 +218,73 @@ Feature: Scope Detection
     """
 
   Scenario: type statement
+    When I preprocess
+    """
+      module test
+        use something
+        implicit none
+        integer :: i
+        type :: ppm_t_type
+          integer :: j
+          contains
+          procedure :: proc => proc_implementation
+        end type ppm_t_type
+        i = 42
+      end module
+
+    """
+    Then it should expand into
+    """
+      module test
+        use something
+        ! use statements
+        implicit none
+        ! interfaces
+        ! variable definitions
+        integer :: i
+        type :: ppm_t_type
+          integer :: j
+          contains
+          procedure :: proc => proc_implementation
+        end type ppm_t_type
+        i = 42
+        ! subroutines
+      end module
+
+    """
+
+    When I preprocess
+    """
+      module test
+        use something
+        implicit none
+        integer :: i
+        type, extends(supertype) :: ppm_t_type
+          contains
+          procedure :: proc => proc_implementation
+        end type ppm_t_type
+        i = 42
+      end module
+
+    """
+    Then it should expand into
+    """
+      module test
+        use something
+        ! use statements
+        implicit none
+        ! interfaces
+        ! variable definitions
+        integer :: i
+        type, extends(supertype) :: ppm_t_type
+          contains
+          procedure :: proc => proc_implementation
+        end type ppm_t_type
+        i = 42
+        ! subroutines
+      end module
+
+    """
 
   Scenario: typebound procedure
 
