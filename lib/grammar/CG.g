@@ -123,9 +123,8 @@ subroutine_start : RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T
 subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
 
-function_start : (ID_T FUNCTION_T name=ID_T arglist? NEWLINE_T
-               | FUNCTION_T name=ID_T arglist?
-                 RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T NEWLINE_T)
+function_start : (ID_T)? FUNCTION_T name=ID_T arglist? 
+            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$function_start.start,$function_start.text]) ;
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
