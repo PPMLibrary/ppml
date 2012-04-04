@@ -8,8 +8,8 @@ require 'rake/clean'
 
 # temp files
 CLEAN.include("**/*~")
-# generated files
-CLOBBER.include("lib/parser/*")
+# generated filesc
+CLOBBER.include("lib/parser/CG*")
 
 
 def antlr f

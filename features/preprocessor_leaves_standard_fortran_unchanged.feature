@@ -36,3 +36,7 @@ Feature: preprocessing standard fortran
       | code                            |
       | i=10 &\n  +2\n                  |
       | j=30 &\n & +i\n                 |
+
+    Examples: logical operators
+      | code                        |
+      | lda.eq.3.and.ppm_dim.eq.3\n |

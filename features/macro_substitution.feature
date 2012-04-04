@@ -32,7 +32,6 @@ Feature: macro substitution
        | fun    | v    | sin(<%= v %>)*cos(<%= v %>)       | fun(4.0)\n      | sin(4.0)*cos(4.0)\n       |
        | fun    | v    | sin(<%= v %>)*cos(<%= v %>)       | fun(4.0_mk)\n   | sin(4.0_mk)*cos(4.0_mk)\n |
 
-
   Examples: argument1 dot macro style calling
        | name    | args | body                       | input           | result             |
        | append  | x,a  | call <%=x%>%append(<%=a%>) | append(c,b)\n   | call c%append(b)\n |

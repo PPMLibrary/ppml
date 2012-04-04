@@ -98,26 +98,26 @@ naked_code : line* ;
 
 // Scope detecion - start and end lines
 
-program_start : PROGRAM_T name=ID NEWLINE
+program_start : PROGRAM_T name=ID_T NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$program_start.start,$program_start.text]) ;
-program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID? NEWLINE
+program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$program_end.start,$program_end.text]) ;
 
-module_start : MODULE_T name=ID NEWLINE
+module_start : MODULE_T name=ID_T NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$module_start.start,$module_start.text]) ;
-module_end   : ( ENDMODULE_T | END_T MODULE_T ) ID? NEWLINE
+module_end   : ( ENDMODULE_T | END_T MODULE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$module_end.start,$module_end.text]) ;
 
-subroutine_start : RECURSIVE_T? SUBROUTINE_T name=ID arglist? NEWLINE
+subroutine_start : RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
-subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID? NEWLINE
+subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
 
-function_start : (ID FUNCTION_T name=ID arglist? NEWLINE
-               | FUNCTION_T name=ID arglist?
-                 RESULT_T LEFT_PAREN_T ID RIGHT_PAREN_T NEWLINE)
+function_start : (ID_T FUNCTION_T name=ID_T arglist? NEWLINE_T
+               | FUNCTION_T name=ID_T arglist?
+                 RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T NEWLINE_T)
         -> ^(SCOPE_START $name TEXT[$function_start.start,$function_start.text]) ;
-function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID? NEWLINE
+function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
 
 // Scope detection - body
@@ -139,15 +139,15 @@ inner_stuff
     ;
 
 implicit_none
-    : IMPLICIT_T NONE_T NEWLINE
+    : IMPLICIT_T NONE_T NEWLINE_T
       -> ^(IMPLICIT TEXT[$implicit_none.start,$implicit_none.text])
     ;
 contains
-    : CONTAINS_T NEWLINE 
+    : CONTAINS_T NEWLINE_T 
       -> ^(CONTAINS TEXT[$contains.start,$contains.text])
     ;
 use_statement
-    : USE_T allowed* NEWLINE
+    : USE_T allowed* NEWLINE_T
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
@@ -162,16 +162,16 @@ line
     ;
 
 foreach
-    : FOREACH_T it=ID IN_T name=ID a=arglist?
-        (DOT_T modifiers+=ID arglists+=arglist?)*
-      NEWLINE
+    : FOREACH_T it=ID_T IN_T name=ID_T a=arglist?
+        (DOT_T modifiers+=ID_T arglists+=arglist?)*
+      NEWLINE_T
         bodies+=foreach_body
         // ((foreach_body)=>bodies+=foreach_body
-        // |   {@input.peek(2) == COLON_T}?=>((bname+=ID | bname+=DEFAULT_T) COLON_T NEWLINE
+        // |   {@input.peek(2) == COLON_T}?=>((bname+=ID_T | bname+=DEFAULT_T) COLON_T NEWLINE_T
         //       (foreach_body)=>bodies+=foreach_body*
         //     )+
         // )
-      (ENDFOREACH_T | END_T FOREACH_T) NEWLINE
+      (ENDFOREACH_T | END_T FOREACH_T) NEWLINE_T
         -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers* $arglists*) $bodies*)
     ;
 
@@ -181,14 +181,14 @@ foreach_body
     ;
 
 fcmacro
-    : (result=ID EQUALS_T)? ((name=ID) | (dotarg=ID DOT_T name=ID)) args=arglist NEWLINE
+    : (result=ID_T EQUALS_T)? ((name=ID_T) | (dotarg=ID_T DOT_T name=ID_T)) args=arglist NEWLINE_T
       -> ^(FMACRO $name $result? $args $dotarg?)
     ;
 
 arglist
     : LEFT_PAREN_T
-       ( (args+=value | names+=ID EQUALS_T values+=value)
-         (COMMA_T (args+=value | names+=ID EQUALS_T values+=value))*
+       ( (args+=value | names+=ID_T EQUALS_T values+=value)
+         (COMMA_T (args+=value | names+=ID_T EQUALS_T values+=value))*
        )?
       RIGHT_PAREN_T
       -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
@@ -198,23 +198,23 @@ arglist
 
 fline
     : (allowed*
-      | MODULE_T PROCEDURE_T ID
+      | MODULE_T PROCEDURE_T ID_T
       | PROCEDURE_T allowed*
-      ) NEWLINE
+      ) NEWLINE_T
       -> ^(FLINE TEXT[$fline.start,$fline.text])
     ;
 
 allowed
-    : ID
-    | ANY_CHAR
-    | NUMBER | STRING
+    : ID_T
+    | ANY_CHAR_T | DOT_T
+    | NUMBER_T | STRING_T
     | LEFT_PAREN_T | RIGHT_PAREN_T
     | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
-    | END_T | IN_T
     | boolean | logical | comparison
+    | END_T | IN_T
     ;
 
-value : ID | NUMBER | STRING ;
+value : ID_T | NUMBER_T | STRING_T ;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,73 +247,102 @@ RECURSIVE_T     : 'RECURSIVE'     | 'recursive'     ;
 RESULT_T        : 'RESULT'        | 'result'        ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
-// Before logical operators to give it precedence
-DOT_T          : '.' ;
+DOT_T
+    : '.'
+        (   (TRUE_T)=>  TRUE_T  {$type=TRUE_T}
+        |   (FALSE_T)=> FALSE_T {$type=FALSE_T}
+        |   (AND_T)=>   AND_T   {$type=AND_T}
+        |   (OR_T)=>    OR_T    {$type=OR_T}
+        |   (NOT_T)=>   NOT_T   {$type=NOT_T}
+        |   (EQV_T)=>   EQV_T   {$type=EQV_T}
+        |   (NEQV_T)=>  NEQV_T  {$type=NEQV_T}
+        |   (GT)=>      GT      {$type=GT_T}
+        |   (LT)=>      LT      {$type=LT_T}
+        |   (GE)=>      GE      {$type=GE_T}
+        |   (LE)=>      LE      {$type=LE_T}
+        |   (EQ)=>      EQ      {$type=EQ_T}
+        |   (NE)=>      NE      {$type=NE_T}
+        )?
+    ;
 
 // True/False
 
 boolean : TRUE_T | FALSE_T ;
 
-TRUE_T  : '.TRUE.'  | '.true.'  ;
-FALSE_T : '.FALSE.' | '.false.' ;
+fragment
+TRUE_T  : 'TRUE.'  | 'true.'  ;
+fragment
+FALSE_T : 'FALSE.' | 'false.' ;
 
 // Logical
 
 logical : AND_T | OR_T | NOT_T | EQV_T | NEQV_T ;
 
-AND_T  : '.AND.'  | '.nd.'  ;
-OR_T   : '.OR.'   | '.or.'   ;
-NOT_T  : '.NOT.'  | '.not.'  ;
-EQV_T  : '.EQV.'  | '.eqv.'  ;
-NEQV_T : '.NEQV.' | '.neqv.' ;
+fragment
+AND_T  : 'AND.'  | 'and.'  ;
+fragment
+OR_T   : 'OR.'   | 'or.'   ;
+fragment
+NOT_T  : 'NOT.'  | 'not.'  ;
+fragment
+EQV_T  : 'EQV.'  | 'eqv.'  ;
+fragment
+NEQV_T : 'NEQV.' | 'neqv.' ;
+
 
 // Comparison
 
 comparison : GT_T | LT_T | GE_T | LE_T | EQ_T | NE_T ;
 
-GT_T : '.GT.' | '.gt.' | '>'  ;
-LT_T : '.LT.' | '.lt.' | '<'  ;
-GE_T : '.GE.' | '.ge.' | '>=' ;
-LE_T : '.LE.' | '.le.' | '<=' ;
-EQ_T : '.EQ.' | '.eq.' | '==' ;
-NE_T : '.NE.' | '.ne.' | '/=' ;
+fragment
+GT   : 'GT.' | 'gt.' ;
+GT_T :  '>'  ;
+fragment
+LT   : 'LT.' | 'lt.' ;
+LT_T :  '<'  ;
+fragment
+GE   : 'GE.' | 'ge.' ;
+GE_T :  '>=' ;
+fragment
+LE   : 'LE.' | 'le.' ;
+LE_T :  '<=' ;
+fragment
+EQ   : 'EQ.' | 'eq.' ;
+EQ_T :  '==' ;
+fragment
+NE   : 'NE.' | 'ne.' ;
+NE_T :  '/=' ;
 
 // Identifiers
 
-ID	: (ALPHA | '_') (ALNUM | '_' | '%')* ;
+ID_T : (ALPHA | '_') (ALNUM | '_' | '%')* ;
 
 // Constants
 
-STRING
+STRING_T
     : '"' ('\\"'|~'"')* '"' 
     | '\'' ('\\\''|~'\'')* '\''
     ;
 
-NUMBER : (DIGIT+
-       | DIGIT+ DOT_T DIGIT*
-       | DIGIT+ DOT_T DIGIT* '_' (ID | DIGIT+));
+NUMBER_T
+    : DIGIT+
+        ((DECIMAL)=> DECIMAL ((KIND)=> KIND)?)?
+    ;
+
+fragment
+DECIMAL : '.' DIGIT+ ;
+fragment
+KIND : '_' (ALPHA+ | DIGIT+) ;
 
 // Whitespace
 
-EMPTY_LINE     : {column==0}?=> WS_SPEC COMMENT_SPEC? '\r'? '\n' { $channel=:hidden } ;
-CONTINUED_LINE : AMPERSAND_T (WS_SPEC '\r'? '\n')+ WS_SPEC AMPERSAND_T? { $channel=:hidden } ;
+EMPTY_LINE_T     : {column==0}?=> WS COMMENT? '\r'? '\n' { $channel=:hidden } ;
+CONTINUED_LINE_T : '&' (WS '\r'? '\n')+ WS '&'? { $channel=:hidden } ;
 
-NEWLINE	: '\r'? '\n' ;
+NEWLINE_T : '\r'? '\n' ;
 
-WS	    : WS_SPEC      { $channel=:hidden } ;
-COMMENT : COMMENT_SPEC { $channel=:hidden } ;
-
-fragment
-COMMENT_SPEC : '!' ~('\n'|'\r')* ;
-fragment
-WS_SPEC : (' '|'\r'|'\t'|'\u000C')* ;
-
-//MULTILINE : '&' WS NEWLINE { skip } ;
-
-// Fragments
-
-fragment
-COMPARISSON : '<' | '>' ;
+WS_T      : WS      { $channel=:hidden } ;
+COMMENT_T : COMMENT { $channel=:hidden } ;
 
 EQUALS_T       : '='  ;
 LEFT_PAREN_T   : '('  ;
@@ -323,6 +352,13 @@ DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;
 
+// Fragments
+
+fragment
+COMMENT : '!' ~('\n'|'\r')* ;
+fragment
+WS      : (' '|'\r'|'\t'|'\u000C')* ;
+
 fragment
 ALNUM	: ( ALPHA | DIGIT ) ;
 fragment
@@ -330,4 +366,4 @@ ALPHA	: 'a'..'z' | 'A'..'Z' ;
 fragment
 DIGIT	: '0'..'9' ;
 
-ANY_CHAR : ~( '\r' | '\n' | ' ' | '\t' ) ;
+ANY_CHAR_T : ~( '\r' | '\n' | ' ' | '\t' ) ;

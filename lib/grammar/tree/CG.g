@@ -35,7 +35,7 @@ def find_empty_lines i
   @empty_lines = ''
   stop = i
   return if stop < 0
-  i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE
+  i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE_T
   @empty_lines = t.extract_text(i+1,stop)
 end
 
@@ -43,7 +43,7 @@ def trailing_lines
   t = Preprocessor.instance.tokens
   @trailing = ''
   stop = i = t.length - 1
-  i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE
+  i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE_T
   @trailing = t.extract_text(i+1,stop) if i < stop
 end
 
@@ -123,7 +123,7 @@ function_statement
 
 scope_start
     : { setup_scope }
-      ^(SCOPE_START name=ID text=TEXT)
+      ^(SCOPE_START name=ID_T text=TEXT)
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
@@ -164,14 +164,14 @@ line
     ;
 
 fcmacro
-    : ^(FMACRO n=ID r=ID?
-            a=arglist d=ID?)
+    : ^(FMACRO n=ID_T r=ID_T?
+            a=arglist d=ID_T?)
           -> fcall_macro(name={$n},context={@scope},result={$r},args={a},dotarg={$d})
     ;
 
 foreach
-    : ^(FOREACH n=ID it=ID a=arglist?
-            ^(MODIFIERS m+=ID* ma+=arglist*)
+    : ^(FOREACH n=ID_T it=ID_T a=arglist?
+            ^(MODIFIERS m+=ID_T* ma+=arglist*)
             b+=foreach_body*)
       -> foreach(context={@scope},name={$n},iter={$it},args={a},ms={$m},ma={$ma},bodies={$b})
     ;
@@ -180,7 +180,7 @@ foreach_body : ^(BODY b+=line*) ;
 
 arglist returns [pos,named]
     :  ^(ARGS a+=value*
-            ^(NAMEDARGS na+=ID*)
+            ^(NAMEDARGS na+=ID_T*)
             ^(NAMEDARGS v+=value*))
       { $pos = $a
         $named = Hash[*$na.map(&:to_s).zip($v).flatten] }
@@ -189,7 +189,7 @@ arglist returns [pos,named]
 fline : ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
 
 value
-    : i=ID     -> verbatim(in={$i})
-    | n=NUMBER -> verbatim(in={$n})
-    | s=STRING -> verbatim(in={$s})
+    : i=ID_T     -> verbatim(in={$i})
+    | n=NUMBER_T -> verbatim(in={$n})
+    | s=STRING_T -> verbatim(in={$s})
     ;
