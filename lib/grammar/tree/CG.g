@@ -76,11 +76,13 @@ prog
             ((module_statement)=>pre+=module_statement
             |(subroutine_statement)=>pre+=subroutine_statement
             |(function_statement)=>pre+=function_statement
+            |(imacro)=>pre+=imacro
             )*
             program=program_statement?
             (post+=module_statement
             |post+=subroutine_statement
             |post+=function_statement
+            |post+=imacro
             )*
             { trailing_lines }
             -> prog(pre={$pre},prog={$program.st},post={$post},trailing={@trailing})
@@ -143,6 +145,7 @@ inner_stuff
                 (s+=subroutine_statement
                 |s+=function_statement
                 |s+=procedure_statement
+                |s+=imacro
                 )*)
           { @first_line = nil }
             (b+=inner_line)*)
@@ -153,7 +156,8 @@ type_body
     : { find_hidden }
         ^(TYPE_BODY
             ^(CONTAINS (c=contains_line
-                    (s+=procedure_statement)+)?)
+             (s+=procedure_statement
+             |s+=imacro)+)?)
           { @first_line = nil }
             (b+=inner_line)*)
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
@@ -184,7 +188,8 @@ inner_line
 line
     : { find_hidden
        @first_line ||= @current_indent }
-        ( macro=fcmacro -> verbatim(in={@empty_lines + indent($macro.st.to_s)})
+        ( fmac=fcmacro -> verbatim(in={@empty_lines + indent($fmac.st.to_s)})
+        | imac=imacro -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
         | loop=foreach  -> verbatim(in={@empty_lines + indent($foreach.st.to_s)})
         | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
         | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
@@ -196,6 +201,12 @@ fcmacro
     : ^(FMACRO n=ID_T r=ID_T?
             a=arglist d=ID_T?)
           -> fcall_macro(name={$n},context={@scope},result={$r},args={a},dotarg={$d})
+    ;
+
+imacro
+    : ^(IMACRO n=ID_T
+            a=arglist)
+          -> include_macro(name={$n},context={@scope},args={a})
     ;
 
 foreach

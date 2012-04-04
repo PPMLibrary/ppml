@@ -20,6 +20,7 @@ USE;
 IMPLICIT;
 CONTAINS;
 FMACRO;
+IMACRO;
 FOREACH;
 MODIFIERS;
 BODY;
@@ -48,6 +49,15 @@ def fmacro_call?
     else
         m.has_key?(input.look(1).text)
     end
+  end
+end
+
+def imacro_call?
+  m = Preprocessor.instance.macros
+  if input.peek(3) == TokenData::EQUALS_T
+        m.has_key?(input.look(4).text)
+  else
+        m.has_key?(input.look(2).text)
   end
 end
 }
@@ -143,6 +153,7 @@ inner_stuff
       (con=contains
             (sub+=subroutine_statement
             |sub+=function_statement
+            |sub+=imacro
             )+ )?
        -> ^(INNER_STUFF
             ^(USE $use*)
@@ -185,6 +196,7 @@ procedure_statement
 
 line
     : {fmacro_call?}?=> fcmacro
+    | {imacro_call?}?=> imacro
     | subroutine_statement
     | function_statement
     | (type_statement)=>type_statement
@@ -214,6 +226,11 @@ foreach_body
 fcmacro
     : (result=ID_T EQUALS_T)? ((name=ID_T) | (dotarg=ID_T DOT_T name=ID_T)) args=arglist NEWLINE_T
       -> ^(FMACRO $name $result? $args $dotarg?)
+    ;
+
+imacro
+    : MINCLUDE_T (name=ID_T)  args=arglist NEWLINE_T
+      -> ^(IMACRO $name $args)
     ;
 
 arglist
@@ -279,6 +296,7 @@ RESULT_T        : 'RESULT'        | 'result'        ;
 TYPE_T          : 'TYPE'          | 'type'          ;
 ENDTYPE_T       : 'ENDTYPE'       | 'endtype'       ;
 EXTENDS_T       : 'EXTENDS'       | 'extends'       ;
+MINCLUDE_T      : 'MINCLUDE'      | 'minclude'      ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 DOT_T

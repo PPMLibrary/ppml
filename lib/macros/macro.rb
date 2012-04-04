@@ -9,11 +9,16 @@ module CG
     VAL = '(?:"[^"]*"|[^,]*?)'
     ARG = "#{NAME}(?: *(?<!%)= *#{VAL})?"
     ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
-    MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
-    MACRO_STOP = /^ *end +macro *$/
+    MACRO_START = //
+    MACRO_STOP = //
     REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)*?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/
 
-    def initialize(name, body, args=nil)
+    def initialize(name, body_or_file, args=nil)
+      if body_or_file.is_a? StringIO or body_or_file.is_a? File
+        body = read_body body_or_file
+      else
+        body = body_or_file
+      end
       @name, @body = name, body
       if args
         @args = Macro.parse_arglist args
@@ -61,7 +66,19 @@ module CG
       @recursive_expanded = true
     end
 
-    private
+    protected
+
+    def read_body file
+      body = ''
+      while l=file.gets
+        raise "Nested macro definitions are not allowed" if l =~ self.class::MACRO_START
+        return body if l =~ self.class::MACRO_STOP
+        body << l
+      end
+      raise "EOF while reading body!"
+    end
+
+    protected
 
     class << self
       def load(path)
@@ -71,10 +88,12 @@ module CG
       def load_file(file)
         macros = {}
         while l=file.gets
-          if l =~ MACRO_START
+          if l =~ FunctionMacro::MACRO_START
             name = $~[:name]
-            body = read_body file
-            macros[name] = Macro.new(name, body, $~[:args])
+            macros[name] = FunctionMacro.new(name, file, $~[:args])
+          elsif l =~ IncludeMacro::MACRO_START
+            name = $~[:name]
+            macros[name] = IncludeMacro.new(name, file, $~[:args])
           end
         end
         macros
@@ -95,26 +114,28 @@ module CG
         result
       end
 
-      private
 
-      def read_body file
-        body = ''
-        while l=file.gets
-          raise "Nested macro definitions are not allowed" if l =~ MACRO_START
-          return body if l =~ MACRO_STOP
-          body << l
-        end
-        raise "EOF while reading body!"
-      end
 
     end # class << self
 
   end # Macro
 
   class FunctionMacro < Macro
+    MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
+    MACRO_STOP = /^ *end +macro *$/
   end # FunctionMacro
 
   class ForeachMacro < Macro
   end # ForeachMacro
+
+  class IncludeMacro < Macro
+    MACRO_START = /^ *include +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
+    MACRO_STOP = /^ *end +include *$/
+
+    def expand(scope, args=nil, named=nil)
+      super(scope, result=nil, args=args, named=named, dotarg=nil)
+    end
+
+  end #IncludeMacro
 
 end
