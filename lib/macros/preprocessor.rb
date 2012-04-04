@@ -51,10 +51,18 @@ module CG
       # @macros.each { |name,m| m.expand_recursive_calls }
     end
 
+    def imacros
+      @macros.reject {|n,m| !(m.is_a? IncludeMacro)}
+    end
+
+    def fmacros
+      @macros.reject {|n,m| !(m.is_a? FunctionMacro)}
+    end
+
     def process string
-      # STDERR.puts "Parsing String\n\n#{string}"
-      # print_lexer_tokens string
-      # print_tree_tokens string
+      #STDERR.puts "Parsing String\n\n#{string}"
+      #print_lexer_tokens string
+      #print_tree_tokens string
       @lexer = Lexer.new string
       @tokens = ANTLR3::CommonTokenStream.new @lexer
       unless all_hidden? @tokens

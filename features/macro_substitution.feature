@@ -60,11 +60,13 @@ Feature: macro substitution
     Given the standard macro path is "examples/testdata/macros"
     When I preprocess
     """
+    minclude friendly("Mitrovic")
     fail("topoid not valid",ppm_err_argument,exit_point=8888)
 
     """
     Then it should expand into
     """
+    print *, "Hello, Mr. ","Mitrovic",". Can I be of any service?"
     call ppm_error(ppm_err_argument, &
       "topoid not valid",&
       caller, 100000 , info)

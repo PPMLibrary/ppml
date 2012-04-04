@@ -1,0 +1,3 @@
+include friendly(name)
+print *, "Hello, Mr. ",<%= name %>,". Can I be of any service?"
+end include
