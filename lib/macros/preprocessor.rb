@@ -21,6 +21,15 @@ module CG
       @@standard_macro_path
     end
 
+    def self.user_macro_path= p
+      @@user_macro_path = p
+      Preprocessor.instance.reload_macros
+    end
+
+    def self.user_macro_path
+      @@user_macro_path
+    end
+
     def initialize
       initialize_macros_hash
 

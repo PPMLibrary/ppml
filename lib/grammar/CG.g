@@ -10,9 +10,12 @@ PROGRAM;
 MODULE;
 SUBROUTINE;
 FUNCTION;
+PROCEDURE;
+TYPE;
 SCOPE_START;
 SCOPE_END;
 INNER_STUFF;
+TYPE_BODY;
 USE;
 IMPLICIT;
 CONTAINS;
@@ -93,6 +96,13 @@ function_statement
       -> ^(FUNCTION $open $i $close)
     ;
 
+type_statement
+    : open=type_start
+        i=type_body
+      close=type_end
+      -> ^(TYPE $open $i $close)
+    ;
+
 
 naked_code : line* ;
 
@@ -120,6 +130,11 @@ function_start : (ID_T FUNCTION_T name=ID_T arglist? NEWLINE_T
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
 
+type_start : TYPE_T (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? DOUBLE_COLON_T name=ID_T NEWLINE_T
+        -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
+type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
+        -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
+
 // Scope detection - body
 
 inner_stuff
@@ -138,6 +153,17 @@ inner_stuff
             $body*)
     ;
 
+type_body
+    : ({@input.peek(2) != TYPE_T}? body+=line)*
+      (con=contains
+        (sub+=procedure_statement)+ )?
+      -> ^(TYPE_BODY
+          ^(CONTAINS $con?
+                     $sub*)
+           $body*)
+    ;
+
+
 implicit_none
     : IMPLICIT_T NONE_T NEWLINE_T
       -> ^(IMPLICIT TEXT[$implicit_none.start,$implicit_none.text])
@@ -151,12 +177,18 @@ use_statement
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
+procedure_statement
+    : PROCEDURE_T allowed* NEWLINE_T
+      -> ^(PROCEDURE TEXT[$procedure_statement.start,$procedure_statement.text])
+    ;
+
 // Actual code
 
 line
     : {fmacro_call?}?=> fcmacro
     | subroutine_statement
     | function_statement
+    | (type_statement)=>type_statement
     | foreach
     | fline
     ;
@@ -208,10 +240,10 @@ allowed
     : ID_T
     | ANY_CHAR_T | DOT_T
     | NUMBER_T | STRING_T
-    | LEFT_PAREN_T | RIGHT_PAREN_T
+    | LEFT_PAREN_T | RIGHT_PAREN_T | ARROW_T
     | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
     | boolean | logical | comparison
-    | END_T | IN_T
+    | END_T | IN_T | TYPE_T
     ;
 
 value : ID_T | NUMBER_T | STRING_T ;
@@ -245,6 +277,9 @@ CONTAINS_T      : 'CONTAINS'      | 'contains'      ;
 PROCEDURE_T     : 'PROCEDURE'     | 'procedure'     ;
 RECURSIVE_T     : 'RECURSIVE'     | 'recursive'     ;
 RESULT_T        : 'RESULT'        | 'result'        ;
+TYPE_T          : 'TYPE'          | 'type'          ;
+ENDTYPE_T       : 'ENDTYPE'       | 'endtype'       ;
+EXTENDS_T       : 'EXTENDS'       | 'extends'       ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 DOT_T
@@ -332,12 +367,12 @@ NUMBER_T
 fragment
 DECIMAL : '.' DIGIT+ ;
 fragment
-KIND : '_' (ALPHA+ | DIGIT+) ;
+KIND : '_' (ID_T | DIGIT+) ;
 
 // Whitespace
 
 EMPTY_LINE_T     : {column==0}?=> WS COMMENT? '\r'? '\n' { $channel=:hidden } ;
-CONTINUED_LINE_T : '&' (WS '\r'? '\n')+ WS '&'? { $channel=:hidden } ;
+CONTINUED_LINE_T : AMPERSAND_T (WS '\r'? '\n')+ WS AMPERSAND_T? { $channel=:hidden } ;
 
 NEWLINE_T : '\r'? '\n' ;
 
@@ -351,6 +386,7 @@ AMPERSAND_T    : '&'  ;
 DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;
+ARROW_T        : '=>' ;
 
 // Fragments
 

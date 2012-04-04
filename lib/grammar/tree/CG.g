@@ -119,6 +119,13 @@ function_statement
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
+type_statement
+    : ^(TYPE o=scope_start
+               i=type_body
+               c=scope_end)
+            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+    ;
+
 // Scope handling
 
 scope_start
@@ -135,22 +142,44 @@ inner_stuff
             ^(CONTAINS c=contains_line?
                 (s+=subroutine_statement
                 |s+=function_statement
+                |s+=procedure_statement
                 )*)
           { @first_line = nil }
-            b+=line*)
+            (b+=inner_line)*)
         -> inner(context={@scope},use={$u},implicit={$i.st},contains={$c.st},subroutines={$s},body={$b},indent={@first_line || ''})
+    ;
+
+type_body
+    : { find_hidden }
+        ^(TYPE_BODY
+            ^(CONTAINS c=contains_line?
+             (s+=procedure_statement)+)
+          { @first_line = nil }
+            (b+=inner_line)*)
+        -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
     ;
 
 implicit_line : { find_hidden } ^(IMPLICIT i=TEXT) -> verbatim(in={@empty_lines + @current_indent + $i.text}) ;
 contains_line : { find_hidden } ^(CONTAINS c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
+procedure_statement : { find_hidden } ^(PROCEDURE c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 
 scope_end
     : { cleanup_scope }
       ^(SCOPE_END text=TEXT)
+      {@first_line = @current_indent}
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
 // Actual code
+
+inner_line
+    : { find_hidden
+       @first_line ||= @current_indent }
+        ( l=line -> verbatim(in={$l.st.to_s})
+        | tdef=type_statement -> verbatim(in={@empty_lines + $tdef.st.to_s})
+        )
+    ;
+
 
 line
     : { find_hidden
