@@ -7,10 +7,14 @@ class PPM < Thor
 
   desc 'pp FILE?', 'Preprocess a fortran FILE and perform macro substitution. If FILE not provided read from STDIN'
   method_option :outfile, :aliases => '-o', :type => :string, :desc => 'Put results in OUTFILE'
+  method_option :macrodir, :aliases => '-M', :type => :string, :desc => 'Get macros from MACRODIR'
   def pp file=nil
     require_relative '../lib/macros'
     input = file ? File.new(file) : STDIN
 
+    if options[:macrodir]
+      CG::Preprocessor.user_macro_path=options[:macrodir]
+    end
     configatron.comment_mode = false
     o = CG::Preprocessor.instance.process(input.read)
 
