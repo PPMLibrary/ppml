@@ -155,9 +155,9 @@ inner_stuff
 type_body
     : { find_hidden }
         ^(TYPE_BODY
-            ^(CONTAINS c=contains_line?
+            ^(CONTAINS (c=contains_line
              (s+=procedure_statement
-             |s+=imacro)+)
+             |s+=imacro)+)?)
           { @first_line = nil }
             (b+=inner_line)*)
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
