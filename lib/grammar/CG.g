@@ -140,7 +140,9 @@ function_start : (ID_T FUNCTION_T name=ID_T arglist? NEWLINE_T
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
 
-type_start : TYPE_T (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? DOUBLE_COLON_T name=ID_T NEWLINE_T
+type_start : TYPE_T (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? 
+           (COMMA_T ABSTRACT_T)?
+           DOUBLE_COLON_T name=ID_T NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
 type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
@@ -298,6 +300,7 @@ TYPE_T          : 'TYPE'          | 'type'          ;
 ENDTYPE_T       : 'ENDTYPE'       | 'endtype'       ;
 EXTENDS_T       : 'EXTENDS'       | 'extends'       ;
 MINCLUDE_T      : 'MINCLUDE'      | 'minclude'      ;
+ABSTRACT_T      : 'ABSTRACT'      | 'abstract'      ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 DOT_T
