@@ -5,15 +5,15 @@ module CG
     attr_accessor :name
     attr_reader :args, :body
 
-    NAME = '(?:[a-zA-Z_][a-zA-Z_0-9]*)'
+    NAME = '(?:[a-z_][a-z_0-9]*)'
     VAL = '(?:"[^"]*"|[^,]*?)'
     ARG = "#{NAME}(?: *(?<!%)= *#{VAL})?"
     ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
     MACRO_START = //
-    MACRO_STOP = //
+    MACRO_STOP = /^ *end +macro *$/i
     REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)*?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/
 
-    def initialize(name, body_or_file, args=nil)
+    def initialize name, body_or_file, args=nil
       if body_or_file.is_a? StringIO or body_or_file.is_a? File
         body = read_body body_or_file
       else
@@ -27,18 +27,11 @@ module CG
     end
 
     def expand(scope, result=nil, args=nil, named=nil, dotarg=nil)
-      map = {}
-      args.insert 0,dotarg if !dotarg.nil?
-      if @args
-        map = @args.clone
-        [args.size, map.keys.size].min.times do |i|
-          map[map.keys[i]] = args[i]
-        end if args
-        map.merge! named if named
-      end
+      args.insert 0, dotarg if !dotarg.nil?
+      map = Macro.resolve_args @args, args, named
       map["scope"] = scope
-      expand_recursive_calls(scope) if !@recursive_expand
-      erb = ERB.new @body, nil, "%"
+      expand_recursive_calls(scope) unless @recursive_expand
+      erb = ERB.new @body, nil, "%-"
       erb.result Macro.binding_from_map(map)
     end
 
@@ -78,22 +71,23 @@ module CG
       raise "EOF while reading body!"
     end
 
-    protected
-
     class << self
-      def load(path)
+      def load path
         load_file File.open(path)
       end
 
-      def load_file(file)
+      def load_file file
         macros = {}
         while l=file.gets
           if l =~ FunctionMacro::MACRO_START
             name = $~[:name]
-            macros[name] = FunctionMacro.new(name, file, $~[:args])
+            macros[name] = FunctionMacro.new name, file, $~[:args]
+          elsif l =~ ForeachMacro::MACRO_START
+            name = $~[:name]
+            macros[name] = ForeachMacro.new name, file, $~[:args]
           elsif l =~ IncludeMacro::MACRO_START
             name = $~[:name]
-            macros[name] = IncludeMacro.new(name, file, $~[:args])
+            macros[name] = IncludeMacro.new name, file, $~[:args]
           end
         end
         macros
@@ -114,7 +108,17 @@ module CG
         result
       end
 
-
+      def resolve_args default, positional, named
+        result = {}
+        if default
+          result = default.clone
+          [positional.size, result.keys.size].min.times do |i|
+            result[result.keys[i]] = positional[i]
+          end if positional
+          result.merge! named if named
+        end
+        return result
+      end
 
     end # class << self
 
@@ -122,20 +126,36 @@ module CG
 
   class FunctionMacro < Macro
     MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
-    MACRO_STOP = /^ *end +macro *$/
   end # FunctionMacro
 
   class ForeachMacro < Macro
+    MACRO_START = /^ *foreach +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
+
+    def expand context, iter, args, named, mods, modargs, bodies
+      # STDERR.puts "\nexpand called!\n\n"
+      # STDERR.puts "      iter : #{iter}"
+      # STDERR.puts "      args : #{args}"
+      # STDERR.puts "named args : #{named}"
+      # STDERR.puts "      mods : #{mods}"
+      # STDERR.puts "  mod args : #{modargs}"
+      # STDERR.puts "    bodies : #{bodies}"
+      map = Macro.resolve_args @args, args, named
+      map["scope"] = context
+      map["body"] = bodies[0]
+      map["iter"] = iter
+      # expand_recursive_calls(scope) unless @recursive_expand
+      erb = ERB.new @body, nil, "%-"
+      r = erb.result Macro.binding_from_map(map)
+      # STDERR.puts "RESULT\n#{r}\nDONE"
+      r
+    end
   end # ForeachMacro
 
   class IncludeMacro < Macro
-    MACRO_START = /^ *include +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
-    MACRO_STOP = /^ *end +include *$/
+    MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
 
     def expand(scope, args=nil, named=nil)
       super(scope, result=nil, args=args, named=named, dotarg=nil)
     end
-
   end #IncludeMacro
-
 end

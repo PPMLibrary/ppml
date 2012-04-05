@@ -3,26 +3,30 @@ Feature: Foreach Macros
   In order to abstract away different looping strategies we need to
   provide a looping macro.
 
-  # Scenario: basic foreach macro
-  #   Given a foreach macro named "particles"
-  #   And argument list (P) and body
-  #   """
-  #   do <%= iterator %>=1,<%= P %>%Npart
-  #     <%= b %>
-  #   end do
+  Scenario: basic foreach macro
+    Given a foreach macro named "particles"
+    And argument list (particle_set) and body
+    """
+    do <%= iter %>=1,<%= particle_set %>%Npart
+    <%= body.to_s -%>
+    end do
 
-  #   """
-  #   When I preprocess
-  #   """
-  #   foreach p in particles(P)
-  #     ! do something to p
-  #   end
+    """
+    When I preprocess
+    """
+      ! leading comment
+      foreach p in particles(P)
+        ! do something to p
+        p = 20
+      end foreach
 
-  #   """
-  #   Then it should expand into
-  #   """
-  #   do i=1,P%Npart
-  #     ! do something to p
-  #   end do
+    """
+    Then it should expand into
+    """
+      ! leading comment
+      do p=1,P%Npart
+          ! do something to p
+          p = 20
+      end do
 
-  #   """
+    """

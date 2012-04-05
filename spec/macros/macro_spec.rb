@@ -18,6 +18,7 @@ module CG
     end
 
     context "macro loading" do
+
       describe "#load" do
         it "creates Macro instances for all macro defintions in a file path" do
           path = "examples/testdata/macros/function_call.mac"
@@ -28,6 +29,7 @@ module CG
           macros.keys.should include "override"
         end
       end
+
       describe "#load_file" do
         it "creates Macro instances for all macro defintions in an IO object" do
           path = "examples/testdata/macros/function_call.mac"
@@ -36,6 +38,18 @@ module CG
           macros.keys.should include "simple"
           macros.keys.should include "fail"
           macros.keys.should include "override"
+        end
+      end
+
+      describe "mixed types" do
+        it "creates subclasses of Macro depending on definition" do
+          path = "examples/testdata/macros/mixed.mac"
+          macros = Macro.load_file File.open(path)
+          macros.keys.size.should == 2
+          macros.keys.should include "function_call"
+          macros.keys.should include "looping"
+          macros['function_call'].should be_a FunctionMacro
+          macros['looping'].should be_a ForeachMacro
         end
       end
     end
@@ -47,7 +61,7 @@ module CG
 
     context "macro expansion" do
       it "returns the body with arguments replaced" do
-        m = Macro.new("test",<<-'BODY','a,b,c')
+        m = FunctionMacro.new("test",<<-'BODY','a,b,c')
         plain text line
         substituting <%= a %>, <%= b %> and <%= c %>
         more text
@@ -62,5 +76,7 @@ module CG
   end
 
   describe ForeachMacro do
+    it "takes name, body, args, modifiers and bodies as arguments" do
+    end
   end
 end
