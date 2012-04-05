@@ -140,6 +140,7 @@ inner_stuff
     : { find_hidden }
         ^(INNER_STUFF
             ^(USE u+=line*)
+            ^(IMPORT u+=line*)
             ( i=implicit_line )?
             ^(CONTAINS c=contains_line?
                 (s+=subroutine_statement
@@ -157,6 +158,7 @@ type_body
         ^(TYPE_BODY
             ^(CONTAINS (c=contains_line
              (s+=procedure_statement
+             |s+=generic_statement
              |s+=imacro)+)?)
           { @first_line = nil }
             (b+=inner_line)*)
@@ -166,6 +168,7 @@ type_body
 implicit_line : { find_hidden } ^(IMPLICIT i=TEXT) -> verbatim(in={@empty_lines + @current_indent + $i.text}) ;
 contains_line : { find_hidden } ^(CONTAINS c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 procedure_statement : { find_hidden } ^(PROCEDURE c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
+generic_statement : { find_hidden } ^(GENERIC c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 
 scope_end
     : { cleanup_scope }
