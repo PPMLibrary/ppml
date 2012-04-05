@@ -17,6 +17,8 @@ SCOPE_END;
 INNER_STUFF;
 TYPE_BODY;
 USE;
+IMPORT;
+GENERIC;
 IMPLICIT;
 CONTAINS;
 FMACRO;
@@ -68,10 +70,12 @@ prog
             ((module_statement)=>module_statement
             |(subroutine_statement)=>subroutine_statement
             |(function_statement)=>function_statement
+            |(imacro)=>imacro
             )*
             program_statement?
             (module_statement
             |subroutine_statement
+            |imacro
             )*
       )
     ;
@@ -139,7 +143,10 @@ function_start : (ID_T)? FUNCTION_T name=ID_T arglist?
 function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
 
-type_start : TYPE_T (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? DOUBLE_COLON_T name=ID_T NEWLINE_T
+type_start : TYPE_T 
+            ( (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)
+            | (COMMA_T ABSTRACT_T) )*
+           DOUBLE_COLON_T name=ID_T NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
 type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
@@ -147,8 +154,9 @@ type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
 // Scope detection - body
 
 inner_stuff
-    : use+=use_statement*
-      (imp=implicit_none)?
+    : (use+=use_statement)*
+      (imp+=import_statement)*
+      (implicit=implicit_none)?
       ({@input.peek(2) != PROGRAM_T}? body+=line)*
       (con=contains
             (sub+=subroutine_statement
@@ -157,7 +165,8 @@ inner_stuff
             )+ )?
        -> ^(INNER_STUFF
             ^(USE $use*)
-            $imp?
+            ^(IMPORT $imp*)
+            $implicit?
             ^(CONTAINS $con?
                 $sub*)
             $body*)
@@ -166,7 +175,9 @@ inner_stuff
 type_body
     : ({@input.peek(2) != TYPE_T}? body+=line)*
       (con=contains
-        (sub+=procedure_statement)+ )?
+        (sub+=procedure_statement
+        |sub+=generic_statement
+        |sub+=imacro)+ )?
       -> ^(TYPE_BODY
           ^(CONTAINS $con?
                      $sub*)
@@ -187,9 +198,19 @@ use_statement
       -> ^(FLINE TEXT[$use_statement.start,$use_statement.text])
     ;
 
+import_statement
+    : IMPORT_T allowed* NEWLINE_T
+      -> ^(FLINE TEXT[$import_statement.start,$import_statement.text])
+    ;
+
 procedure_statement
     : PROCEDURE_T allowed* NEWLINE_T
       -> ^(PROCEDURE TEXT[$procedure_statement.start,$procedure_statement.text])
+    ;
+
+generic_statement
+    : GENERIC_T allowed* NEWLINE_T
+      -> ^(GENERIC TEXT[$generic_statement.start,$generic_statement.text])
     ;
 
 // Actual code
@@ -297,6 +318,9 @@ TYPE_T          : 'TYPE'          | 'type'          ;
 ENDTYPE_T       : 'ENDTYPE'       | 'endtype'       ;
 EXTENDS_T       : 'EXTENDS'       | 'extends'       ;
 MINCLUDE_T      : 'MINCLUDE'      | 'minclude'      ;
+ABSTRACT_T      : 'ABSTRACT'      | 'abstract'      ;
+GENERIC_T       : 'GENERIC'       | 'generic'       ;
+IMPORT_T        : 'IMPORT'        | 'import'        ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 DOT_T
