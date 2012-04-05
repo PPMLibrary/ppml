@@ -77,6 +77,9 @@ module CG
 
     def expand(name, *args)
       @macros[name.to_s].expand(*args) if @macros.has_key? name.to_s
+    rescue ArgumentError => e
+      STDERR.puts "Fatal Error: Called macro #{name} in scope #{args[0].name} with wrong number of arguments"
+      raise
     end
 
     private
