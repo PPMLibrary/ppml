@@ -1,4 +1,9 @@
 macro simple(arg1, arg2)
+% if not conf.mpi.nil? and conf.mpi
+call MPI_Init()
+% else
+! mpi is off
+% end
 call ppm_init(info)
 x = exp(<%= arg2 %>+2)
 if (x .ge. 3.0_MK) then

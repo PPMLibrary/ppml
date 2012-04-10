@@ -40,7 +40,6 @@ end
 
 Then /^the project skeleton is created in "([^"]*)"$/ do |target| #"
   project = File.basename(target)
-  puts "#{project}/#{configuration_file_name}"
   Dir.exists?(project).should == true
   Dir.exists?("#{project}/macros").should == true
   Dir.exists?("#{project}/gen").should == true
