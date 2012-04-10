@@ -1,0 +1,14 @@
+<%= @job_preamble %>
+
+<% @nprocs.each do |p| %>
+mkdir proc_<%= "%06d" % (p) %>
+cd proc_<%= "%06d" % (p) %>
+<%   (1..@nreps).each do |r| %>
+mkdir run<%= "%03d" % (r) %>
+cd run<%= "%03d" % (r) %>
+mpirun -np <%= p %> ../../<%= @client %> <%= @runargs[p] %>
+cd ..
+<%   end %>
+cd ..
+touch DONE
+<% end %>

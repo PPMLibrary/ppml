@@ -38,7 +38,14 @@ Feature: command line utility
   #   When I run "ppm run"
   #   Then the simulation is executed
 
-  # Scenario: cleaning the project directory
+   Scenario: running a benchmark
+     Given the cwd is "examples/testproject" and the system is "brutus"
+     When I run "ppm bench --cluster=brutus"
+     Then the subdirectory "bench" is created and the compiled simulation is copied from "bin" to "bench"
+     And  the template "brutus_job.tt" is copied to "bench" and executed
+     And  plots are created for the parallel scaling and wallclock time
+
+# Scenario: cleaning the project directory
   #   Given the cwd is "examples/testproject"
   #   When I run "ppm clean"
   #   Then the build directory is deleted

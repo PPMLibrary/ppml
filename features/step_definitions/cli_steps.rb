@@ -40,11 +40,28 @@ end
 
 Then /^the project skeleton is created in "([^"]*)"$/ do |target| #"
   project = File.basename(target)
+  puts "#{project}/#{configuration_file_name}"
   Dir.exists?(project).should == true
   Dir.exists?("#{project}/macros").should == true
   Dir.exists?("#{project}/gen").should == true
   Dir.exists?("#{project}/run").should == true
   File.exists?("#{project}/#{project}.ppm").should == true
-  File.exists?("#{project}/#{project}.config").should == true
+  File.exists?("#{project}/#{configuration_file_name}").should == true
   FileUtils.rm_rf project # cleanup
+end
+
+Given /^the cwd is "([^"]*)" and the system is "([^"]*)"$/ do |arg1, arg2|
+  pending # express the regexp above with the code you wish you had
+end
+
+Then /^the subdirectory "([^"]*)" is created and the compiled simulation is copied from "([^"]*)" to "([^"]*)"$/ do |arg1, arg2, arg3|
+  pending # express the regexp above with the code you wish you had
+end
+
+And /^the template "([^"]*)" is copied to "([^"]*)" and executed$/ do |arg1, arg2|
+  pending # express the regexp above with the code you wish you had
+end
+
+And /^plots are created for the parallel scaling and wallclock time$/ do
+  pending # express the regexp above with the code you wish you had
 end
