@@ -280,7 +280,7 @@ allowed
     | LEFT_PAREN_T | RIGHT_PAREN_T | ARROW_T
     | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
     | boolean | logical | comparison
-    | END_T | IN_T | TYPE_T
+    | END_T | IN_T | TYPE_T | ABSTRACT_T
     ;
 
 value : ID_T | NUMBER_T | STRING_T ;
