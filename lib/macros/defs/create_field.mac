@@ -1,3 +1,6 @@
 macro create_field(ndim,name)
-
+% scope.use "ppm_module_field_typedef"
+% scope.var result => "type(ppm_t_field) :: #{result}"
+% scope.var "info" => "integer :: info"
+call <%= result %>%create(<%= ndim %>, <%= name %>, info)
 end macro

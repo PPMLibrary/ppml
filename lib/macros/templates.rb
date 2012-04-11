@@ -28,6 +28,9 @@ ENDTEMPLATE
 % else
 %   _erbout += "#{@indent}implicit none\n"
 % end
+% unless @context.includes.empty?
+%   _erbout += "#{@indent}include '" + @context.includes.uniq.join("'\n#{indent}include '") + "'\n"
+% end
 % if configatron.comment_mode
 %   _erbout += "#{@indent}! interfaces\n"
 % end

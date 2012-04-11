@@ -29,10 +29,10 @@ Feature: command line utility
     When I run "ppm newproject project_1 -d"
     Then the project skeleton is created in "examples/project_1"
 
-  #  Scenario: generating fortran source from client generator files
-  #    Given the cwd is "examples/testproject"
-  #    When I run "ppm generate"
-  #    Then I get the generated fortran source files and all necessary auxillary files in "examples/testproject/gen"
+  # Scenario: generating fortran source from client generator files
+  #   Given the cwd is "examples/testproject"
+  #   When I run "ppm generate"
+  #   Then I get the generated fortran source files and all necessary auxillary files in "examples/testproject/gen"
   
   # Scenario: compiling client generator files
   #   Given the cwd is "examples/testproject"
@@ -44,12 +44,12 @@ Feature: command line utility
   #   When I run "ppm run"
   #   Then the simulation is executed
 
-   Scenario: running a benchmark
-     Given the cwd is "examples/testproject" and the system is "local"
-     When I run "ppm bench --cluster=local"
-     Then the subdirectory "bench" is created and the compiled simulation is copied from "bin" to "bench"
-     And  the template "local_job.tt" is copied to "bench" and executed
-     And  plots are created for the parallel scaling and wallclock time
+   # Scenario: running a benchmark
+   #   Given the cwd is "examples/testproject" and the system is "local"
+   #   When I run "ppm bench --cluster=local"
+   #   Then the subdirectory "bench" is created and the compiled simulation is copied from "bin" to "bench"
+   #   And  the template "local_job.tt" is copied to "bench" and executed
+   #   And  plots are created for the parallel scaling and wallclock time
 
   # Scenario: cleaning the project directory
   #   Given the cwd is "examples/testproject"

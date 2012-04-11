@@ -1,6 +1,9 @@
-macro fail(message, type=ppm_err_alloc,info=info,exit_point=9999)
-call ppm_error(<%= type %>, &
-  <%= message %>,&
-  caller, 100000 , <%= info %>)
-goto <%= exit_point %>
+macro fail(test, message, type=ppm_err_alloc,info=info,exit_point=9999)
+% scope.var "caller" => "character(len=#{scope.name.length}) :: caller = '#{scope.name}'"
+if (<%= test %>) then
+    call ppm_error(<%= type %>, caller, &
+    <%= message %>, &
+    100000, <%= info %>)
+  goto <%= exit_point %>
+end if
 end macro

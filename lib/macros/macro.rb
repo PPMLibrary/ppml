@@ -30,6 +30,7 @@ module CG
       args.insert 0, dotarg if !dotarg.nil?
       map = Macro.resolve_args @args, args, named
       map["scope"] = scope
+      map["result"] = result
       expand_recursive_calls(scope) unless @recursive_expand
       erb = ERB.new @body, nil, "%-"
       erb.result Macro.binding_from_map(map)

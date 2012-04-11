@@ -1,12 +1,12 @@
 macro ppm_init(debug_level=0)
-% scope.var("comm"  => "INTEGER    :: comm")
-% scope.var("rank"  => "INTEGER    :: rank")
-% scope.var("nproc" => "INTEGER    :: nproc")
-% scope.var("info"  => "INTEGER    :: info")
-
-call define_args()
-call parse_args(info)
-$fail(info.ne.0, "Parse args failed.")
+% scope.use "ppm_module_init"
+% scope.use "ppm_module_ctrl"
+% scope.use "ppm_module_error"
+% scope.var("comm"  => "integer    :: comm")
+% scope.var("rank"  => "integer    :: rank")
+% scope.var("nproc" => "integer    :: nproc")
+% scope.var("info"  => "integer    :: info")
+% scope.include "mpif.h"
 
 % if conf.mpi
 call MPI_Init(info)
@@ -21,9 +21,12 @@ call MPI_Comm_Rank(comm,rank,info)
 $fail(info.ne.0, "MPI_Comm_Rank failed.")
 % end
 
-call ppm_init(ndim,<%= conf.ppm.prec %>, &
+!call define_args()
+call parse_args(info)
+$fail(info.ne.0, "Parse args failed.")
+
+call ppm_init(<%= conf.ppm.dim %>, <%= conf.ppm.prec %>, &
               <%= conf.ppm.tolexp %>,comm,&
               <%= debug_level %>,info)
 $fail(info.ne.0, "ppm_init failed.")
-
 end macro

@@ -1,3 +1,6 @@
-macro create_toplogy(decomp,sub2proc,boundary_condition)
-
+macro create_toplogy(boundary_condition,decomp=ppm_param_decomp_cuboid,assign=ppm_param_assign_internal)
+% scope.var "info" => "integer :: info"
+% scope.var result => "integer :: #{result}"
+% scope.ctrl {name: , default: , min: , help: }
+call ppm_mktopo(<%=result%>,decomp,assign,min_phys,max_phys,boundary_condition,ghostsize,cost,info)
 end macro
