@@ -5,6 +5,8 @@ require 'thor'
 require 'thor/group'
 require_relative '../lib/settings'
 require_relative '../lib/cg'
+require_relative '../lib/macros'
+require_relative '../lib/fortran'
 
 class PPM < Thor
   include Thor::Actions
@@ -13,7 +15,6 @@ class PPM < Thor
   method_option :outfile, :aliases => '-o', :type => :string, :desc => 'Put results in OUTFILE'
   method_option :macrodir, :aliases => '-M', :type => :string, :desc => 'Get macros from MACRODIR'
   def pp file=nil
-    require_relative '../lib/macros'
     input = file ? File.new(file) : STDIN
 
     read_configuration
@@ -21,7 +22,7 @@ class PPM < Thor
     if options[:macrodir]
       CG::Preprocessor.user_macro_path=options[:macrodir]
     end
-    configatron.comment_mode = false
+    conf.comment_mode = false
     o = CG::Preprocessor.instance.process(input.read)
 
     if options[:outfile]
@@ -31,7 +32,6 @@ class PPM < Thor
     else
       puts o
     end
-
   end
 
   def self.source_root
@@ -46,16 +46,24 @@ class PPM < Thor
   desc 'generate', 'Generate fortran code from ppm sources'
   def generate
     read_configuration
-    template "../lib/templates/Makefile.tt", "gen/Makefile", force: true
-    FileUtils.copy "settings", "gen/settings"
-    inside 'gen' do
-      run 'make generate'
+    remove_file "gen/compile.log"
+    conf.comment_mode = false
+    Dir["*.ppm"].each do |src|
+      o = CG::Preprocessor.instance.process(File.new(src).read)
+      src[-3..-1] = "f03"
+      File.open "gen/#{src}", 'w+' do |f|
+        f.puts o
+      end
+    end
+    File.open "gen/global.f03", 'w+' do |f|
+      f.puts CG::GlobalModule.instance.to_s
     end
   end
 
   desc 'build', 'Build the simulation binary'
   def build
     generate
+    template "../lib/templates/Makefile.tt", "gen/Makefile", force: true
     inside 'gen' do
       run 'make'
     end

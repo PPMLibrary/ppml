@@ -1,5 +1,5 @@
 macro ppm_finalize()
-% scope.use "ppm_module_finalize"
+% scope.use :ppm_module_finalize
 % scope.var("info"  => "integer    :: info")
 
 call ppm_finalize(info)

@@ -21,8 +21,8 @@ ENDTEMPLATE
 
         define_template( :inner,       <<-'ENDTEMPLATE')
 % _erbout += @use.join("")  unless @use.empty?
-% _erbout += "#{@indent}! use statements\n" if configatron.comment_mode
-% _erbout += @indent + @context.use_statements.join("\n#{@indent}") + "\n" unless @context.use_statements.empty?
+% _erbout += "#{@indent}! use statements\n" if conf.comment_mode
+% _erbout += @indent + @context.use_statements.values.join("\n#{@indent}") + "\n" unless @context.use_statements.empty?
 % unless @implicit.nil?
 %   _erbout += @implicit.to_s
 % else
@@ -31,27 +31,28 @@ ENDTEMPLATE
 % unless @context.includes.empty?
 %   _erbout += "#{@indent}include '" + @context.includes.uniq.join("'\n#{indent}include '") + "'\n"
 % end
-% if configatron.comment_mode
+% if conf.comment_mode
 %   _erbout += "#{@indent}! interfaces\n"
 % end
-% if configatron.comment_mode
+% if conf.comment_mode
 %   _erbout += "#{@indent}! variable definitions\n"
 % end
 % _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
 % _erbout += @body.join("")              unless @body.empty?
+% _erbout += "9999 continue\n"           if @context.output_continue
 % _erbout += @contains.to_s              unless @contains.nil?
-% _erbout += "#{@indent}! subroutines\n" if configatron.comment_mode
+% _erbout += "#{@indent}! subroutines\n" if conf.comment_mode
 % _erbout += @subroutines.join("")       unless @subroutines.empty?
 ENDTEMPLATE
 
         define_template( :type_inner,       <<-'ENDTEMPLATE')
-% if configatron.comment_mode
+% if conf.comment_mode
 %   #_erbout += "#{@indent}! type member definitions\n"
 % end
 % _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
 % _erbout += @body.join("")              unless @body.empty?
 % _erbout += @contains.to_s              unless @contains.nil?
-% #_erbout += "#{@indent}! procedures\n" if configatron.comment_mode
+% #_erbout += "#{@indent}! procedures\n" if conf.comment_mode
 % _erbout += @procedures.join("")       unless @procedures.empty?
         ENDTEMPLATE
 
