@@ -162,7 +162,8 @@ type_body
             ^(CONTAINS (c=contains_line
              (s+=procedure_statement
              |s+=generic_statement
-             |s+=imacro)+)?)
+             |s+=inner_line)+)?)
+             //|s+=imacro)+)?)
           { @first_line = nil }
             (b+=inner_line)*)
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})

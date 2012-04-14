@@ -275,7 +275,7 @@ MODULE ppm_module_ctrl
 
      LOGICAL                                             :: min_set       = .FALSE.
      LOGICAL                                             :: max_set       = .FALSE.
-     LOGICAL                                             :: type          = .TRUE. ! enable
+     LOGICAL                                             :: vtype          = .TRUE. ! enable
      LOGICAL                                             :: default_set   = .FALSE.
      CHARACTER(LEN=256)                                  :: name
      CHARACTER(LEN=2)                                    :: flag
@@ -1302,7 +1302,7 @@ CONTAINS
                         %long_flag)), ok)
                 END IF
                 IF (ok) THEN
-                   IF (LOGICAL_args(i)%type .EQV. enabling_flag) THEN
+                   IF (LOGICAL_args(i)%vtype .EQV. enabling_flag) THEN
                       LOGICAL_args(i)%variable = .TRUE.
                    ELSE
                       LOGICAL_args(i)%variable = .FALSE.
@@ -5482,7 +5482,7 @@ CONTAINS
 
   SUBROUTINE LOGICAL_add_arg(variable, name, flag, long_flag, ctrl_name, &
        &                         default,                                    &
-                                 type, &
+                                 vtype, &
                                  default_func, validator, &
                                  help)
 !!! Adds a new arg definition.
@@ -5497,7 +5497,7 @@ CONTAINS
 
 
 
-    LOGICAL,                                 OPTIONAL, INTENT(IN   ) :: type
+    LOGICAL,                                 OPTIONAL, INTENT(IN   ) :: vtype
 !!! Type of flag. Logical flags require no value to be supplied.
 !!! Instead the behavior depends on this argument. One of:
 !!! enabling_flag :: Presence of flag sets variable to .TRUE.
@@ -5587,8 +5587,8 @@ CONTAINS
        def%validator            => validator
        def%validator_set        =  .TRUE.
     END IF
-    IF (PRESENT(type)) THEN
-       def%type         =  type
+    IF (PRESENT(vtype)) THEN
+       def%vtype         =  vtype
     END IF
     ! group
     def%group            = groups_i

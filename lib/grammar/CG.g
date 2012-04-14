@@ -146,7 +146,7 @@ function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
 type_start : TYPE_T 
             ( (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)
             | (COMMA_T ABSTRACT_T) )*
-           DOUBLE_COLON_T name=ID_T NEWLINE_T
+           (DOUBLE_COLON_T)? name=ID_T NEWLINE_T
         -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
 type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
         -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
@@ -175,9 +175,10 @@ inner_stuff
 type_body
     : ({@input.peek(2) != TYPE_T}? body+=line)*
       (con=contains
-        (sub+=procedure_statement
+        ((procedure_statement)=> sub+=procedure_statement
         |sub+=generic_statement
-        |sub+=imacro)+ )?
+        |{@input.peek(2) != TYPE_T}? body+=line)+ )?
+        //|sub+=imacro)+ )?
       -> ^(TYPE_BODY
           ^(CONTAINS $con?
                      $sub*)
