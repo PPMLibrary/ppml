@@ -36,6 +36,12 @@ NAMEDARGS;
 #require_relative 'scope'
 }
 
+@rulecatch {
+rescue ANTLR3::Error::RecognitionError => re
+  report_error(re)
+  raise re
+}
+
 @members {
 def fmacro_call?
   m = Preprocessor.instance.macros
@@ -62,6 +68,35 @@ def imacro_call?
         m.has_key?(input.look(2).text)
   end
 end
+
+def error_message( e = $! )
+  s = ""
+  case e
+  when UnwantedToken
+    token_name = token_name( e.expecting )
+    s = "extraneous input #{ token_error_display( e.unexpected_token ) } expecting #{ token_name }"
+  when MissingToken
+    token_name = token_name( e.expecting )
+    s = "missing #{ token_name } at #{ token_error_display( e.symbol ) }"
+  when MismatchedToken
+    token_name = token_name( e.expecting )
+    s = "mismatched input #{ token_error_display( e.symbol ) } expecting #{ token_name }"
+  when MismatchedTreeNode
+    token_name = token_name( e.expecting )
+    s = "mismatched tree node: #{ e.symbol } expecting #{ token_name }"
+  when NoViableAlternative
+    s = "no viable alternative at input " << token_error_display( e.symbol )
+  when MismatchedSet
+    s = "mismatched input #{token_error_display( e.symbol )} expecting set #{e.expecting.inspect}" 
+  when MismatchedNotSet
+    s = "mismatched input #{token_error_display( e.symbol )} expecting set #{e.expecting.inspect}" 
+  when FailedPredicate
+    s = "rule #{e.rule_name} failed predicate: [ #{e.predicate_text} ]?" 
+  else e.message
+  end
+  s
+end
+
 }
 
 prog
