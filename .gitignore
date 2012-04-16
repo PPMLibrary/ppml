@@ -6,3 +6,7 @@ examples/testdata/output
 examples/testproject/build
 pkg/*
 *.tokens
+examples/*/gen
+examples/*/bin
+examples/*/run
+examples/*/bench
