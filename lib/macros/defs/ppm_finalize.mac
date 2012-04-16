@@ -1,6 +1,6 @@
 macro ppm_finalize()
 % scope.use :ppm_module_finalize
-% scope.var("info"  => "integer    :: info")
+% scope.var info: "integer    :: info"
 
 call ppm_finalize(info)
 $fail(info.ne.0, "ppm_finalize failed.")

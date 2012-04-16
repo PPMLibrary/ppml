@@ -32,9 +32,9 @@ module CG
       end
 
       it "adds variables with #var" do
-        @s.var("aVariable" => "TYPE(SomeType), DIMENSION(:)  :: aVariable")
-        @s.var("i" => "INTEGER :: i")
-        @s.variables.should == {"aVariable" => "TYPE(SomeType), DIMENSION(:)  :: aVariable","i" => "INTEGER :: i"}
+        @s.var(aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable")
+        @s.var(i: "INTEGER :: i")
+        @s.variables.should == {aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable", i: "INTEGER :: i"}
       end
     end
   end

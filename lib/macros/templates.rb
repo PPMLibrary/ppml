@@ -7,10 +7,8 @@ module CG
         define_template( :join,        "<%= @lines.join('') %>")
 
         define_template( :prog,        <<-'ENDTEMPLATE')
-% _erbout += @pre.join("")  unless @pre.empty?
-% _erbout += @prog.to_s     unless @prog.nil?
-% _erbout += @post.join("") unless @post.empty?
-% _erbout += @trailing      unless @trailing.empty?
+% _erbout += @scopes.join("") unless @scopes.empty?
+% _erbout += @trailing        unless @trailing.empty?
 ENDTEMPLATE
 
         define_template( :scoped,      <<-'ENDTEMPLATE')

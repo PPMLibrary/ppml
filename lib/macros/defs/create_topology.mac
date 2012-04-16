@@ -1,8 +1,8 @@
 macro create_topology(boundary_condition,decomp=nil,assign=nil)
 % scope.use :ppm_module_mktopo
-% scope.var "info" => "integer :: info"
-% scope.var result => "integer :: #{result}"
-% scope.var "cost" => "real, dimension(:), pointer :: cost"
+% scope.var info: "integer :: info"
+% scope.var result.to_sym => "integer :: #{result}"
+% scope.var cost: "real, dimension(:), pointer :: cost"
 % scope.arg name: :min_phys, type: "real, dimension(#{conf.ppm.dim})", default: "(/#{(["0.0"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'"
 % scope.arg name: :max_phys, type: "real, dimension(#{conf.ppm.dim})", default: "(/#{(["1.0"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'"
 % scope.arg name: :domain_decomposition, type: "integer", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"

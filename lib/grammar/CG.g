@@ -6,12 +6,9 @@ output = AST;
 }
 
 tokens {
-PROGRAM;
-MODULE;
-SUBROUTINE;
-FUNCTION;
 PROCEDURE;
 TYPE;
+SCOPE;
 SCOPE_START;
 SCOPE_END;
 INNER_STUFF;
@@ -40,6 +37,10 @@ NAMEDARGS;
 rescue ANTLR3::Error::RecognitionError => re
   report_error(re)
   raise re
+}
+
+@init {
+    @context = []
 }
 
 @members {
@@ -101,48 +102,38 @@ end
 
 prog
     : (naked_code)=>naked_code
-    | (
-            ((module_statement)=>module_statement
-            |(subroutine_statement)=>subroutine_statement
-            |(function_statement)=>function_statement
-            |(imacro)=>imacro
-            )*
-            program_statement?
-            (module_statement
-            |subroutine_statement
-            |imacro
-            )*
-      )
+    | scope_statement*
     ;
 
 // Scope detection - top level statements
 
-program_statement
-    : open=program_start
+scope_statement
+    : open=scope_start
         i=inner_stuff
-      close=program_end
-      -> ^(PROGRAM $open $i $close)
+      close=scope_end
+      -> ^(SCOPE $open $i $close)
     ;
 
-subroutine_statement
-    : open=subroutine_start
-        i=inner_stuff
-      close=subroutine_end
-      -> ^(SUBROUTINE $open $i $close)
+scope_start
+    :
+        ( PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
+        | MODULE_T name=ID_T NEWLINE_T { @context << :module }
+        | RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
+        | (ID_T)? FUNCTION_T name=ID_T arglist?
+            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T { @context << :function }
+        )
+        -> ^(SCOPE_START $name TEXT[$scope_start.start,$scope_start.text])
     ;
 
-module_statement
-    : open=module_start
-        i=inner_stuff
-      close=module_end
-      -> ^(MODULE $open $i $close)
-    ;
-
-function_statement
-    : open=function_start
-        i=inner_stuff
-      close=function_end
-      -> ^(FUNCTION $open $i $close)
+scope_end
+    :
+        ( {@context.last==:program}?=>    ( ENDPROGRAM_T    | END_T PROGRAM_T    ) ID_T? NEWLINE_T
+        | {@context.last==:module}?=>     ( ENDMODULE_T     | END_T MODULE_T     ) ID_T? NEWLINE_T
+        | {@context.last==:subroutine}?=> ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
+        | {@context.last==:function}?=>   ( ENDFUNCTION_T   | END_T FUNCTION_T   ) ID_T? NEWLINE_T
+        )
+        { @context.pop }
+        -> ^(SCOPE_END TEXT[$scope_end.start,$scope_end.text])
     ;
 
 type_statement
@@ -157,33 +148,14 @@ naked_code : line* ;
 
 // Scope detecion - start and end lines
 
-program_start : PROGRAM_T name=ID_T NEWLINE_T
-        -> ^(SCOPE_START $name TEXT[$program_start.start,$program_start.text]) ;
-program_end   : ( ENDPROGRAM_T | END_T PROGRAM_T ) ID_T? NEWLINE_T
-        -> ^(SCOPE_END TEXT[$program_end.start,$program_end.text]) ;
-
-module_start : MODULE_T name=ID_T NEWLINE_T
-        -> ^(SCOPE_START $name TEXT[$module_start.start,$module_start.text]) ;
-module_end   : ( ENDMODULE_T | END_T MODULE_T ) ID_T? NEWLINE_T
-        -> ^(SCOPE_END TEXT[$module_end.start,$module_end.text]) ;
-
-subroutine_start : RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T
-        -> ^(SCOPE_START $name TEXT[$subroutine_start.start,$subroutine_start.text]) ;
-subroutine_end   : ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
-        -> ^(SCOPE_END TEXT[$subroutine_end.start,$subroutine_end.text]) ;
-
-function_start : (ID_T)? FUNCTION_T name=ID_T arglist? 
-            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T
-        -> ^(SCOPE_START $name TEXT[$function_start.start,$function_start.text]) ;
-function_end   : ( ENDFUNCTION_T | END_T FUNCTION_T ) ID_T? NEWLINE_T
-        -> ^(SCOPE_END TEXT[$function_end.start,$function_end.text]) ;
-
 type_start : TYPE_T 
             ( (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)
             | (COMMA_T ABSTRACT_T) )*
            (DOUBLE_COLON_T)? name=ID_T NEWLINE_T
+        { @context << :type }
         -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
 type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
+        { @context.pop }
         -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
 
 // Scope detection - body
@@ -194,8 +166,7 @@ inner_stuff
       (implicit=implicit_none)?
       ({@input.peek(2) != PROGRAM_T}? body+=line)*
       (con=contains
-            (sub+=subroutine_statement
-            |sub+=function_statement
+            (sub+=scope_statement
             |sub+=imacro
             )+ )?
        -> ^(INNER_STUFF
@@ -254,8 +225,7 @@ generic_statement
 line
     : {fmacro_call?}?=> fcmacro
     | {imacro_call?}?=> imacro
-    | subroutine_statement
-    | function_statement
+    | scope_statement
     | (type_statement)=>type_statement
     | foreach
     | fline

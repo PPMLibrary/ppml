@@ -11,7 +11,7 @@ module CG
     ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
     MACRO_START = //
     MACRO_STOP = /^ *end +macro *$/i
-    REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)*?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/
+    REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)+?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/i
 
     def initialize name, body_or_file, args=nil
       if body_or_file.is_a? StringIO or body_or_file.is_a? File
@@ -26,9 +26,9 @@ module CG
       @recursive_expanded = false
     end
 
-    def expand(scope, result=nil, args=nil, named=nil, dotarg=nil)
-      args.insert 0, dotarg if !dotarg.nil?
-      map = Macro.resolve_args @args, args, named
+    def expand(scope, result=nil, pos=nil, named=nil, dotarg=nil)
+      pos.insert 0, dotarg if !dotarg.nil?
+      map = Macro.resolve_args @args, pos, named
       map["scope"] = scope
       map["result"] = result.to_s
       expand_recursive_calls(scope) unless @recursive_expand
@@ -46,7 +46,7 @@ module CG
         named = {}
         args.each do
           |name, value|
-          if value.nil?
+          if value == :required
             positional.push name
           else
             named[name] = value
@@ -104,7 +104,7 @@ module CG
         result = {}
         args.scan(REGMAGIC) do
           |name, value|
-          result[name] = (value and value != 'nil') ? value : nil
+          result[name] = value ? (value != 'nil' ? value : nil) : :required
         end
         result
       end
@@ -118,6 +118,7 @@ module CG
           end if positional
           result.merge! named if named
         end
+        raise ArgumentError if result.values.include? :required
         return result
       end
 
@@ -126,7 +127,7 @@ module CG
   end # Macro
 
   class FunctionMacro < Macro
-    MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
+    MACRO_START = /^ *macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
   end # FunctionMacro
 
   class ForeachMacro < Macro
@@ -153,7 +154,7 @@ module CG
   end # ForeachMacro
 
   class IncludeMacro < Macro
-    MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/
+    MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
 
     def expand(scope, args=nil, named=nil)
       super(scope, result=nil, args=args, named=named, dotarg=nil)

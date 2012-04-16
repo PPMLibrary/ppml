@@ -74,54 +74,30 @@ end
 // Entry point
 
 prog
-    : (naked_code)=> code=naked_code { trailing_lines } -> verbatim(in={$code.st.to_s + @trailing})
-    | (
-            ((module_statement)=>pre+=module_statement
-            |(subroutine_statement)=>pre+=subroutine_statement
-            |(function_statement)=>pre+=function_statement
-            |(imacro)=>pre+=imacro
-            )*
-            program=program_statement?
-            (post+=module_statement
-            |post+=subroutine_statement
-            |post+=function_statement
-            |post+=imacro
-            )*
-            { trailing_lines }
-            -> prog(pre={$pre},prog={$program.st},post={$post},trailing={@trailing})
-      )
+    : (scope_statement)=>scopes+=scope_statement*
+      { trailing_lines }
+      -> prog(scopes={$scopes},trailing={@trailing})
+    | code=naked_code
+      { trailing_lines }
+      -> verbatim(in={$code.st.to_s + @trailing})
     ;
 
 // Top level constructs
 
 naked_code : (l+=line)* -> join(lines={$l}) ;
 
-program_statement
-    : ^(PROGRAM o=scope_start
-                i=inner_stuff
-                c=scope_end)
+scope_statement
+    : ^(SCOPE o=scope_start
+              i=inner_stuff
+              c=scope_end)
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
     ;
 
-module_statement
-    : ^(MODULE o=scope_start
-               i=inner_stuff
-               c=scope_end)
-            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
-    ;
-
-subroutine_statement
-    : ^(SUBROUTINE o=scope_start
-                   i=inner_stuff
-                   c=scope_end)
-            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
-    ;
-
-function_statement
-    : ^(FUNCTION o=scope_start
-                 i=inner_stuff
-                 c=scope_end)
-            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+scope_end
+    : { cleanup_scope }
+      ^(SCOPE_END text=TEXT)
+      {@first_line = @current_indent}
+      -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
 type_statement
@@ -146,8 +122,7 @@ inner_stuff
             ^(IMPORT u+=line*)
             ( i=implicit_line )?
             ^(CONTAINS c=contains_line?
-                (s+=subroutine_statement
-                |s+=function_statement
+                (s+=scope_statement
                 |s+=procedure_statement
                 |s+=imacro
                 )*)
@@ -169,17 +144,10 @@ type_body
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
     ;
 
-implicit_line : { find_hidden } ^(IMPLICIT i=TEXT) -> verbatim(in={@empty_lines + @current_indent + $i.text}) ;
-contains_line : { find_hidden } ^(CONTAINS c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
+implicit_line :       { find_hidden } ^(IMPLICIT  i=TEXT) -> verbatim(in={@empty_lines + @current_indent + $i.text}) ;
+contains_line :       { find_hidden } ^(CONTAINS  c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 procedure_statement : { find_hidden } ^(PROCEDURE c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
-generic_statement : { find_hidden } ^(GENERIC c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
-
-scope_end
-    : { cleanup_scope }
-      ^(SCOPE_END text=TEXT)
-      {@first_line = @current_indent}
-      -> verbatim(in={@empty_lines + @current_indent + $text.text})
-    ;
+generic_statement :   { find_hidden } ^(GENERIC   c=TEXT) -> verbatim(in={@empty_lines + @current_indent + $c.text}) ;
 
 // Actual code
 
@@ -195,12 +163,11 @@ inner_line
 line
     : { my_indent, my_empty = find_hidden
        @first_line ||= my_indent }
-        ( fmac=fcmacro -> verbatim(in={@empty_lines + indent($fmac.st.to_s)})
-        | loop=foreach -> verbatim(in={my_empty + indent($foreach.st.to_s, my_indent)})
-        | imac=imacro  -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
-        | fortran=fline -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
-        | func=function_statement  -> verbatim(in={@empty_lines + $func.st.to_s})
-        | sub=subroutine_statement -> verbatim(in={@empty_lines + $sub.st.to_s})
+        ( fmac=fcmacro       -> verbatim(in={@empty_lines + indent($fmac.st.to_s)})
+        | loop=foreach       -> verbatim(in={my_empty + indent($foreach.st.to_s, my_indent)})
+        | imac=imacro        -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
+        | fortran=fline      -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
+        | ss=scope_statement -> verbatim(in={@empty_lines + $ss.st.to_s})
         )
     ;
 

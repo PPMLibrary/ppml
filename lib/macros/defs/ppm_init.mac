@@ -1,10 +1,10 @@
 macro ppm_init(debug_level=0)
 % scope.use :ppm_module_init
 % scope.use :ppm_module_ctrl
-% scope.var("comm"  => "integer    :: comm")
-% scope.var("rank"  => "integer    :: rank")
-% scope.var("nproc" => "integer    :: nproc")
-% scope.var("info"  => "integer    :: info")
+% scope.var comm:  "integer    :: comm"
+% scope.var rank:  "integer    :: rank"
+% scope.var nproc: "integer    :: nproc"
+% scope.var info:  "integer    :: info"
 % scope.include "mpif.h"
 
 % if conf.mpi

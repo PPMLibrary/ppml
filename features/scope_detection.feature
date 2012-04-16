@@ -14,17 +14,17 @@ Feature: Scope Detection
       ! leading comment
       
       program sample ! some comment for omar
-        ! more comments
+        ! first inner comment
         use something
-        ! more comments
+        ! after use comment
         implicit none
-        ! more comments
+        ! after implicit comment
         integer :: i
-        ! more comments
+        ! body comment
         i = 42
-        ! more comments
+        ! before end comment
       end program
-      ! more comments
+      ! trailing comment
 
     """
     Then it should expand into
@@ -33,21 +33,21 @@ Feature: Scope Detection
       ! leading comment
       
       program sample ! some comment for omar
-        ! more comments
+        ! first inner comment
         use something
         ! use statements
-        ! more comments
+        ! after use comment
         implicit none
         ! interfaces
         ! variable definitions
-        ! more comments
+        ! after implicit comment
         integer :: i
-        ! more comments
+        ! body comment
         i = 42
         ! subroutines
-        ! more comments
+        ! before end comment
       end program
-      ! more comments
+      ! trailing comment
 
     """
 
