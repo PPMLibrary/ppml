@@ -50,12 +50,12 @@ class PPM < Thor
     conf.comment_mode = false
     Dir["*.ppm"].each do |src|
       o = CG::Preprocessor.instance.process(File.new(src).read)
-      src[-3..-1] = "f03"
+      src[-3..-1] = "f90"
       File.open "gen/#{src}", 'w+' do |f|
         f.puts o
       end
     end
-    File.open "gen/global.f03", 'w+' do |f|
+    File.open "gen/global.f90", 'w+' do |f|
       f.puts CG::GlobalModule.instance.to_s
     end
   end
