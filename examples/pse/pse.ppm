@@ -6,9 +6,9 @@ program pse
   c = create_particles(t)
   global_mapping(c,t)
   f = create_field(2, "Field1")
-  !   - initialize_property    (f,c)
-  !   - ghost_mapping          (c)
-  !   - create_neighlist       (c)
+  field_discretize_on(f,c)
+  ghost_mapping(c)
+  create_neighlist(c)
   !   - d = define_operator
   !   - compute_operator       (d,c)
   !   - o = initialize_ode     (r)

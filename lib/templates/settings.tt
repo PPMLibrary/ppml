@@ -7,7 +7,7 @@ conf.ppm.base_path = "<%= @ppm_base_path %>"
 conf.ppm.numerics.base_path = "<%= @ppmnumerics_base_path %>"
 
 # numerics settings
-conf.ppm.prec = 0.0001
+conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
 conf.ppm.tolexp = 10
 conf.ppm.dim = 2
 

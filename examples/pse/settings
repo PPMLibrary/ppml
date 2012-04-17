@@ -2,12 +2,12 @@
 # basic settings
 conf.project_name = "pse"
 conf.binary = "pse"
-conf.build.optflags = "-O3"
-conf.ppm.base_path = "/Users/milanm/Work/PhD/lib/ppm"
-conf.ppm.numerics.base_path = "/Users/milanm/Work/PhD/lib/ppmnumerics"
+conf.build.optflags = "-O3 -CB -traceback"
+conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm_ds"
+conf.ppm.numerics.base_path = "/home/omar/code/ppm/libppmnumerics"
 
 # numerics settings
-conf.ppm.prec = 2
+conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
 conf.ppm.tolexp = 10
 conf.ppm.dim = 2
 

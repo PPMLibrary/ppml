@@ -1,0 +1,5 @@
+macro ghost_mapping(discretization)
+% scope.use :ppm_module_map
+% scope.var info: "integer :: info"
+call <%= discretization %>%map_ghosts(info)
+end macro
