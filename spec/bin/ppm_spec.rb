@@ -1,5 +1,5 @@
 require_relative '../spec_helper.rb'
-
+require 'fileutils'
 ENV['PATH'] += ":#{Dir.pwd}/bin"
 
 describe "ppm" do
@@ -23,9 +23,7 @@ HEREDOC
     end
     it "takes '-o file' and puts result to 'file'" do
       `./bin/ppm pp examples/testdata/fortran.f -o examples/testdata/output/preprocessed.f`
-      o = `cat examples/testdata/output/preprocessed.f | md5`
-      g = `cat examples/testdata/fortran_gold.f | md5`
-      o.should == g
+      FileUtils.cmp('examples/testdata/output/preprocessed.f','examples/testdata/fortran_gold.f').should == true
     end
   end
 end

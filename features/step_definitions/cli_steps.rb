@@ -7,11 +7,7 @@ When /^I run "([^"]*)"$/ do |cmd| #"
 end
 
 Then /^the result file is equal to "([^"]*)"$/ do |target| #"
-  s = `cat output/preprocessed.f | md5`
-  $?.exitstatus.should == 0
-  t = `cat #{target} | md5`
-  $?.exitstatus.should == 0
-  s.should == t
+  FileUtils.cmp('output/preprocessed.f',target).should == true
 end
 
 Then /^I get an executable simulation$/ do
