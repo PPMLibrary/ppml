@@ -1,3 +1,3 @@
-rhs pse(topology=t,discretization=pset,rhs=wp,drhs=dwp,idata,ldata,rdata)
+rhs pse_rhs(topology=t,discretization=pset,rhs=wp,drhs=dwp,idata,ldata,rdata)
 
 end rhs

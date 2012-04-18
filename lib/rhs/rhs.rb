@@ -41,8 +41,6 @@ module CG
       @rhs_func.add body
     end
 
-
-
     protected
 
     def read_body file
