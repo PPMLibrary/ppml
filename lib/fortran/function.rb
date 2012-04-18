@@ -3,10 +3,8 @@ module CG
     def initialize name, result_type, result_name=nil
       @name = name
       @result_type = result_type
-      STDERR.puts "resultname: #{result_name}"
       @result_name = result_name.nil? ? @name : result_name
       @result_arg = result_name.nil? ? "" : " result(#{@result_name})"
-      STDERR.puts "resultname: #{@result_arg}"
       @use = {}
       @vars = {}
       @args = {}
