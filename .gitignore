@@ -10,3 +10,4 @@ examples/*/gen
 examples/*/bin
 examples/*/run
 examples/*/bench
+.idea/*
