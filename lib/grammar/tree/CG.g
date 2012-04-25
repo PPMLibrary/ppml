@@ -91,14 +91,47 @@ scope_statement
               i=inner_stuff
               c=scope_end)
             -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+    | r=rhs_statement
+        -> verbatim(in={$r.st})
     ;
 
-scope_end
-    : { cleanup_scope }
-      ^(SCOPE_END text=TEXT)
-      {@first_line = @current_indent}
-      -> verbatim(in={@empty_lines + @current_indent + $text.text})
+rhs_statement
+    :  ^(RHS_SCOPE s=rhs_start
+                   i=rhs_inner_stuff
+                   e=scope_end)
+        -> rhs(name={s.name},args={s.args},ret={s.ret},inner={$i.body})
     ;
+
+rhs_start returns [name,args,ret]
+    : { setup_scope }
+        ^(RHS_START n=ID_T a=rhs_args r=rhs_args)
+      { $name=$n
+        $args=a.args
+        $ret=r.args }
+    ;
+
+rhs_inner_stuff returns [body]
+    : ^(RHS_INNER l+=fline*)
+        { $body=$l }
+    ;
+
+rhs_args returns [args]
+    : { a_accumulate = [] }
+        ^(ARGS (a+=fd_arg {a_accumulate << a} )*)
+      { $args=a_accumulate }
+    ;
+
+fd_arg returns [name,disc]
+    : ^(FDARG n=ID_T d=ID_T?)
+        { $name=$n.text
+          if $d
+            $disc=$d.text
+          else
+            $disc=nil
+          end
+        }
+    ;
+
 
 type_statement
     : ^(TYPE o=scope_start
@@ -112,6 +145,13 @@ type_statement
 scope_start
     : { setup_scope }
       ^(SCOPE_START name=ID_T text=TEXT)
+      -> verbatim(in={@empty_lines + @current_indent + $text.text})
+    ;
+
+scope_end
+    : { cleanup_scope }
+      ^(SCOPE_END text=TEXT)
+      {@first_line = @current_indent}
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 

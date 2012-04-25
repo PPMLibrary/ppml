@@ -1,5 +1,11 @@
+require_relative '../spec_helper'
+
 module CG
   describe GlobalModule do
+    before :all do
+      read_configuration
+    end
+
     before :each do
       @g = GlobalModule.instance
     end

@@ -17,6 +17,10 @@ ENDTEMPLATE
 % _erbout += @close.to_s
 ENDTEMPLATE
 
+        define_template( :rhs,         <<-'ENDTEMPLATE')
+% CG::RHSModule.instance.definition @name.to_s, @args, @ret, @inner
+ENDTEMPLATE
+
         define_template( :inner,       <<-'ENDTEMPLATE')
 % _erbout += @use.join("")  unless @use.empty?
 % _erbout += "#{@indent}! use statements\n" if conf.comment_mode

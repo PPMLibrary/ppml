@@ -5,7 +5,7 @@ module CG
     @@module_name = "global"
 
     def self.module_name
-      @@module_name
+      "#{conf.name_prefix}#{@@module_name}"
     end
 
     def initialize

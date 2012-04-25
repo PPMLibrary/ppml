@@ -20,7 +20,7 @@ module CG
     end
 
 
-    describe "Scope symbol tables" do
+    describe "scope modification" do
       before :each do
         @s = Scope.new "name"
       end
@@ -35,6 +35,12 @@ module CG
         @s.var(aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable")
         @s.var(i: "INTEGER :: i")
         @s.variables.should == {aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable", i: "INTEGER :: i"}
+      end
+
+      it "allows the type of a symbol to be set as second argument to #var" do
+        @s.var({:c => "type(something) :: c"}, :particles)
+        @s.variables.should == {:c => "type(something) :: c"}
+        @s.type_of(:c).should == :particles
       end
     end
   end

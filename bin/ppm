@@ -7,7 +7,6 @@ require_relative '../lib/settings'
 require_relative '../lib/cg'
 require_relative '../lib/macros'
 require_relative '../lib/fortran'
-require_relative '../lib/rhs'
 
 class PPM < Thor
   include Thor::Actions
@@ -23,7 +22,7 @@ class PPM < Thor
     if options[:macrodir]
       CG::Preprocessor.user_macro_path=options[:macrodir]
     end
-    conf.comment_mode = false
+
     o = CG::Preprocessor.instance.process(input.read)
 
     if options[:outfile]
@@ -48,17 +47,6 @@ class PPM < Thor
   def generate
     read_configuration
     remove_file "gen/compile.log"
-    conf.comment_mode = false
-    rhs_collection = {}
-    Dir["*.rhs"].each do |rhs_file|
-      rhs = CG::Rhs.load rhs_file
-      rhs_collection[rhs.name] = rhs
-      o = CG::Preprocessor.instance.process(rhs.rhs_func.to_s)
-      rhs_file = rhs_file[0...-4] + "_rhs.f90"
-      File.open "gen/#{rhs_file}", 'w+' do |f|
-        f.puts o
-      end
-    end
     Dir["*.ppm"].each do |src|
       o = CG::Preprocessor.instance.process(File.new(src).read)
       src[-3..-1] = "f90"
@@ -66,8 +54,11 @@ class PPM < Thor
         f.puts o
       end
     end
-    File.open "gen/global.f90", 'w+' do |f|
+    File.open "gen/#{conf.name_prefix}global.f90", 'w+' do |f|
       f.puts CG::GlobalModule.instance.to_s
+    end
+    File.open "gen/#{conf.name_prefix}rhs.f90", 'w+' do |f|
+      f.puts CG::RHSModule.instance.to_s
     end
   end
 
@@ -120,7 +111,6 @@ class NewProjectGroup < Thor::Group
   end
 
   def create_client_config
-
     # defaults
     @ppm_base_path = '/usr/local'
     @mpi_state = "true"
@@ -134,7 +124,6 @@ class NewProjectGroup < Thor::Group
     end
 
     template "../lib/templates/settings.tt", "#{name}/#{configuration_file_name}"
-
   end
 end
 
@@ -155,7 +144,6 @@ class BenchmarkGroup < Thor::Group
   def create_dirs
     # The benchmark directory
     empty_directory "bench"
-
   end
 
   def copy_files

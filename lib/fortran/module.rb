@@ -2,7 +2,7 @@ module CG
   class FortranModule
     def initialize name
       @name = name
-      @use = {}
+      @use  = {}
       @vars = {}
       @subs = []
     end
@@ -17,6 +17,10 @@ module CG
 
     def subroutine sub
       @subs << sub
+    end
+
+    def function func
+      @subs << func
     end
 
     def to_s

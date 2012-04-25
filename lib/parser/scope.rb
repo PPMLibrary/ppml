@@ -10,6 +10,7 @@ module CG
       @includes = []
       @parent = parent
       @output_continue = false
+      @types = Hash.new nil
       parent.set_child self if !parent.nil?
     end
 
@@ -17,7 +18,8 @@ module CG
       @use_statements[sym] = str || "use #{sym.to_s}"
     end
 
-    def var var
+    def var var, type=nil
+      @types[var.keys[0]] = type if type
       @variables.merge! var
     end
 
@@ -32,6 +34,10 @@ module CG
     def arg h
       use GlobalModule.module_name
       GlobalModule.instance.arg h
+    end
+
+    def type_of sym
+      @types[sym]
     end
 
     protected

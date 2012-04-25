@@ -27,6 +27,10 @@ FLINE;
 TEXT;
 ARGS;
 NAMEDARGS;
+FDARG;
+RHS_SCOPE;
+RHS_START;
+RHS_INNER;
 }
 
 @header {
@@ -112,17 +116,17 @@ scope_statement
         i=inner_stuff
       close=scope_end
       -> ^(SCOPE $open $i $close)
+    | rhs_statement
     ;
 
 scope_start
     :
-        ( PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
-        | MODULE_T name=ID_T NEWLINE_T { @context << :module }
-        | RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
-        | (ID_T)? FUNCTION_T name=ID_T arglist?
+    ( PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
+    | MODULE_T name=ID_T NEWLINE_T { @context << :module }
+    | RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
+    | (ID_T)? FUNCTION_T name=ID_T arglist?
             (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T { @context << :function }
-        )
-        -> ^(SCOPE_START $name TEXT[$scope_start.start,$scope_start.text])
+    ) -> ^(SCOPE_START $name TEXT[$scope_start.start,$scope_start.text])
     ;
 
 scope_end
@@ -135,6 +139,40 @@ scope_end
         { @context.pop }
         -> ^(SCOPE_END TEXT[$scope_end.start,$scope_end.text])
     ;
+
+rhs_statement
+    : s=rhs_start
+        i=rhs_inner_stuff
+      e=rhs_end
+      -> ^(RHS_SCOPE $s $i $e)
+    ;
+
+rhs_start
+    : RHS_T name=ID_T args=rhs_arglist RETURNS_T ret=rhs_arglist NEWLINE_T
+        -> ^(RHS_START $name $args $ret)
+    ;
+
+rhs_end
+    : (END_T RHS_T | ENDRHS_T) NEWLINE_T
+        -> ^(SCOPE_END TEXT[$rhs_end.start,$rhs_end.text])
+    ;
+
+rhs_inner_stuff 
+    : l+=fline*
+        -> ^(RHS_INNER $l*) 
+    ;
+
+rhs_arglist
+    : LEFT_PAREN_T
+        ( args+=fd_arg
+         (COMMA_T args+=fd_arg)*
+        )?
+      RIGHT_PAREN_T
+      -> ^(ARGS $args*)
+    ;
+
+// field and discretization
+fd_arg : field=ID_T (ARROW_T disc=ID_T)? -> ^(FDARG $field $disc?) ;
 
 type_statement
     : open=type_start
@@ -301,6 +339,9 @@ value : ID_T | NUMBER_T | STRING_T ;
 FOREACH_T       : 'FOREACH'       | 'foreach'       ;
 ENDFOREACH_T    : 'ENDFOREACH'    | 'endforeach'    ;
 IN_T            : 'IN'            | 'in'            ;
+RHS_T           : 'RHS'           | 'rhs'           ;
+ENDRHS_T        : 'ENDRHS'        | 'endrhs'        ;
+RETURNS_T       : 'RETURNS'       | 'returns'       ;
 
 // Fortran Keywords
 

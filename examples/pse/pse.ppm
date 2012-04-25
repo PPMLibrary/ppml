@@ -14,7 +14,7 @@ program pse
   !   - o = initialize_ode     (r)
   !   - loop                   (condition)
   !     - step_ode             (o,c)
-  ppm_finalize()
+    ppm_finalize()
   ! - define_rhs r(a)
   !   - a = apply_operator     (d,a)
 end program

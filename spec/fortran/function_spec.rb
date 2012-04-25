@@ -2,7 +2,7 @@ module CG
   describe FortranFunction do
 
     before :each do
-      @f = FortranFunction.new "name","integer","resval"
+      @f = FortranFunction.new "name", "integer", "resval"
     end
 
     context "#use" do
