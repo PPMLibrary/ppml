@@ -1,5 +1,16 @@
 require 'ostruct'
 
+def indent body, amount
+  prefix = " " * amount
+  unless body.empty?
+    lines = body.split("\n")
+    lines = [''] if lines.empty?
+    lines.map! { |l| prefix + l }
+    lines.join("\n") + "\n"
+  end
+end
+
+
 module CG
   class Macro
     attr_accessor :name
@@ -31,7 +42,7 @@ module CG
       map = Macro.resolve_args @args, pos, named
       map["scope"] = scope
       map["result"] = result.to_s
-      expand_recursive_calls(scope) unless @recursive_expand
+      expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       erb.result Macro.binding_from_map(map)
     end
@@ -86,6 +97,8 @@ module CG
           elsif l =~ ForeachMacro::MACRO_START
             name = $~[:name]
             macros[name] = ForeachMacro.new name, file, $~[:args]
+          elsif l =~ TimeLoopMacro::MACRO_START
+            macros["timeloop"] = TimeLoopMacro.new file
           elsif l =~ IncludeMacro::MACRO_START
             name = $~[:name]
             macros[name] = IncludeMacro.new name, file, $~[:args]
@@ -145,13 +158,28 @@ module CG
       map["scope"] = context
       map["body"] = bodies[0]
       map["iter"] = iter
-      # expand_recursive_calls(scope) unless @recursive_expand
+      # expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       r = erb.result Macro.binding_from_map(map)
       # STDERR.puts "RESULT\n#{r}\nDONE"
       r
     end
   end # ForeachMacro
+
+  class TimeLoopMacro < Macro
+    MACRO_START = /^ *timeloop +macro *\(body\) *$/i
+
+    def initialize body
+      super "timeloop", body, "body"
+    end
+
+    def expand context, body
+      map = {"scope" => context, "body" => body.to_s}
+      expand_recursive_calls(context) unless @recursive_expanded
+      erb = ERB.new @body, nil, "%-"
+      erb.result Macro.binding_from_map(map)
+    end
+  end # TimeLoopMacro
 
   class IncludeMacro < Macro
     MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i

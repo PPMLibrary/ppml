@@ -39,6 +39,7 @@ def find_empty_lines i
   return if stop < 0
   i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE_T
   @empty_lines = t.extract_text(i+1,stop)
+  @empty_lines = strip(@empty_lines) if @dont_indent
 end
 
 def trailing_lines
@@ -51,12 +52,25 @@ end
 
 def indent string, prefix=nil
   prefix ||= @current_indent
-  if !string.empty?
+  result = string
+  unless string.empty? or @dont_indent
     lines = string.split("\n")
     lines = [''] if lines.empty?
     lines.map! { |l| prefix + l }
-    lines.join("\n") + "\n"
+    result = lines.join("\n") + "\n"
   end
+  result
+end
+
+def strip string
+  result = string
+  unless string.empty?
+    lines = string.split("\n")
+    lines = [''] if lines.empty?
+    lines.map! { |l| l.strip }
+    result = lines.join("\n") + "\n"
+  end
+  result
 end
 
 def setup_scope
@@ -204,9 +218,12 @@ line
     : { my_indent, my_empty = find_hidden
        @first_line ||= my_indent }
         ( fmac=fcmacro       -> verbatim(in={@empty_lines + indent($fmac.st.to_s)})
-        | loop=foreach       -> verbatim(in={my_empty + indent($foreach.st.to_s, my_indent)})
+        | loop=foreach       -> verbatim(in={my_empty + indent($loop.st.to_s, my_indent)})
+        | tl=timeloop        -> verbatim(in={my_empty + indent($tl.st.to_s, my_indent)})
         | imac=imacro        -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
-        | fortran=fline      -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
+        | fortran=fline
+          { @current_indent = "" if @dont_indent }
+          -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
         | ss=scope_statement -> verbatim(in={@empty_lines + $ss.st.to_s})
         )
     ;
@@ -231,6 +248,19 @@ foreach
     ;
 
 foreach_body : ^(BODY l+=line*) -> join(lines={$l}) ;
+
+timeloop
+    : {dont_indent_old = @dont_indent
+       @dont_indent = true}
+      ^(TIMELOOP b=timeloop_body
+        {find_hidden} timeloop_end)
+       {@dont_indent = dont_indent_old}
+      -> timeloop(context={@scope}, body={$b.st.to_s + (@empty_lines || '')})
+    ;
+
+timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
+
+timeloop_body : ^(BODY l+=line*) -> join(lines={$l}) ;
 
 arglist returns [pos,named]
     :  ^(ARGS a+=value*

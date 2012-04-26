@@ -71,6 +71,10 @@ ENDTEMPLATE
         define_template( :foreach, <<-'ENDTEMPLATE')
 <%= CG::Preprocessor.instance.expand(@name, @context, @iter, @args.pos, @args.named, @mods, @modargs, @bodies) %>
 ENDTEMPLATE
+
+        define_template( :timeloop, <<-'ENDTEMPLATE')
+% _erbout += CG::Preprocessor.instance.expand("timeloop", @context, @body)
+ENDTEMPLATE
       end
     end
   end

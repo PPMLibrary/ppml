@@ -31,6 +31,7 @@ FDARG;
 RHS_SCOPE;
 RHS_START;
 RHS_INNER;
+TIMELOOP;
 }
 
 @header {
@@ -266,6 +267,7 @@ line
     | scope_statement
     | (type_statement)=>type_statement
     | foreach
+    | timeloop
     | fline
     ;
 
@@ -273,20 +275,32 @@ foreach
     : FOREACH_T it=ID_T IN_T name=ID_T a=arglist?
         (DOT_T modifiers+=ID_T arglists+=arglist?)*
       NEWLINE_T
-        bodies+=foreach_body
-        // ((foreach_body)=>bodies+=foreach_body
+        bodies+=loop_body
+        // ((loop_body)=>bodies+=loop_body
         // |   {@input.peek(2) == COLON_T}?=>((bname+=ID_T | bname+=DEFAULT_T) COLON_T NEWLINE_T
-        //       (foreach_body)=>bodies+=foreach_body*
+        //       (loop_body)=>bodies+=loop_body*
         //     )+
         // )
       (ENDFOREACH_T | END_T FOREACH_T) NEWLINE_T
         -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers* $arglists*) $bodies*)
     ;
 
-foreach_body
-    : ({@input.peek(2) != FOREACH_T}? body+=line)*
+loop_body
+    : ({@input.peek(2) != FOREACH_T and @input.peek(2) != TIMELOOP_T}?
+       body+=line)*
       -> ^(BODY $body*)
     ;
+
+
+timeloop
+    : TIMELOOP_T NEWLINE_T
+        body=loop_body
+      e=timeloop_end
+      -> ^(TIMELOOP $body $e)
+    ;
+
+timeloop_end : (ENDTIMELOOP_T | END_T TIMELOOP_T) NEWLINE_T
+   -> ^(SCOPE_END TEXT[$timeloop_end.start,$timeloop_end.text]);
 
 fcmacro
     : (result=ID_T EQUALS_T)? ((name=ID_T) | (dotarg=ID_T DOT_T name=ID_T)) args=arglist NEWLINE_T
@@ -342,6 +356,8 @@ IN_T            : 'IN'            | 'in'            ;
 RHS_T           : 'RHS'           | 'rhs'           ;
 ENDRHS_T        : 'ENDRHS'        | 'endrhs'        ;
 RETURNS_T       : 'RETURNS'       | 'returns'       ;
+TIMELOOP_T      : 'TIMELOOP'      | 'timeloop'      ;
+ENDTIMELOOP_T   : 'ENDTIMELOOP'   | 'endtimeloop'   ;
 
 // Fortran Keywords
 
