@@ -8,7 +8,7 @@ Feature: Foreach Macros
     And argument list (particle_set) and body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= body.to_s -%>
+    <%= indent(body,2) -%>
     end do
 
     """
@@ -25,8 +25,8 @@ Feature: Foreach Macros
     """
       ! leading comment
       do p=1,P%Npart
-          ! do something to p
-          p = 20
+        ! do something to p
+        p = 20
       end do
 
     """

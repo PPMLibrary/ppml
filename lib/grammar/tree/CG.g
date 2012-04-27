@@ -241,9 +241,12 @@ imacro
     ;
 
 foreach
-    : ^(FOREACH n=ID_T it=ID_T a=arglist?
+    : {dont_indent_old = @dont_indent
+       @dont_indent = true}
+      ^(FOREACH n=ID_T it=ID_T a=arglist?
             ^(MODIFIERS m+=ID_T* ma+=arglist*)
             b+=foreach_body*)
+       {@dont_indent = dont_indent_old}
       -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={$ma},bodies={$b})
     ;
 
