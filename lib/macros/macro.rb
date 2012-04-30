@@ -19,7 +19,7 @@ module CG
     NAME = '(?:[a-z_][a-z_0-9]*)'
     VAL = '(?:"[^"]*"|[^,]*?)'
     ARG = "#{NAME}(?: *(?<!%)= *#{VAL})?"
-    ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*)?"
+    ARGS = "(?: *#{ARG} *(?:, *#{ARG} *)*(?:, *\\*#{NAME} *)?|(?: *\\*#{NAME} *))?"
     MACRO_START = //
     MACRO_STOP = /^ *end +macro *$/i
     REGMAGIC = /(?:^|,) *(?<name>([^=,]|(?<=%)=)+?)(?: *(?<!%)= *(?<value>".*?(?<!\\)"|[^,]*))? *(?=,|$)/i
@@ -117,8 +117,14 @@ module CG
         result = {}
         args.scan(REGMAGIC) do
           |name, value|
-          result[name] = value ? (value != 'nil' ? value : nil) : :required
+          if name[0] == '*'
+            result[:splat] = name[1..name.length]
+            break
+          else
+            result[name] = value ? (value != 'nil' ? value : nil) : :required
+          end
         end
+        result[:splat] = nil unless result[:splat]
         result
       end
 
@@ -126,13 +132,29 @@ module CG
         result = {}
         if default
           result = default.clone
-          [positional.size, result.keys.size].min.times do |i|
-            result[result.keys[i]] = positional[i]
-          end if positional
+          if positional
+            n = [positional.size, result.keys.size-1].min
+            n.times do |i|
+              if i < positional.size
+                result[result.keys[i]] = positional[i]
+              end
+              result[result.keys[i]] = positional[i]
+            end
+            if positional.size > n
+              unless result[:splat]
+                raise "Too many arguments! Expecting #{result.keys.size-1} got #{@positional.size}"
+              end
+              result[result[:splat]] = []
+              n.upto(positional.size-1).each do |i|
+                result[result[:splat]] << positional[i]
+              end
+              result.delete(:splat)
+            end
+          end
           result.merge! named if named
         end
         raise ArgumentError if result.values.include? :required
-        return result
+        result
       end
 
     end # class << self
@@ -146,23 +168,47 @@ module CG
   class ForeachMacro < Macro
     MACRO_START = /^ *foreach +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
 
-    def expand context, iter, args, named, mods, modargs, bodies
-      # STDERR.puts "\nexpand called!\n\n"
-      # STDERR.puts "      iter : #{iter}"
-      # STDERR.puts "      args : #{args}"
-      # STDERR.puts "named args : #{named}"
-      # STDERR.puts "      mods : #{mods}"
-      # STDERR.puts "  mod args : #{modargs}"
-      # STDERR.puts "    bodies : #{bodies}"
+    def initialize name, body, args, mods=nil
+      super name, body, args
+      @mods = ForeachMacro.parse_mods mods
+    end
+
+    def expand context, iter, args, named, mods, ma, ma_named, bodies
       map = Macro.resolve_args @args, args, named
-      map["scope"] = context
+      map.merge! ForeachMacro.resolve_mods(@mods, mods, ma, ma_named)
       map["body"] = bodies[0]
+      map["scope"] = context
       map["iter"] = iter
       # expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      r = erb.result Macro.binding_from_map(map)
-      # STDERR.puts "RESULT\n#{r}\nDONE"
-      r
+      erb.result Macro.binding_from_map(map)
+    end
+
+    def self.parse_mods mods
+      result = {}
+      mods.each do
+        |name, arglist|
+        result[name] = Macro.parse_arglist arglist
+      end if mods
+      result
+    end
+
+    def self.resolve_mods defn, mods, pos, named
+      result = {}
+      # copy default values in
+      defn.each do
+        |n, args|
+        args.each do
+          |name, value|
+          result[name] = value unless name == :splat
+        end
+      end
+      # merge supplied args (override defaults)
+      mods.zip(pos,named).each do
+        |m, p, n|
+        result.merge! Macro.resolve_args defn[m], p, n
+      end
+      result
     end
   end # ForeachMacro
 

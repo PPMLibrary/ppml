@@ -20,7 +20,7 @@ def find_hidden
   i      = tree.start_index
 
   i -= 1
-  if !t[i].nil? and t[i].channel == :hidden
+  if !t[i].nil? and t[i].type == WS_T
     @current_indent = t[i].text
     i -= 1
   else
@@ -221,9 +221,7 @@ line
         | loop=foreach       -> verbatim(in={my_empty + indent($loop.st.to_s, my_indent)})
         | tl=timeloop        -> verbatim(in={my_empty + indent($tl.st.to_s, my_indent)})
         | imac=imacro        -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
-        | fortran=fline
-          { @current_indent = "" if @dont_indent }
-          -> verbatim(in={@empty_lines + @current_indent + $fortran.st.to_s})
+        | fortran=fline      -> verbatim(in={@empty_lines + (@dont_indent ? "" : @current_indent) + $fortran.st.to_s})
         | ss=scope_statement -> verbatim(in={@empty_lines + $ss.st.to_s})
         )
     ;
@@ -235,22 +233,25 @@ fcmacro
     ;
 
 imacro
-    : ^(IMACRO n=ID_T
-            a=arglist)
-          -> include_macro(name={$n},context={@scope},args={a})
+    : ^(IMACRO n=ID_T a=arglist)
+       -> include_macro(name={$n},context={@scope},args={a})
     ;
 
 foreach
     : {dont_indent_old = @dont_indent
-       @dont_indent = true}
+       @dont_indent = true
+       modarg_acc = [] }
       ^(FOREACH n=ID_T it=ID_T a=arglist?
-            ^(MODIFIERS m+=ID_T* ma+=arglist*)
-            b+=foreach_body*)
-       {@dont_indent = dont_indent_old}
-      -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={$ma},bodies={$b})
+            ^(MODIFIERS m+=ID_T* (ma+=arglist {modarg_acc << ma})*  )
+            b+=foreach_body*
+        { find_hidden } foreach_end)
+{@dont_indent = dont_indent_old}
+      -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={modarg_acc},bodies={$b})
     ;
 
 foreach_body : ^(BODY l+=line*) -> join(lines={$l}) ;
+
+foreach_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 
 timeloop
     : {dont_indent_old = @dont_indent
@@ -265,12 +266,12 @@ timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 
 timeloop_body : ^(BODY l+=line*) -> join(lines={$l}) ;
 
-arglist returns [pos,named]
+arglist returns [pos,named,splat]
     :  ^(ARGS a+=value*
             ^(NAMEDARGS na+=ID_T*)
             ^(NAMEDARGS v+=value*))
       { $pos = $a
-        $named = Hash[*$na.map(&:to_s).zip($v).flatten] }
+        $named = Hash[*$na.map(&:to_s).zip($v).flatten]}
     ;
 
 fline : ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;

@@ -281,9 +281,13 @@ foreach
         //       (loop_body)=>bodies+=loop_body*
         //     )+
         // )
-      (ENDFOREACH_T | END_T FOREACH_T) NEWLINE_T
-        -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers* $arglists*) $bodies*)
+      e=foreach_end
+        -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers* $arglists*) $bodies* $e)
     ;
+
+foreach_end: (ENDFOREACH_T | END_T FOREACH_T) NEWLINE_T
+   -> ^(SCOPE_END TEXT[$foreach_end.start,$foreach_end.text]);
+
 
 loop_body
     : ({@input.peek(2) != FOREACH_T and @input.peek(2) != TIMELOOP_T}?
@@ -333,7 +337,7 @@ fline
 
 allowed
     : ID_T
-    | ANY_CHAR_T | DOT_T
+    | ANY_CHAR_T | DOT_T | STAR_T
     | NUMBER_T | STRING_T
     | LEFT_PAREN_T | RIGHT_PAREN_T | ARROW_T
     | COMMA_T | EQUALS_T | DOUBLE_COLON_T | COLON_T | AMPERSAND_T
@@ -491,6 +495,7 @@ DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;
 COMMA_T        : ','  ;
 ARROW_T        : '=>' ;
+STAR_T         : '*'  ;
 
 // Fragments
 

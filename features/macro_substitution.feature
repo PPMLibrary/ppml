@@ -56,6 +56,10 @@ Feature: macro substitution
        | name  | args    | body              | input        | result |
        | named | a=1,b=2 | <%= a %>,<%= b %> | named(b=3)\n | 1,3\n  |
 
+    Examples: splat arguments
+       | name  | args      | body                                          | input            | result      |
+       | splat | a=5,*rest | <% if rest.is_a? Array %><%= rest %><% end %> | splat(1,2,3,4)\n | [2, 3, 4]\n |
+
   Scenario: Full example of named args
     Given the standard macro path is "examples/testdata/macros"
     When I preprocess

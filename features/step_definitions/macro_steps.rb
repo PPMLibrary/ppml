@@ -53,9 +53,18 @@ end
 
 Given /^a foreach macro named "([^"]*)"$/ do |name| #"
   @macros ||= {}
-  @temp_name = name
+  @modifiers ||= {}
+  @name = name
 end
 
-Given /^argument list \(([^\)]*)\) and body$/ do |args, body|
-  @macros[@temp_name] = CG::ForeachMacro.new @temp_name, body, args
+Given /^argument list \(([^\)]*)\)$/ do |args|
+  @args = args
+end
+
+Given /^modifier "([^"]*)" with argument list \(([^\)]*)\)$/ do |name,args| #"
+  @modifiers[name] = args
+end
+
+Given /^body$/ do |body|
+  @macros[@name] = CG::ForeachMacro.new @name, body, @args, @modifiers
 end
