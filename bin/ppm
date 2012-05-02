@@ -13,14 +13,14 @@ class PPM < Thor
 
   desc 'pp FILE?', 'Preprocess a fortran FILE and perform macro substitution. If FILE not provided read from STDIN'
   method_option :outfile, :aliases => '-o', :type => :string, :desc => 'Put results in OUTFILE'
-  method_option :macrodir, :aliases => '-M', :type => :string, :desc => 'Get macros from MACRODIR'
+  method_option :macrodir, :aliases => '-M', :type => :string, :desc => 'Get macros from MACRODIR1[:MCRODIR2...:MACRODIRN]'
   def pp file=nil
     input = file ? File.new(file) : STDIN
 
     read_configuration
 
     if options[:macrodir]
-      CG::Preprocessor.user_macro_path=options[:macrodir]
+      CG::Preprocessor.user_macro_path=options[:macrodir].split(':')
     end
 
     o = CG::Preprocessor.instance.process(input.read)
