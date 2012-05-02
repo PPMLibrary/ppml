@@ -10,7 +10,7 @@ module CG
     attr_accessor :macros, :lexer, :tokens, :parser, :tree_tokens, :tree_parser
 
     @@standard_macro_path = File.dirname(__FILE__)+'/defs/'
-    @@user_macro_path = 'macros/'
+    @@user_macro_paths = ['macros/']
 
     def self.standard_macro_path= p
       @@standard_macro_path = p
@@ -21,13 +21,13 @@ module CG
       @@standard_macro_path
     end
 
-    def self.user_macro_path= p
-      @@user_macro_path = p
+    def self.user_macro_paths= p
+      @@user_macro_paths = p
       Preprocessor.instance.reload_macros
     end
 
-    def self.user_macro_path
-      @@user_macro_path
+    def self.user_macro_paths
+      @@user_macro_paths
     end
 
     def initialize
@@ -47,7 +47,13 @@ module CG
     def reload_macros
       @macros.clear
       load_macros_from_glob "#{@@standard_macro_path}/*.mac"
-      load_macros_from_glob "#{@working_dir+'/'+@@user_macro_path}/*.mac"
+      @@user_macro_paths.each do | user_macro_path |
+        unless user_macro_path.start_with? '/'
+          load_macros_from_glob "#{@working_dir+'/'+user_macro_path}/*.mac"
+        else
+          load_macros_from_glob "#{user_macro_path}/*.mac"
+        end
+      end
       # @macros.each { |name,m| m.expand_recursive_calls }
     end
 
