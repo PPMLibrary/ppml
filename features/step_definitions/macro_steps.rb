@@ -39,7 +39,7 @@ Then /^a macro named "([^"]*)" should be created$/ do |name| #"
 end
 
 Then /^the macro should have arguments "([^"]*)"$/ do |args| #"
-  al = CG::Macro.parse_arglist args
+  al = CG::Macro.build_arglist args
   @macros[@name].args.should == al
 end
 
@@ -51,20 +51,13 @@ end
 # Foreach macros #
 ##################
 
-Given /^a foreach macro named "([^"]*)"$/ do |name| #"
-  @macros ||= {}
-  @modifiers ||= {}
-  @name = name
-end
 
-Given /^argument list \(([^\)]*)\)$/ do |args|
+Given /^a foreach macro named "([^"]*)" with argument list \(([^\)]*)\)$/ do |name,args| #"
+  @macros ||= {}
+  @name = name
   @args = args
 end
 
-Given /^modifier "([^"]*)" with argument list \(([^\)]*)\)$/ do |name,args| #"
-  @modifiers[name] = args
-end
-
 Given /^body$/ do |body|
-  @macros[@name] = CG::ForeachMacro.new @name, body, @args, @modifiers
+  @macros[@name] = CG::ForeachMacro.new @name, body, @args
 end

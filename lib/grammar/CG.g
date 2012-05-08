@@ -273,7 +273,7 @@ line
 
 foreach
     : FOREACH_T it=ID_T IN_T name=ID_T a=arglist?
-        (DOT_T modifiers+=ID_T arglists+=arglist?)*
+        (WITH_T (modifiers+=ID_T arglists+=arglist?)*)?
       NEWLINE_T
         bodies+=loop_body
         // ((loop_body)=>bodies+=loop_body
@@ -362,6 +362,7 @@ ENDRHS_T        : 'ENDRHS'        | 'endrhs'        ;
 RETURNS_T       : 'RETURNS'       | 'returns'       ;
 TIMELOOP_T      : 'TIMELOOP'      | 'timeloop'      ;
 ENDTIMELOOP_T   : 'ENDTIMELOOP'   | 'endtimeloop'   ;
+WITH_T          : 'WITH'          | 'with'          ;
 
 // Fortran Keywords
 

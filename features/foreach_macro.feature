@@ -4,8 +4,7 @@ Feature: Foreach Macros
   provide a looping macro.
 
   Scenario: basic foreach macro
-    Given a foreach macro named "particles"
-    And argument list (particle_set)
+    Given a foreach macro named "particles" with argument list (particle_set)
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
@@ -33,29 +32,32 @@ Feature: Foreach Macros
     """
   
   Scenario: particle foreach macro
-    Given definition
+    Given a foreach macro named "particles" with argument list (pset)
+    And body
     """
-    foreach particles(pset,body)
     modifier positions(x)
     modifier fields(*fields)
-    % unless mods.positions.nil?
-    call P%get_xp(<%= "#{mods.positions}_#{iter}" %>,info)
+    % unless x.nil?
+    call P%get_xp(<%= "#{x}_#{iter}" %>,info)
     % end
-    % mods.fields.each do |f|
+    % fields.each do |f|
     call P%get_field(<%= f[0] %>,<%= "#{f[1]}_#{iter}" %>,info)
     % end
     do <%= iter %>=1,<%= pset %>%Npart
     <%= indent(body,2) -%>
     <%= transform body, "w_p", "w_p($1,#{iter})" %>
     end do
+    end macro
 
     """
-    Given definition
+    And a foreach macro named "neighbors" with argument list (pset)
+    And body
     """
-    foreach neighbors(pset)
+    foreach macro neighbors(pset)
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= indent(body,2) -%>
     end do
+    end macro
 
     """
     When I preprocess
@@ -85,12 +87,11 @@ Feature: Foreach Macros
 
   Scenario: modifiers
     Given setting ppm.dim is 2
-    And a foreach macro named "mesh"
-    And argument list (m)
-    And modifier "fields" with argument list (*fields)
-    And modifier "indices" with argument list (i,j,k=nil)
+    And a foreach macro named "mesh" with argument list (m)
     And body
     """
+    modifier fields(*fields)
+    modifier indices(i,j,k=nil)
     % body_indent = conf.ppm.dim * 2 + 2
     patch_iterator = <%= m %>%subpatch%begin()
     do while (associated(patch_iterator))
@@ -114,7 +115,7 @@ Feature: Foreach Macros
     """
     When I preprocess
     """
-    foreach node in mesh(M).fields(f1).indices(i,j)
+    foreach node in mesh(M) with fields(f1) indices(i,j)
       node%f1(1) = cos(i*h(1)+j)
       node%f2(2) = sin(i*h(1)+j)
       node%f3(3) = cos(i*h(1)+j)**2
@@ -139,12 +140,11 @@ Feature: Foreach Macros
     """
 
   Scenario: identifier manipulation
-    Given a foreach macro named "mesh"
-    And argument list (m)
-    And modifier "indices" with argument list (i=i,j=j,k=k)
-    And modifier "fields" with argument list (*fs)
+    Given a foreach macro named "mesh" with argument list (m)
     And body
     """
+    modifier indices(i=i,j=j,k=k)
+    modifier fields(*fs)
     patch_iterator = <%= m %>%subpatch%begin()
     do while (associated(patch_iterator))
     % fs.each_with_index do |f,ind|
@@ -161,7 +161,7 @@ Feature: Foreach Macros
     """
     When I preprocess
     """
-    foreach node in mesh(M).fields(f1)
+    foreach node in mesh(M) with fields(f1)
       node%f1(1) = cos(i*h(1)+j)
       node%f2(2) = sin(i*h(1)+j)
       node%f3(3) = cos(i*h(1)+j)**2

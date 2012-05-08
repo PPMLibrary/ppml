@@ -11,8 +11,8 @@ module CG
       end
       describe "#parse_arglist" do
         it "turns an arguments string into a map" do
-          Macro.parse_arglist("a,b,c").should == {'a'=>:required, 'b'=>:required, 'c'=>:required, :splat => nil}
-          Macro.parse_arglist("a=b,c=d,e").should == {'a'=>'b', 'c'=>'d', 'e'=>:required, :splat => nil}
+          Macro.build_arglist("a,b,c").should == {'a'=>:required, 'b'=>:required, 'c'=>:required, :splat => nil}
+          Macro.build_arglist("a=b,c=d,e").should == {'a'=>'b', 'c'=>'d', 'e'=>:required, :splat => nil}
         end
       end
     end

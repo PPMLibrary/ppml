@@ -10,6 +10,10 @@ def indent body, amount
   end
 end
 
+def transform body, var, trans
+  body
+end
+
 
 module CG
   class Macro
@@ -32,7 +36,7 @@ module CG
       end
       @name, @body = name, body
       if args
-        @args = Macro.parse_arglist args
+        @args = Macro.build_arglist args
       end
       @recursive_expanded = false
     end
@@ -107,11 +111,26 @@ module CG
         macros
       end
 
-      def binding_from_map map
-        data = OpenStruct.new(map)
+      def build_struct arguments
+        if arguments.is_a? Hash
+          data = OpenStruct.new(Hash[arguments.map {|k,v| [k,build_struct( v)]}])
+        else
+          arguments
+        end
+      end
+
+      def binding_from_map arguments
+        data = build_struct arguments
         def data.get_binding; binding end
         data.get_binding
       end
+
+      def build_arglist args
+        result = parse_arglist args
+        result[:splat] = nil unless result[:splat]
+        result
+      end
+
 
       def parse_arglist args
         result = {}
@@ -124,7 +143,6 @@ module CG
             result[name] = value ? (value != 'nil' ? value : nil) : :required
           end
         end
-        result[:splat] = nil unless result[:splat]
         result
       end
 
@@ -142,16 +160,29 @@ module CG
             end
             if positional.size > n
               unless result[:splat]
-                raise "Too many arguments! Expecting #{result.keys.size-1} got #{@positional.size}"
+                raise "Too many arguments! Expecting #{result.keys.size-1} got #{positional.size}"
               end
               result[result[:splat]] = []
               n.upto(positional.size-1).each do |i|
                 result[result[:splat]] << positional[i]
               end
-              result.delete(:splat)
             end
           end
-          result.merge! named if named
+          if named
+            named.each_pair do |name,value|
+              unless result[name].nil?
+                result[name] = value
+              else
+                unless result[:splat]
+                  raise "Unexpected named argument! #{name} was not defined"
+                else
+                  result[result[:splat]] = [] if result[result[:splat]].nil?
+                  result[result[:splat]] << [name,value]
+                end
+              end
+            end
+          end
+          result.delete(:splat)
         end
         raise ArgumentError if result.values.include? :required
         result
@@ -167,15 +198,16 @@ module CG
 
   class ForeachMacro < Macro
     MACRO_START = /^ *foreach +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
+    MODIFIER = /^ *modifier +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
 
-    def initialize name, body, args, mods=nil
+    def initialize name, body, args
       super name, body, args
-      @mods = ForeachMacro.parse_mods mods
+      @body, @modifiers = parse_modifiers @body
     end
 
     def expand context, iter, args, named, mods, ma, ma_named, bodies
       map = Macro.resolve_args @args, args, named
-      map.merge! ForeachMacro.resolve_mods(@mods, mods, ma, ma_named)
+      map.merge! resolve_modifiers(mods, ma, ma_named)
       map["body"] = bodies[0]
       map["scope"] = context
       map["iter"] = iter
@@ -184,19 +216,24 @@ module CG
       erb.result Macro.binding_from_map(map)
     end
 
-    def self.parse_mods mods
-      result = {}
-      mods.each do
-        |name, arglist|
-        result[name] = Macro.parse_arglist arglist
-      end if mods
-      result
+    def parse_modifiers body
+      modifiers = {}
+      rest = []
+      body.split("\n").each do |line|
+          if line =~ MODIFIER
+            modifiers[$~[:name]] = Macro.build_arglist $~[:args]
+          else
+            rest << line
+          end
+      end
+      body = rest.join("\n")
+      [body,modifiers]
     end
 
-    def self.resolve_mods defn, mods, pos, named
+    def resolve_modifiers mods, pos, named
       result = {}
       # copy default values in
-      defn.each do
+      @modifiers.each do
         |n, args|
         args.each do
           |name, value|
@@ -206,7 +243,7 @@ module CG
       # merge supplied args (override defaults)
       mods.zip(pos,named).each do
         |m, p, n|
-        result.merge! Macro.resolve_args defn[m], p, n
+        result.merge! Macro.resolve_args @modifiers[m], p, n
       end
       result
     end
