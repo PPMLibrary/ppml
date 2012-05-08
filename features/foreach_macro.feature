@@ -149,6 +149,7 @@ Feature: Foreach Macros
     do while (associated(patch_iterator))
     % fs.each_with_index do |f,ind|
       call patch_iterator%get_field(field_data<%= ind %>, <%= f %>, info)
+    %   transform body, "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
     % end
       do <%= i %> = 1, patch_iterator%nnodes(1)
         do <%= j %> = 1, patch_iterator%nnodes(2)
@@ -161,10 +162,10 @@ Feature: Foreach Macros
     """
     When I preprocess
     """
-    foreach node in mesh(M) with fields(f1)
-      node%f1(1) = cos(i*h(1)+j)
-      node%f2(2) = sin(i*h(1)+j)
-      node%f3(3) = cos(i*h(1)+j)**2
+    foreach n in mesh(M) with fields(f1,f2,f3)
+      f1_n(1) = cos(i*h(1)+j)
+      f2_n(2) = sin(i*h(1)+j)
+      f3_n(3) = cos(i*h(1)+j)**2
     end foreach
 
     """
@@ -173,11 +174,13 @@ Feature: Foreach Macros
     patch_iterator = M%subpatch%begin()
     do while (associated(patch_iterator))
       call patch_iterator%get_field(field_data0, f1, info)
+      call patch_iterator%get_field(field_data1, f2, info)
+      call patch_iterator%get_field(field_data2, f3, info)
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
-          node%f1(1) = cos(i*h(1)+j)
-          node%f2(2) = sin(i*h(1)+j)
-          node%f3(3) = cos(i*h(1)+j)**2
+          f1_data(i,j,1) = cos(i*h(1)+j)
+          f2_data(i,j,2) = sin(i*h(1)+j)
+          f3_data(i,j,3) = cos(i*h(1)+j)**2
         end do
       end do
       patch_iterator => M%subpatch%next()
