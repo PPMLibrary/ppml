@@ -37,7 +37,6 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= a %>%Npart
     <%= indent(body,2) -%>
-    <%= body %>
     end do
 
     """
@@ -46,7 +45,6 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= b %>%Npart
     <%= indent(body,2) -%>
-    <%= body %>
     end do
 
     """
@@ -75,21 +73,19 @@ Feature: Foreach Macros
     """
     modifier positions(x)
     modifier fields(*fields)
-    % unless x.nil?
+    modifier types(*types)
+    % unless x == :required
     call P%get_xp(<%= "#{x}_#{iter}" %>,info)
     % end
     % fields.each do |f|
     call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
     % end
     do <%= iter %>=1,<%= pset %>%Npart
-    <%= indent(body,2) -%>
     % fields.each do |f|
-    %   out = transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
-    %   body = out
+    %   transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
     % end
-    <%= body %>
+    <%= indent(body,2) -%>
     end do
-    end macro
 
     """
     And a foreach macro named "neighbors" with argument list (pset)
@@ -97,32 +93,26 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= indent(body,2) -%>
-    <%= body %>
     end do
-    end macro
 
     """
     When I preprocess
     """
       ! leading comment
-      foreach p in particles(P) with positions(x) fields(w=weight)
-        foreach q in neighbors(p)
-          ! applying a kernel eta to all w_p
-          w_p = w_p + sqrt(sum((x_p(:) - x_q(:))**2)) * eta(w_p,w_q)
-        end foreach
+      foreach p in particles(P) with fields(w=weight,dw=change)
+        ! updating w
+        w_p = w_p + dt*dw_p
       end foreach
 
     """
     Then it should expand into
     """
       ! leading comment
-      call P%get_xp(x_p,info)
       call P%get_field(weight,w_p,info)
-      nlist => P%get_neighlist(P)
+      call P%get_field(change,dw_p,info)
       do p=1,P%Npart
-        do q=1,nlist%nvlist(p)
-          ! applying a kernel eta to all vp
-          w_p(p) = w_p(p) + sqrt(sum((x_p(:,p) - x_q(:,q))**2)) * eta(w_p(p),w_q(q))
+        ! updating w
+        w_p(p) = w_p(p) + dt*dw_p(p)
       end do
 
     """
