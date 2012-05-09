@@ -30,7 +30,45 @@ Feature: Foreach Macros
       end do
 
     """
-  
+
+  Scenario: loop nesting
+    Given a foreach macro named "outer" with argument list (a)
+    And body
+    """
+    do <%= iter %>=1,<%= a %>%Npart
+    <%= indent(body,2) -%>
+    <%= body %>
+    end do
+
+    """
+    And a foreach macro named "inner" with argument list (b)
+    And body
+    """
+    do <%= iter %>=1,<%= b %>%Npart
+    <%= indent(body,2) -%>
+    <%= body %>
+    end do
+
+    """
+    When I preprocess
+    """
+      foreach p in outer(X)
+        foreach q in inner(Y)
+          bla
+        end foreach
+      end foreach
+
+    """
+    Then it should expand into
+    """
+      do p=1,X%Npart
+        do q=1,Y%Npart
+          bla
+        end do
+      end do
+
+    """
+
   Scenario: particle foreach macro
     Given a foreach macro named "particles" with argument list (pset)
     And body
@@ -41,11 +79,15 @@ Feature: Foreach Macros
     call P%get_xp(<%= "#{x}_#{iter}" %>,info)
     % end
     % fields.each do |f|
-    call P%get_field(<%= f[0] %>,<%= "#{f[1]}_#{iter}" %>,info)
+    call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
     % end
     do <%= iter %>=1,<%= pset %>%Npart
     <%= indent(body,2) -%>
-    <%= transform body, "w_p", "w_p($1,#{iter})" %>
+    % fields.each do |f|
+    %   out = transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
+    %   body = out
+    % end
+    <%= body %>
     end do
     end macro
 
@@ -53,9 +95,9 @@ Feature: Foreach Macros
     And a foreach macro named "neighbors" with argument list (pset)
     And body
     """
-    foreach macro neighbors(pset)
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= indent(body,2) -%>
+    <%= body %>
     end do
     end macro
 
