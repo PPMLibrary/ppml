@@ -41,7 +41,7 @@ Feature: Foreach Macros
     call P%get_xp(<%= "#{x}_#{iter}" %>,info)
     % end
     % fields.each do |f|
-    call P%get_field(<%= f[0] %>,<%= "#{f[1]}_#{iter}" %>,info)
+    call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
     % end
     do <%= iter %>=1,<%= pset %>%Npart
     <%= indent(body,2) -%>
@@ -53,11 +53,9 @@ Feature: Foreach Macros
     And a foreach macro named "neighbors" with argument list (pset)
     And body
     """
-    foreach macro neighbors(pset)
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= indent(body,2) -%>
     end do
-    end macro
 
     """
     When I preprocess
@@ -117,8 +115,8 @@ Feature: Foreach Macros
     """
     foreach node in mesh(M) with fields(f1) indices(i,j)
       node%f1(1) = cos(i*h(1)+j)
-      node%f2(2) = sin(i*h(1)+j)
-      node%f3(3) = cos(i*h(1)+j)**2
+      node%f1(2) = sin(i*h(1)+j)
+      node%f1(3) = cos(i*h(1)+j)**2
     end foreach
 
     """
@@ -130,8 +128,8 @@ Feature: Foreach Macros
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           node%f1(1) = cos(i*h(1)+j)
-          node%f2(2) = sin(i*h(1)+j)
-          node%f3(3) = cos(i*h(1)+j)**2
+          node%f1(2) = sin(i*h(1)+j)
+          node%f1(3) = cos(i*h(1)+j)**2
         end do
       end do
       patch_iterator => M%subpatch%next()
@@ -139,7 +137,7 @@ Feature: Foreach Macros
 
     """
 
-  Scenario: identifier manipulation
+  Scenario: identifier transform
     Given a foreach macro named "mesh" with argument list (m)
     And body
     """
@@ -147,8 +145,8 @@ Feature: Foreach Macros
     modifier fields(*fs)
     patch_iterator = <%= m %>%subpatch%begin()
     do while (associated(patch_iterator))
-    % fs.each_with_index do |f,ind|
-      call patch_iterator%get_field(field_data<%= ind %>, <%= f %>, info)
+    % fs.each do |f|
+      call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
     %   transform body, "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
     % end
       do <%= i %> = 1, patch_iterator%nnodes(1)
@@ -173,9 +171,9 @@ Feature: Foreach Macros
     """
     patch_iterator = M%subpatch%begin()
     do while (associated(patch_iterator))
-      call patch_iterator%get_field(field_data0, f1, info)
-      call patch_iterator%get_field(field_data1, f2, info)
-      call patch_iterator%get_field(field_data2, f3, info)
+      call patch_iterator%get_field(f1_data, f1, info)
+      call patch_iterator%get_field(f2_data, f2, info)
+      call patch_iterator%get_field(f3_data, f3, info)
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           f1_data(i,j,1) = cos(i*h(1)+j)

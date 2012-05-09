@@ -10,7 +10,6 @@ def indent body, amount
   end
 end
 
-
 def transform body, pattern, replacement
   # check if arguments are used in the replacement
   replacement = replacement.split /(\$(?:\d+|\*))/
