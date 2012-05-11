@@ -225,26 +225,27 @@ Feature: Foreach Macros
     Given a foreach macro named "mesh" with argument list (m)
     And body
     """
-    i = 1
-    do j = 1, patch_iterator%nnodes(2)
+    modifier indices(i=i,j=j)
+    <%= i %> = 1
+    do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.top.indent 2 -%>
     end do
 
-    do i = 2, patch_iterator%nnodes(1) - 1
-      do j = 1, patch_iterator%nnodes(2)
+    do <%= i %> = 2, patch_iterator%nnodes(1) - 1
+      do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.rest.indent 4 -%>
       end do
     end do
 
-    i = patch_iterator%nnodes(1)
-    do j = 1, patch_iterator%nnodes(2)
+    <%= i %> = patch_iterator%nnodes(1)
+    do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.bottom.indent 2 -%>
     end do
 
     """
     When I preprocess
     """
-    foreach n in mesh(M)
+    foreach n in mesh(M) with indices(i,j)
       for top
         x = f(i+1,j)
       for bottom
@@ -274,3 +275,69 @@ Feature: Foreach Macros
 
     """
     
+  Scenario: complete example
+    Given a foreach macro named "mesh" with argument list (m)
+    And body
+    """
+    % fs.each do |f|
+    call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
+    % end
+    %   bodies.top.transform!    "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
+    %   bodies.bottom.transform! "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
+    %   bodies.rest.transform!   "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
+    %   bodies.top.transform!    "#{fs[1]}_#{iter}", "#{fs[1]}_data"
+    %   bodies.bottom.transform! "#{fs[1]}_#{iter}", "#{fs[1]}_data"
+    %   bodies.rest.transform!   "#{fs[1]}_#{iter}", "#{fs[1]}_data"
+
+    modifier fields(*fs)
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.top.indent 2 -%>
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.rest.indent 4 -%>
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.bottom.indent 2 -%>
+    end do
+
+    """
+    When I preprocess
+    """
+    foreach n in mesh(M) with fields(f,g)
+      for top
+        f_n(1) = g_n(i+1,j)
+      for bottom
+        f_n(1) = g_n(i-1,j)
+      for rest
+        f_n(1) = g_n(i-1,j) + g_n(i+1,j)
+    end foreach
+
+    """
+    Then it should expand into
+    """
+    call patch_iterator%get_field(f_data, f, info)
+    call patch_iterator%get_field(g_data, g, info)
+
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+      f_data(i,j,1) = g_data(i+1,j)
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+        f_data(i,j,1) = g_data(i-1,j) + g_data(i+1,j)
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+      f_data(i,j,1) = g_data(i-1,j)
+    end do
+
+    """
