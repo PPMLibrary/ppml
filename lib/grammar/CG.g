@@ -275,12 +275,9 @@ foreach
     : FOREACH_T it=ID_T IN_T name=ID_T a=arglist?
         (WITH_T (modifiers+=ID_T arglists+=arglist?)*)?
       NEWLINE_T
-        bodies+=loop_body
-        // ((loop_body)=>bodies+=loop_body
-        // |   {@input.peek(2) == COLON_T}?=>((bname+=ID_T | bname+=DEFAULT_T) COLON_T NEWLINE_T
-        //       (loop_body)=>bodies+=loop_body*
-        //     )+
-        // )
+        ((loop_body)=>bodies+=loop_body
+        |(bodies+=qualified_body)*
+        )
       e=foreach_end
         -> ^(FOREACH $name $it $a? ^(MODIFIERS $modifiers* $arglists*) $bodies* $e)
     ;
@@ -292,7 +289,14 @@ foreach_end: (ENDFOREACH_T | END_T FOREACH_T) NEWLINE_T
 loop_body
     : ({@input.peek(2) != FOREACH_T and @input.peek(2) != TIMELOOP_T}?
        body+=line)*
-      -> ^(BODY $body*)
+      -> ^(BODY ID_T[$loop_body.start,"default"] $body*)
+    ;
+
+qualified_body
+    : FOR_T name=ID_T NEWLINE_T
+      ({@input.peek(2) != FOREACH_T}?
+       body+=line)*
+      -> ^(BODY $name $body*)
     ;
 
 
@@ -356,6 +360,7 @@ value : ID_T | NUMBER_T | STRING_T ;
 
 FOREACH_T       : 'FOREACH'       | 'foreach'       ;
 ENDFOREACH_T    : 'ENDFOREACH'    | 'endforeach'    ;
+FOR_T           : 'FOR'           | 'for'           ;
 IN_T            : 'IN'            | 'in'            ;
 RHS_T           : 'RHS'           | 'rhs'           ;
 ENDRHS_T        : 'ENDRHS'        | 'endrhs'        ;

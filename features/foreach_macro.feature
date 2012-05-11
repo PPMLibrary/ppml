@@ -222,4 +222,55 @@ Feature: Foreach Macros
     """
 
   Scenario: multiple bodies
+    Given a foreach macro named "mesh" with argument list (m)
+    And body
+    """
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.top.indent 2 -%>
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.rest.indent 4 -%>
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.bottom.indent 2 -%>
+    end do
+
+    """
+    When I preprocess
+    """
+    foreach n in mesh(M)
+      for top
+        x = f(i+1,j)
+      for bottom
+        x = f(i-1,j)
+      for rest
+        x = f(i-1,j) + f(i+1,j)
+    end foreach
+
+    """
+    Then it should expand into
+    """
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+      x = f(i+1,j)
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+        x = f(i-1,j) + f(i+1,j)
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+      x = f(i-1,j)
+    end do
+
+    """
     

@@ -263,9 +263,10 @@ module CG
     def expand context, iter, args, named, mods, ma, ma_named, bodies
       map = Macro.resolve_args @args, args, named
       map.merge! resolve_modifiers(mods, ma, ma_named)
-      map["body"] = bodies[0]
-      map["scope"] = context
-      map["iter"] = iter
+      map["body"]   = bodies[:default] if bodies[:default]
+      map["bodies"] = bodies
+      map["scope"]  = context
+      map["iter"]   = iter
       # expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       erb.result Macro.binding_from_map(map)
