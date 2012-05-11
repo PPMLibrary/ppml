@@ -8,7 +8,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -36,7 +36,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= a %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -44,7 +44,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= b %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -78,24 +78,18 @@ Feature: Foreach Macros
     % end
     % fields.each do |f|
     call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+    %   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
     % end
     do <%= iter %>=1,<%= pset %>%Npart
-    <%= indent(body,2) -%>
-    % fields.each do |f|
-    %   out = transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
-    %   body = out
-    % end
-    <%= body %>
+    <%= body.indent 2 -%>
     end do
-    end macro
 
     """
     And a foreach macro named "neighbors" with argument list (pset)
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= indent(body,2) -%>
-    <%= body %>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -142,7 +136,7 @@ Feature: Foreach Macros
     % if conf.ppm.dim == 3
           do <%= k %> = 1, patch_iterator%nnodes(3)
     % end
-    <%= indent(body, body_indent) -%>
+    <%= body.indent body_indent -%>
     % if conf.ppm.dim == 3
           end do
     % end
@@ -188,11 +182,11 @@ Feature: Foreach Macros
     do while (associated(patch_iterator))
     % fs.each do |f|
       call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
-    %   transform body, "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
+    %   body.transform! "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
     % end
       do <%= i %> = 1, patch_iterator%nnodes(1)
         do <%= j %> = 1, patch_iterator%nnodes(2)
-    <%= indent(body, 6) -%>
+    <%= body.indent 6 -%>
         end do
       end do
       patch_iterator => <%= m %>%subpatch%next()
