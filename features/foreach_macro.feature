@@ -37,7 +37,6 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= a %>%Npart
     <%= indent(body,2) -%>
-    <%= body %>
     end do
 
     """
@@ -46,7 +45,6 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= b %>%Npart
     <%= indent(body,2) -%>
-    <%= body %>
     end do
 
     """
