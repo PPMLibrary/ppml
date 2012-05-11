@@ -8,7 +8,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -36,7 +36,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= a %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -44,7 +44,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= b %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -83,9 +83,9 @@ Feature: Foreach Macros
     % end
     do <%= iter %>=1,<%= pset %>%Npart
     % fields.each do |f|
-    %   transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+    %   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
     % end
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
@@ -93,7 +93,7 @@ Feature: Foreach Macros
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= indent(body,2) -%>
+    <%= body.indent 2 -%>
     end do
 
     """
