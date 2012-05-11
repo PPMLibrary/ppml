@@ -240,31 +240,33 @@ imacro
 foreach
     : {dont_indent_old = @dont_indent
        @dont_indent = true
-       modarg_acc = [] }
+       modarg_acc = [] 
+       bodies = {} }
       ^(FOREACH n=ID_T it=ID_T a=arglist?
             ^(MODIFIERS m+=ID_T* (ma+=arglist {modarg_acc << ma})*  )
-            b+=foreach_body*
+            (b=loop_body { bodies[$b.name.text.to_sym] = $b.body } )*
         { find_hidden } foreach_end)
 {@dont_indent = dont_indent_old}
-      -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={modarg_acc},bodies={$b})
+      -> foreach(name={$n.text},context={@scope},iter={$it.text},args={a},mods={$m},modargs={modarg_acc},bodies={bodies})
     ;
 
-foreach_body : ^(BODY l+=line*) -> join(lines={$l}) ;
+loop_body returns [name,body]: ^(BODY n=ID_T l+=line*)
+{$name=$n
+$body=$l.join ''
+};
 
 foreach_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 
 timeloop
     : {dont_indent_old = @dont_indent
        @dont_indent = true}
-      ^(TIMELOOP b=timeloop_body
+      ^(TIMELOOP b=loop_body 
         {find_hidden} timeloop_end)
        {@dont_indent = dont_indent_old}
-      -> timeloop(context={@scope}, body={$b.st.to_s + (@empty_lines || '')})
+      -> timeloop(context={@scope}, body={$b.body.to_s + (@empty_lines || '')})
     ;
 
 timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
-
-timeloop_body : ^(BODY l+=line*) -> join(lines={$l}) ;
 
 arglist returns [pos,named,splat]
     :  ^(ARGS a+=value*

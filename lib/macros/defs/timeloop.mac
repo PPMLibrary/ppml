@@ -2,6 +2,6 @@ timeloop macro(body)
 % scope.var time_loop_step: "integer :: time_loop_step"
 % scope.var time_loop_time: "real :: time_loop_time"
 while (time_loop_time < <%= conf.stop.time %> .and. time_loop_step < <%= conf.stop.step %>)
-<%= indent(body,2) -%>
+<%= body.indent 2 -%>
 end while
 end macro

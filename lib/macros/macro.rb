@@ -1,60 +1,71 @@
 require 'ostruct'
 
-def indent body, amount
-  prefix = " " * amount
-  unless body.empty?
-    lines = body.split("\n")
-    lines = [''] if lines.empty?
-    lines.map! { |l| prefix + l }
-    lines.join("\n") + "\n"
-  end
-end
+class String
 
-
-def transform body, pattern, replacement
-  # check if arguments are used in the replacement
-  replacement = replacement.split /(\$(?:\d+|\*))/
-  max = 0
-  splat = false
-  replacement.map! do
-    |piece|
-    if piece == "$*"
-      splat = true
-      :splat
-    elsif piece =~ /^\$(\d+)$/
-      max = $~[1].to_i if $~[1].to_i > max
-      $~[1].to_i
-    else
-      piece
+  def indent amount
+    prefix = " " * amount
+    unless empty?
+      lines = split("\n")
+      lines = [''] if lines.empty?
+      lines.map! { |l| prefix + l }
+      lines.join("\n") + "\n"
     end
   end
-  # turn pattern into propper regexp
-  pattern = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
-  if splat or max > 0
-    pattern << "\\((.*?)\\)"
+
+  def indent! amount
+    replace(indent amount)
   end
-  # replace
-  body.gsub! /#{pattern}/ do
-    |match|
-    rep = replacement
-    if splat or max > 0
-      args = []
-      $~[1].scan /"[^"]*"|[^,]+/ do
-        |arg|
-        args << arg
+
+  def transform pattern, replacement
+    # check if arguments are used in the replacement
+    replacement = replacement.split /(\$(?:\d+|\*))/
+    max = 0
+    splat = false
+    replacement.map! do
+      |piece|
+      if piece == "$*"
+        splat = true
+        :splat
+      elsif piece =~ /^\$(\d+)$/
+        max = $~[1].to_i if $~[1].to_i > max
+        $~[1].to_i
+      else
+        piece
       end
-      rep.map! do
-        |piece|
-        if piece.is_a? Integer
-          args[piece-1]
-        elsif piece == :splat
-          args[max..args.length].join "," unless max > args.length
-        else
-          piece
+    end
+    # turn pattern into propper regexp
+    pattern = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
+    if splat or max > 0
+      pattern << "\\((.*?)\\)"
+    end
+    # replace
+    result = gsub /#{pattern}/ do
+      |match|
+      rep = replacement
+      if splat or max > 0
+        args = []
+        $~[1].scan /"[^"]*"|[^,]+/ do
+          |arg|
+          args << arg
+        end
+        rep.map! do
+          |piece|
+          if piece.is_a? Integer
+            args[piece-1]
+          elsif piece == :splat
+            args[max..args.length].join "," unless max > args.length
+          else
+            piece
+          end
         end
       end
+      rep.join ''
     end
-    rep.join ''
+    result
+  end
+
+  def transform! pattern, replacement
+    replace(transform pattern, replacement)
   end
 end
 
@@ -252,9 +263,10 @@ module CG
     def expand context, iter, args, named, mods, ma, ma_named, bodies
       map = Macro.resolve_args @args, args, named
       map.merge! resolve_modifiers(mods, ma, ma_named)
-      map["body"] = bodies[0]
-      map["scope"] = context
-      map["iter"] = iter
+      map["body"]   = bodies[:default] if bodies[:default]
+      map["bodies"] = bodies
+      map["scope"]  = context
+      map["iter"]   = iter
       # expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       erb.result Macro.binding_from_map(map)

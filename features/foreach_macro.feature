@@ -79,6 +79,7 @@ Feature: Foreach Macros
     % end
     % fields.each do |f|
     call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+    %   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
     % end
     do <%= iter %>=1,<%= pset %>%Npart
     % fields.each do |f|
@@ -135,7 +136,7 @@ Feature: Foreach Macros
     % if conf.ppm.dim == 3
           do <%= k %> = 1, patch_iterator%nnodes(3)
     % end
-    <%= indent(body, body_indent) -%>
+    <%= body.indent body_indent -%>
     % if conf.ppm.dim == 3
           end do
     % end
@@ -149,8 +150,8 @@ Feature: Foreach Macros
     """
     foreach node in mesh(M) with fields(f1) indices(i,j)
       node%f1(1) = cos(i*h(1)+j)
-      node%f2(2) = sin(i*h(1)+j)
-      node%f3(3) = cos(i*h(1)+j)**2
+      node%f1(2) = sin(i*h(1)+j)
+      node%f1(3) = cos(i*h(1)+j)**2
     end foreach
 
     """
@@ -162,8 +163,8 @@ Feature: Foreach Macros
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           node%f1(1) = cos(i*h(1)+j)
-          node%f2(2) = sin(i*h(1)+j)
-          node%f3(3) = cos(i*h(1)+j)**2
+          node%f1(2) = sin(i*h(1)+j)
+          node%f1(3) = cos(i*h(1)+j)**2
         end do
       end do
       patch_iterator => M%subpatch%next()
@@ -171,7 +172,7 @@ Feature: Foreach Macros
 
     """
 
-  Scenario: identifier manipulation
+  Scenario: identifier transform
     Given a foreach macro named "mesh" with argument list (m)
     And body
     """
@@ -179,13 +180,13 @@ Feature: Foreach Macros
     modifier fields(*fs)
     patch_iterator = <%= m %>%subpatch%begin()
     do while (associated(patch_iterator))
-    % fs.each_with_index do |f,ind|
-      call patch_iterator%get_field(field_data<%= ind %>, <%= f %>, info)
-    %   transform body, "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
+    % fs.each do |f|
+      call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
+    %   body.transform! "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
     % end
       do <%= i %> = 1, patch_iterator%nnodes(1)
         do <%= j %> = 1, patch_iterator%nnodes(2)
-    <%= indent(body, 6) -%>
+    <%= body.indent 6 -%>
         end do
       end do
       patch_iterator => <%= m %>%subpatch%next()
@@ -205,9 +206,9 @@ Feature: Foreach Macros
     """
     patch_iterator = M%subpatch%begin()
     do while (associated(patch_iterator))
-      call patch_iterator%get_field(field_data0, f1, info)
-      call patch_iterator%get_field(field_data1, f2, info)
-      call patch_iterator%get_field(field_data2, f3, info)
+      call patch_iterator%get_field(f1_data, f1, info)
+      call patch_iterator%get_field(f2_data, f2, info)
+      call patch_iterator%get_field(f3_data, f3, info)
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           f1_data(i,j,1) = cos(i*h(1)+j)
@@ -221,4 +222,55 @@ Feature: Foreach Macros
     """
 
   Scenario: multiple bodies
+    Given a foreach macro named "mesh" with argument list (m)
+    And body
+    """
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.top.indent 2 -%>
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.rest.indent 4 -%>
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+    <%= bodies.bottom.indent 2 -%>
+    end do
+
+    """
+    When I preprocess
+    """
+    foreach n in mesh(M)
+      for top
+        x = f(i+1,j)
+      for bottom
+        x = f(i-1,j)
+      for rest
+        x = f(i-1,j) + f(i+1,j)
+    end foreach
+
+    """
+    Then it should expand into
+    """
+    i = 1
+    do j = 1, patch_iterator%nnodes(2)
+      x = f(i+1,j)
+    end do
+
+    do i = 2, patch_iterator%nnodes(1) - 1
+      do j = 1, patch_iterator%nnodes(2)
+        x = f(i-1,j) + f(i+1,j)
+      end do
+    end do
+
+    i = patch_iterator%nnodes(1)
+    do j = 1, patch_iterator%nnodes(2)
+      x = f(i-1,j)
+    end do
+
+    """
     
