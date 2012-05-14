@@ -122,18 +122,20 @@ scope_statement
 
 scope_start
     :
-    ( PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
-    | MODULE_T name=ID_T NEWLINE_T { @context << :module }
-    | RECURSIVE_T? SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
-    | (ID_T)? FUNCTION_T name=ID_T arglist?
+    ( kind=PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
+    | kind=MODULE_T name=ID_T NEWLINE_T { @context << :module }
+    | ABSTRACT_T? kind=INTERFACE_T name=ID_T? NEWLINE_T { @context << :interface }
+    | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
+    | (ID_T)? kind=FUNCTION_T name=ID_T arglist?
             (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T { @context << :function }
-    ) -> ^(SCOPE_START $name TEXT[$scope_start.start,$scope_start.text])
+    ) -> ^(SCOPE_START TEXT[$kind.text] $name? TEXT[$scope_start.start,$scope_start.text])
     ;
 
 scope_end
     :
         ( {@context.last==:program}?=>    ( ENDPROGRAM_T    | END_T PROGRAM_T    ) ID_T? NEWLINE_T
         | {@context.last==:module}?=>     ( ENDMODULE_T     | END_T MODULE_T     ) ID_T? NEWLINE_T
+        | {@context.last==:interface}?=>  ( ENDINTERFACE_T  | END_T INTERFACE_T  ) ID_T? NEWLINE_T
         | {@context.last==:subroutine}?=> ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
         | {@context.last==:function}?=>   ( ENDFUNCTION_T   | END_T FUNCTION_T   ) ID_T? NEWLINE_T
         )
@@ -187,12 +189,12 @@ naked_code : line* ;
 
 // Scope detecion - start and end lines
 
-type_start : TYPE_T 
+type_start : kind=TYPE_T 
             ( (COMMA_T EXTENDS_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)
             | (COMMA_T ABSTRACT_T) )*
            (DOUBLE_COLON_T)? name=ID_T NEWLINE_T
         { @context << :type }
-        -> ^(SCOPE_START $name TEXT[$type_start.start,$type_start.text]) ;
+        -> ^(SCOPE_START TEXT[$kind.text] $name TEXT[$type_start.start,$type_start.text]) ;
 type_end   : ( ENDTYPE_T | END_T TYPE_T ) ID_T? NEWLINE_T
         { @context.pop }
         -> ^(SCOPE_END TEXT[$type_end.start,$type_end.text]) ;
@@ -375,6 +377,8 @@ PROGRAM_T       : 'PROGRAM'       | 'program'       ;
 ENDPROGRAM_T    : 'ENDPROGRAM'    | 'endprogram'    ;
 MODULE_T        : 'MODULE'        | 'module'        ;
 ENDMODULE_T     : 'ENDMODULE'     | 'endmodule'     ;
+INTERFACE_T     : 'INTERFACE'     | 'interface'     ;
+ENDINTERFACE_T  : 'ENDINTERFACE'  | 'endinterface'  ;
 SUBROUTINE_T    : 'SUBROUTINE'    | 'subroutine'    ;
 ENDSUBROUTINE_T : 'ENDSUBROUTINE' | 'endsubroutine' ;
 FUNCTION_T      : 'FUNCTION'      | 'function'      ;

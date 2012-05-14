@@ -22,29 +22,34 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :inner,       <<-'ENDTEMPLATE')
-% _erbout += @use.join("")  unless @use.empty?
-% _erbout += "#{@indent}! use statements\n" if conf.comment_mode
-% _erbout += @indent + @context.use_statements.values.join("\n#{@indent}") + "\n" unless @context.use_statements.empty?
-% unless @implicit.nil?
-%   _erbout += @implicit.to_s
-% else
-%   _erbout += "#{@indent}implicit none\n"
+% unless @context.kind == :interface
+%   _erbout += @use.join("")  unless @use.empty?
+%   _erbout += "#{@indent}! use statements\n" if conf.comment_mode
+%   _erbout += @indent + @context.use_statements.values.join("\n#{@indent}") + "\n" unless @context.use_statements.empty?
+% end
+% unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
+%   unless @implicit.nil?
+%     _erbout += @implicit.to_s
+%   else
+%     _erbout += "#{@indent}implicit none\n"
+%   end
 % end
 % unless @context.includes.empty?
 %   _erbout += "#{@indent}include '" + @context.includes.uniq.join("'\n#{indent}include '") + "'\n"
 % end
-% if conf.comment_mode
-%   _erbout += "#{@indent}! interfaces\n"
-% end
-% if conf.comment_mode
-%   _erbout += "#{@indent}! variable definitions\n"
+% unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
+%   if conf.comment_mode
+%     _erbout += "#{@indent}! variable definitions\n"
+%   end
 % end
 % _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
 % _erbout += @body.join("")              unless @body.empty?
-% _erbout += "9999 continue\n"           if @context.output_continue
-% _erbout += @contains.to_s              unless @contains.nil?
-% _erbout += "#{@indent}! subroutines\n" if conf.comment_mode
-% _erbout += @subroutines.join("")       unless @subroutines.empty?
+% unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
+%   _erbout += "9999 continue\n"           if @context.output_continue
+%   _erbout += @contains.to_s              unless @contains.nil?
+%   _erbout += "#{@indent}! subroutines\n" if conf.comment_mode
+%   _erbout += @subroutines.join("")       unless @subroutines.empty?
+% end
 ENDTEMPLATE
 
         define_template( :type_inner,       <<-'ENDTEMPLATE')

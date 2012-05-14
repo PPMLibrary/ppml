@@ -38,7 +38,6 @@ Feature: Scope Detection
         ! use statements
         ! after use comment
         implicit none
-        ! interfaces
         ! variable definitions
         ! after implicit comment
         integer :: i
@@ -74,7 +73,6 @@ Feature: Scope Detection
         use something
         ! use statements
         implicit none
-        ! interfaces
         ! variable definitions
         integer :: i
         i = 42
@@ -106,7 +104,6 @@ Feature: Scope Detection
         use something
         ! use statements
         implicit none
-        ! interfaces
         ! variable definitions
         integer :: i
         i = 42
@@ -155,7 +152,6 @@ Feature: Scope Detection
         use something
         ! use statements
         implicit none
-        ! interfaces
         ! variable definitions
         integer :: i
         i = 42
@@ -168,7 +164,6 @@ Feature: Scope Detection
           use stuff
           ! use statements
           implicit none
-          ! interfaces
           ! variable definitions
           integer k
           k = 13
@@ -181,7 +176,6 @@ Feature: Scope Detection
           use stuff
           ! use statements
           implicit none
-          ! interfaces
           ! variable definitions
           integer k
           k = 13
@@ -208,7 +202,6 @@ Feature: Scope Detection
       use something
       ! use statements
       implicit none
-      ! interfaces
       ! variable definitions
       integer :: i
       i = 42
@@ -239,7 +232,6 @@ Feature: Scope Detection
         use something
         ! use statements
         implicit none
-        ! interfaces
         ! variable definitions
         integer :: i
         type :: ppm_t_type
@@ -273,7 +265,6 @@ Feature: Scope Detection
         use something
         ! use statements
         implicit none
-        ! interfaces
         ! variable definitions
         integer :: i
         type, extends(supertype) :: ppm_t_type
@@ -285,6 +276,38 @@ Feature: Scope Detection
       end module
 
     """
+
+  Scenario: interface statement
+    When I preprocess
+    """
+      module m
+        interface  
+          subroutine test(arg1,arg2)
+          integer, intent(in)  :: arg1
+          integer, intent(out) :: arg2
+          end subroutine test
+        end interface
+      end module
+
+    """
+    Then it should expand into
+    """
+      module m
+        ! use statements
+        implicit none
+        ! variable definitions
+        interface  
+          subroutine test(arg1,arg2)
+          ! use statements
+          integer, intent(in)  :: arg1
+          integer, intent(out) :: arg2
+          end subroutine test
+        end interface
+        ! subroutines
+      end module
+
+    """
+
 
   Scenario: typebound procedure
 
