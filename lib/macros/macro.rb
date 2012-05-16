@@ -41,25 +41,27 @@ class String
     # replace
     result = gsub /#{pattern}/ do
       |match|
-      rep = replacement
+      substitute = ""
       if splat or max > 0
         args = []
         $~[1].scan /"[^"]*"|[^,]+/ do
           |arg|
           args << arg
         end
-        rep.map! do
+        replacement.each do
           |piece|
           if piece.is_a? Integer
-            args[piece-1]
+            substitute = substitute + args[piece-1]
           elsif piece == :splat
-            args[max..args.length].join "," unless max > args.length
+            substitute = substitute + args[max..args.length].join(",") unless max > args.length
           else
-            piece
+            substitute = substitute + piece
           end
         end
+      else
+        substitute = replacement.join ""
       end
-      rep.join ''
+      substitute
     end
     result
   end

@@ -1,20 +1,29 @@
 program pse
   integer, dimension(4) :: bcd
   bcd = ppm_param_bcdef_periodic
+
   ppm_init()
+
   t = create_topology(bcd)
+
   c = create_particles(t)
   global_mapping(c,t)
+
   f = create_field(2, "Field1")
+
   field_discretize_on(f,c)
+
   ghost_mapping(c)
   create_neighlist(c)
+
   !   - d = define_operator
   !   - compute_operator       (d,c)
   !   - o = initialize_ode     (r)
   !   - loop                   (condition)
   !     - step_ode             (o,c)
-    ppm_finalize()
+
+  ppm_finalize()
+
   ! - define_rhs r(a)
   !   - a = apply_operator     (d,a)
 end program

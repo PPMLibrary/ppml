@@ -314,6 +314,8 @@ Feature: Foreach Macros
         f_n(1) = g_n(i+1,j)
       for bottom
         f_n(1) = g_n(i-1,j)
+        f_n(2) = g_n(i,j)
+        f_n(3) = g_n(i+1,j)
       for rest
         f_n(1) = g_n(i-1,j) + g_n(i+1,j)
     end foreach
@@ -338,6 +340,8 @@ Feature: Foreach Macros
     i = patch_iterator%nnodes(1)
     do j = 1, patch_iterator%nnodes(2)
       f_data(i,j,1) = g_data(i-1,j)
+      f_data(i,j,2) = g_data(i,j)
+      f_data(i,j,3) = g_data(i+1,j)
     end do
 
     """
