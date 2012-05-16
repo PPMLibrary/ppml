@@ -5,10 +5,22 @@ module CG
       @pattern     = pattern_to_regexp  pattern
     end
 
+    def transform *args
+      res = args.map do
+        |arg|
+        do_transform arg if arg.is_a? String
+      end
+      if res.length == 1 
+        res[0]
+      else
+        res
+      end
+    end
+
     # Replace all occurences of pattern in target with replacement.
     #
     # @param target [String] target string
-    def transform target
+    def do_transform target
       target.gsub /#{@pattern}/ do
         |match|
         sub = ""
@@ -31,11 +43,23 @@ module CG
       end
     end
 
+    def transform! *args
+      res = args.map do
+        |arg|
+        do_transform! arg if arg.is_a? String
+      end
+      if res.length == 1 
+        res[0]
+      else
+        res
+      end
+    end
+
     # Destructive version of transform
     #
     # @param target [String] target string
-    def transform! target
-      target.replace(transform target)
+    def do_transform! target
+      target.replace(do_transform target)
     end
 
     # Transforms an input string into an array of pieces
