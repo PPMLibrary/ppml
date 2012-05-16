@@ -1,9 +1,10 @@
 module CG
   class Scope
-    attr_reader :name, :use_statements, :variables, :includes, :child, :parent, :output_continue
+    attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent, :output_continue
     attr_accessor :indent, :body_indent
 
-    def initialize name, parent=nil
+    def initialize kind, name, parent=nil
+      @kind = kind
       @name = name
       @use_statements = {}
       @variables = {}

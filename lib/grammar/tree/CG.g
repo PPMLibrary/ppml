@@ -73,9 +73,9 @@ def strip string
   result
 end
 
-def setup_scope
-  find_hidden
-  @scope = CG::Scope.new(@input.look(3).text,@scope)
+def setup_scope kind, name
+  #find_hidden
+  @scope = CG::Scope.new(kind.downcase.to_sym,name,@scope)
 end
 
 def cleanup_scope
@@ -117,8 +117,9 @@ rhs_statement
     ;
 
 rhs_start returns [name,args,ret]
-    : { setup_scope }
-        ^(RHS_START n=ID_T a=rhs_args r=rhs_args)
+    : { find_hidden }
+    ^(RHS_START n=ID_T a=rhs_args r=rhs_args)
+        { setup_scope "rhs", $n }
       { $name=$n
         $args=a.args
         $ret=r.args }
@@ -157,8 +158,9 @@ type_statement
 // Scope handling
 
 scope_start
-    : { setup_scope }
-      ^(SCOPE_START name=ID_T text=TEXT)
+    : {find_hidden}
+    ^(SCOPE_START kind=TEXT name=ID_T? text=TEXT) 
+    { setup_scope $kind.text, $name }
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 

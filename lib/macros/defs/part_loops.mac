@@ -1,0 +1,26 @@
+macro foreach particles(pset)
+modifier positions(x)
+modifier fields(*fields)
+modifier types(*types)
+% types = Hash[types.map {|tdef| [tdef[0],tdef[1].to_sym]}] 
+% unless x == :required
+% scope.var "#{x}_#{iter}".to_sym => "real(mk), dimension(:,:), pointer :: #{x}_#{iter}"
+call P%get_xp(<%= "#{x}_#{iter}" %>,info)
+% end
+% fields.each do |f|
+%   if types[f[0]]  == :scalar
+%     scope.var "#{f[0]}_#{iter}".to_sym => "real(mk), dimension(:), pointer :: #{f[0]}_#{iter}"
+%   else if types[f[0]]  == :vector
+%     scope.var "#{f[0]}_#{iter}".to_sym => "real(mk), dimension(:,:), pointer :: #{f[0]}_#{iter}"
+%   else
+%     STDERR.puts "ERROR: #{f[0]}_#{iter} must be either declared as scalar or vector"
+%   end
+call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+% end
+do <%= iter %>=1,<%= pset %>%Npart
+% fields.each do |f|
+%   transform body, "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+% end
+<%= indent(body,2) -%>
+end do
+end macro

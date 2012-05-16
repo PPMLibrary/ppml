@@ -5,12 +5,15 @@ module CG
 
     describe "creating scopes" do
       it "creates nested scopes" do
-        prog = Scope.new "program"
-        s1 = Scope.new("subroutine1",prog)
-        s2 = Scope.new("subsub",s1)
+        prog = Scope.new :program, "program"
+        s1 = Scope.new(:subroutine, "subroutine1",prog)
+        s2 = Scope.new(:subroutine, "subsub",s1)
         s2.parent.should == s1
         s2.parent.parent.should == prog
         s1.parent.should == prog
+        prog.kind.should == :program
+        s1.parent.kind.should == :program
+        s2.parent.kind.should == :subroutine
         prog.child.should == s1
         prog.child.child.should == s2
         s1.child.should == s2
@@ -22,7 +25,7 @@ module CG
 
     describe "scope modification" do
       before :each do
-        @s = Scope.new "name"
+        @s = Scope.new :subroutine, "name"
       end
 
       it "adds use statements with #use" do
