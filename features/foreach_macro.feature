@@ -282,12 +282,14 @@ Feature: Foreach Macros
     % fs.each do |f|
     call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
     % end
-    %   bodies.top.transform!    "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
-    %   bodies.bottom.transform! "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
-    %   bodies.rest.transform!   "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
-    %   bodies.top.transform!    "#{fs[1]}_#{iter}", "#{fs[1]}_data"
-    %   bodies.bottom.transform! "#{fs[1]}_#{iter}", "#{fs[1]}_data"
-    %   bodies.rest.transform!   "#{fs[1]}_#{iter}", "#{fs[1]}_data"
+    % ft = CG::Transform.new "#{fs[0]}_#{iter}", "#{fs[0]}_data(i,j,$1)"
+    % gt = CG::Transform.new "#{fs[1]}_#{iter}", "#{fs[1]}_data"
+    % ft.transform! bodies.top
+    % ft.transform! bodies.bottom
+    % ft.transform! bodies.rest
+    % gt.transform! bodies.top
+    % gt.transform! bodies.bottom
+    % gt.transform! bodies.rest
 
     modifier fields(*fs)
     i = 1
@@ -314,6 +316,8 @@ Feature: Foreach Macros
         f_n(1) = g_n(i+1,j)
       for bottom
         f_n(1) = g_n(i-1,j)
+        f_n(2) = g_n(i,j)
+        f_n(3) = g_n(i+1,j)
       for rest
         f_n(1) = g_n(i-1,j) + g_n(i+1,j)
     end foreach
@@ -338,6 +342,8 @@ Feature: Foreach Macros
     i = patch_iterator%nnodes(1)
     do j = 1, patch_iterator%nnodes(2)
       f_data(i,j,1) = g_data(i-1,j)
+      f_data(i,j,2) = g_data(i,j)
+      f_data(i,j,3) = g_data(i+1,j)
     end do
 
     """

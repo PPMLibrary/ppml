@@ -1,4 +1,5 @@
 require 'ostruct'
+require_relative 'transform'
 
 class String
 
@@ -17,51 +18,8 @@ class String
   end
 
   def transform pattern, replacement
-    # check if arguments are used in the replacement
-    replacement = replacement.split /(\$(?:\d+|\*))/
-    max = 0
-    splat = false
-    replacement.map! do
-      |piece|
-      if piece == "$*"
-        splat = true
-        :splat
-      elsif piece =~ /^\$(\d+)$/
-        max = $~[1].to_i if $~[1].to_i > max
-        $~[1].to_i
-      else
-        piece
-      end
-    end
-    # turn pattern into propper regexp
-    pattern = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
-    if splat or max > 0
-      pattern << "\\((.*?)\\)"
-    end
-    # replace
-    result = gsub /#{pattern}/ do
-      |match|
-      rep = replacement
-      if splat or max > 0
-        args = []
-        $~[1].scan /"[^"]*"|[^,]+/ do
-          |arg|
-          args << arg
-        end
-        rep.map! do
-          |piece|
-          if piece.is_a? Integer
-            args[piece-1]
-          elsif piece == :splat
-            args[max..args.length].join "," unless max > args.length
-          else
-            piece
-          end
-        end
-      end
-      rep.join ''
-    end
-    result
+    t = CG::Transform.new pattern, replacement
+    t.transform self
   end
 
   def transform! pattern, replacement
