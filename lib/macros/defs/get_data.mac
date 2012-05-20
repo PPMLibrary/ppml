@@ -1,4 +1,4 @@
 macro get_data(field)
-% scope.var({result.to_sym => "real(mk), dimension(:), pointer :: #{result}"})
+% scope.var result.to_sym,  "real(mk), dimension(:), pointer"
 <%= result %> = b%get_wp(<%= field %>)
 end macro

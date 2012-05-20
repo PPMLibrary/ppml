@@ -1,5 +1,5 @@
 macro field_discretize_on(field,discretization)
 % scope.use :ppm_module_field_typedef
-% scope.var info: "integer :: info"
+% scope.var :info, "integer"
 call <%= field %>%discretize_on(<%= discretization %>,info)
 end macro

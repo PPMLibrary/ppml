@@ -1,7 +1,7 @@
 macro fail(test, message, type=ppm_err_alloc,info=info,exit_point=nil)
 % scope.use :ppm_module_error
 % scope.insert_exit_point unless exit_point
-% scope.var caller: "character(len=#{scope.name.length}) :: caller = '#{scope.name}'"
+% scope.raw_var caller: "character(len=#{scope.name.length}) :: caller = '#{scope.name}'"
 if (<%= test %>) then
     call ppm_error(<%= type %>, caller, &
     <%= message %>, &

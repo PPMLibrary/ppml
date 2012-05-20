@@ -1,7 +1,7 @@
 macro create_particles(topology, np=Npart)
 % scope.use :ppm_module_particles_typedef
-% scope.var {result.to_sym => "type(ppm_t_particles_d) :: #{result}"}, :particles
-% scope.var info: "integer :: info"
+% scope.var result.to_sym,  "type(ppm_t_particles_d)"
+% scope.var :info, "integer"
 % scope.arg name: :Npart, type: "integer", default: "10000", ctrl_name: "'Npart'", help: "'Global number of particles'"
 call <%= result %>%initialize(<%= np %>, info, topoid=<%= topology %>)
 end macro

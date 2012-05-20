@@ -2,16 +2,17 @@ foreach macro particles(pset)
 modifier positions(x)
 modifier fields(*fields)
 modifier types(*types)
+% scope.var iter.to_sym,  "integer"
 % typehash = Hash[types.map {|tdef| [tdef[0],"#{tdef[1]}".to_sym]}] 
 % unless x == :required
-%   scope.var "#{x}_#{iter}".to_sym => "real(mk), dimension(:,:), pointer :: #{x}_#{iter}"
+%   scope.var "#{x}_#{iter}".to_sym,  "real(mk), dimension(:,:), pointer"
 call <%= pset %>%get_xp(<%= "#{x}_#{iter}" %>,info)
 % end
 % fields.each do |f|
 %   if typehash[f[0]]  == :scalar
-%     scope.var "#{f[0]}_#{iter}".to_sym => "real(mk), dimension(:), pointer :: #{f[0]}_#{iter}"
+%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(mk), dimension(:), pointer"
 %   elsif typehash[f[0]]  == :vector
-%     scope.var "#{f[0]}_#{iter}".to_sym => "real(mk), dimension(:,:), pointer :: #{f[0]}_#{iter}"
+%     scope.var "#{f[0]}_#{iter}".to_sym, "real(mk), dimension(:,:), pointer"
 %   else
 %     STDERR.puts "ERROR: #{f[0]}_#{iter} must be either declared as scalar or vector"
 %   end

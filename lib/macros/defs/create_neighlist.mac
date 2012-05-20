@@ -1,4 +1,4 @@
 macro create_neighlist(discretization)
-% scope.var info: "integer :: info"
+% scope.var :info, "integer"
 call <%= discretization %>%comp_neighlist(info)
 end macro

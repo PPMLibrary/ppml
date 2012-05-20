@@ -1,6 +1,6 @@
 timeloop macro(body)
-% scope.var time_loop_step: "integer :: time_loop_step"
-% scope.var time_loop_time: "real :: time_loop_time"
+% scope.var :time_loop_step, "integer"
+% scope.var :time_loop_time, "real"
 while (time_loop_time < <%= conf.stop.time %> .and. time_loop_step < <%= conf.stop.step %>)
 <%= body.indent 2 -%>
 end while

@@ -9,6 +9,7 @@ Feature: time loop macro
   Scenario: basic time loop
     Given setting stop.time is 10
     And setting stop.step is 1000
+    And setting predictable_mangle_prefix is on
     When I preprocess
     """
     program timetest
@@ -23,9 +24,9 @@ Feature: time loop macro
     """
     program timetest
       implicit none
-      integer :: time_loop_step
-      real :: time_loop_time
-      while (time_loop_time < 10 .and. time_loop_step < 1000)
+      integer :: mangled_time_loop_step
+      real :: mangled_time_loop_time
+      while (mangled_time_loop_time < 10 .and. mangled_time_loop_step < 1000)
         ! some code here
         a = 10
       end while

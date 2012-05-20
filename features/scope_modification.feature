@@ -9,9 +9,10 @@ Feature: scope modification
   from any macro invoked anywhere in a scope.
   
   Scenario: Declaring variables
+    Given setting predictable_mangle_prefix is on
     Given a macro "mpi_init" is defined as
     """
-    % scope.var("info" => "INTEGER    :: info")
+    % scope.var :info, "INTEGER"
     call MPI_Init(info)
 
     """
@@ -26,8 +27,8 @@ Feature: scope modification
     """
     program test 
       implicit none
-      INTEGER    :: info
-      call MPI_Init(info)
+      INTEGER :: mangled_info
+      call MPI_Init(mangled_info)
     end program test
     
     """

@@ -34,14 +34,14 @@ module CG
         @s.use_statements.should == {some_module:'use some_module', other_module: 'use other_module, only: variable'}
       end
 
-      it "adds variables with #var" do
-        @s.var(aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable")
-        @s.var(i: "INTEGER :: i")
+      it "adds variables with #raw_var" do
+        @s.raw_var(aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable")
+        @s.raw_var(i: "INTEGER :: i")
         @s.variables.should == {aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable", i: "INTEGER :: i"}
       end
 
       it "allows the type of a symbol to be set as second argument to #var" do
-        @s.var({:c => "type(something) :: c"}, :particles)
+        @s.raw_var({:c => "type(something) :: c"}, :particles)
         @s.variables.should == {:c => "type(something) :: c"}
         @s.type_of(:c).should == :particles
       end

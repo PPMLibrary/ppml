@@ -103,7 +103,9 @@ module CG
       map["result"] = result.to_s
       expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      erb.result Macro.binding_from_map(map)
+      expanded = erb.result Macro.binding_from_map(map)
+      expanded = scope.mangle expanded unless scope.nil?
+      expanded
     end
 
     def expand_recursive_calls(scope)
@@ -269,7 +271,9 @@ module CG
       map["iter"]   = iter
       # expand_recursive_calls(scope) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      erb.result Macro.binding_from_map(map)
+      expanded = erb.result Macro.binding_from_map(map)
+      expanded = context.mangle expanded unless context.nil?
+      expanded
     end
 
     def parse_modifiers body
@@ -316,7 +320,9 @@ module CG
       map = {"scope" => context, "body" => body.to_s}
       expand_recursive_calls(context) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      erb.result Macro.binding_from_map(map)
+      expanded = erb.result Macro.binding_from_map(map)
+      expanded = context.mangle expanded unless context.nil?
+      expanded
     end
   end # TimeLoopMacro
 
