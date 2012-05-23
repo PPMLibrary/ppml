@@ -20,8 +20,13 @@ call <%= pset %>%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
 % end
 do <%= iter %>=1,<%= pset %>%Npart
 % fields.each do |f|
-%   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+%   if typehash[f[0]]  == :scalar
+%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+%   elsif typehash[f[0]]  == :vector
+%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
+%   end
 % end
+% body.transform! "#{x}_#{iter}", "#{x}_#{iter}($1,#{iter})"
 <%= body.indent 2 -%>
 end do
 end macro
