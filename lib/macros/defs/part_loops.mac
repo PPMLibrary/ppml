@@ -1,31 +1,27 @@
 foreach macro particles(pset)
 modifier positions(x)
-modifier fields(*fields)
-modifier types(*types)
+modifier sca_fields(*sca_fields)
+modifier vec_fields(*vec_fields)
 % scope.var iter.to_sym,  "integer"
-% typehash = Hash[types.map {|tdef| [tdef[0],"#{tdef[1]}".to_sym]}] 
 % unless x == :required
-%   scope.var "#{x}_#{iter}".to_sym,  "real(mk), dimension(:,:), pointer"
+%   scope.var "#{x}_#{iter}".to_sym,  "real(mk), dimension(:,:), pointer", "=> null()"
 call <%= pset %>%get_xp(<%= "#{x}_#{iter}" %>,info)
 % end
-% fields.each do |f|
-%   if typehash[f[0]]  == :scalar
-%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(mk), dimension(:), pointer"
-%   elsif typehash[f[0]]  == :vector
-%     scope.var "#{f[0]}_#{iter}".to_sym, "real(mk), dimension(:,:), pointer"
-%   else
-%     STDERR.puts "ERROR: #{f[0]}_#{iter} must be either declared as scalar or vector"
-%   end
+% sca_fields.each do |f|
+%   scope.var "#{f[0]}_#{iter}".to_sym,  "real(mk), dimension(:), pointer", "=> null()"
 call <%= pset %>%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
-% end
+% end unless sca_fields.nil?
+% vec_fields.each do |f|
+%   scope.var "#{f[0]}_#{iter}".to_sym, "real(mk), dimension(:,:), pointer", "=> null()"
+call <%= pset %>%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+% end unless vec_fields.nil?
 do <%= iter %>=1,<%= pset %>%Npart
-% fields.each do |f|
-%   if typehash[f[0]]  == :scalar
-%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
-%   elsif typehash[f[0]]  == :vector
-%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
-%   end
-% end
+% sca_fields.each do |f|
+%   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+% end unless sca_fields.nil?
+% vec_fields.each do |f|
+%   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
+% end unless vec_fields.nil?
 % body.transform! "#{x}_#{iter}", "#{x}_#{iter}($1,#{iter})"
 <%= body.indent 2 -%>
 end do

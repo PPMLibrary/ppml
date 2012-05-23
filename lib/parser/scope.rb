@@ -48,8 +48,10 @@ module CG
     # @param [Symbol] name of the variable
     # @param [String] typedecl_str to be used in the generated Fortran code at
     #                 the left hand side of the '::'
-    def var name, typedecl_str
-      @unmangled[name] = typedecl_str
+    # @param [String] init_str to be used in the generated fortran as an
+    #                 initializer, such as "=> NULL()"
+    def var name, typedecl_str, init_str = nil
+      @unmangled[name] = [typedecl_str, init_str]
     end
 
     # Mangle the variable names in an expanded macro and add the final variable
@@ -69,7 +71,7 @@ module CG
         mangled = "#{prefix}_#{k.to_s}"
         pattern = "(?<![a-z_0-9])" + unmangled +  "(?![a-z_0-9])"
         body.gsub! /#{pattern}/, mangled
-        raw_var mangled.to_sym => "#{v} :: #{mangled}"
+        raw_var mangled.to_sym => "#{v[0]} :: #{mangled} #{v[1]}".rstrip()
       end
       @unmangled.clear
       body
