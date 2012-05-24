@@ -279,6 +279,7 @@ Feature: Foreach Macros
     Given a foreach macro named "mesh" with argument list (m)
     And body
     """
+    modifier fields(*fs)
     % fs.each do |f|
     call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
     % end
@@ -291,7 +292,6 @@ Feature: Foreach Macros
     % gt.transform! bodies.bottom
     % gt.transform! bodies.rest
 
-    modifier fields(*fs)
     i = 1
     do j = 1, patch_iterator%nnodes(2)
     <%= bodies.top.indent 2 -%>
@@ -311,7 +311,7 @@ Feature: Foreach Macros
     """
     When I preprocess
     """
-    foreach n in mesh(M) with fields(f,g)
+    foreach n in mesh(M) with fields(f,g) indices(i,j)
       for top
         f_n(1) = g_n(i+1,j)
       for bottom

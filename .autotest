@@ -4,7 +4,8 @@ require 'autotest/restart'
 require 'autotest/timestamp'
 
 Autotest.add_hook :initialize do |autotest|
-  %w{.git doc .#}.each do |exception|
+  %w{.git doc **/.#*}.each do |exception|
     autotest.add_exception(exception)
   end
+  false
 end
