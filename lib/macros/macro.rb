@@ -227,7 +227,7 @@ module CG
       map["bodies"] = bodies
       map["scope"]  = context
       map["iter"]   = iter
-      # expand_recursive_calls(scope) unless @recursive_expanded
+      expand_recursive_calls(context) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result Macro.binding_from_map(map)
       expanded = context.mangle expanded unless context.nil?
