@@ -11,6 +11,10 @@ output = template;
 require_relative 'scope'
 }
 
+@init {
+@scope = Scope.new nil, nil
+}
+
 
 @members {
 
@@ -30,6 +34,12 @@ def find_hidden
   find_empty_lines i
 
   return @current_indent, @empty_lines
+end
+
+def update_line_number
+  t = Preprocessor.instance.tokens
+  i = @input.look.start_index
+  @scope.line = t[i].line
 end
 
 def find_empty_lines i
@@ -218,7 +228,8 @@ inner_line
 
 line
     : { my_indent, my_empty = find_hidden
-       @first_line ||= my_indent }
+        @first_line ||= my_indent
+        update_line_number }
         ( fmac=fcmacro       -> verbatim(in={@empty_lines + indent($fmac.st.to_s)})
         | loop=foreach       -> verbatim(in={my_empty + indent($loop.st.to_s, my_indent)})
         | tl=timeloop        -> verbatim(in={my_empty + indent($tl.st.to_s, my_indent)})

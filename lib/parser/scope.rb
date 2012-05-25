@@ -4,7 +4,7 @@ module CG
   # adding various declarations to the scope when generating its code.
   class Scope
     attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent, :output_continue
-    attr_accessor :indent, :body_indent
+    attr_accessor :indent, :body_indent, :line
 
     # Creates a new scope.
     #
