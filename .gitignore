@@ -11,3 +11,4 @@ examples/*/bin
 examples/*/run
 examples/*/bench
 .idea/*
+.yardoc
