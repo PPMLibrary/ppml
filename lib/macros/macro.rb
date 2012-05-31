@@ -72,23 +72,29 @@ module CG
     end
 
     def expand_recursive_calls scope, binding
-      @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
+      @body.gsub!(/^(?<indent>[ \t]*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
         indent = $~[:indent]
         name = $~[:name]
         args = Macro.parse_arglist($~[:args])
-        positional = []
-        named = {}
-        args.each do
-          |name, value|
-          if value == :required
-            positional.push eval(name, binding).to_s
-          else
-            named[name] = eval(value, binding).to_s
-          end
-        end
-        "% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,#{positional},#{named}).indent(\"#{indent}\")"
+        <<CODE
+% pos = []
+% named = {}
+% CG::Macro.eval_args(#{args}, pos, named, get_binding)
+% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,pos,named).indent(\"#{indent}\")
+CODE
       end
       @recursive_expanded = true
+    end
+
+    def self.eval_args args, pos, named, binding
+      args.each do
+        |name, value|
+        if value == :required
+          pos.push eval(name, binding).to_s
+        else
+          named[name] = eval(value, binding).to_s
+        end
+      end
     end
 
     protected
