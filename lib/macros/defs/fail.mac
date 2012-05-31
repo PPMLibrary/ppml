@@ -5,7 +5,7 @@ macro fail(test, message, type=ppm_err_alloc,info=info,exit_point=nil)
 if (<%= test %>) then
     call ppm_error(<%= type %>, caller, &
     <%= message %>, &
-    100000, <%= info %>)
+    <%= scope.line %>, <%= info %>)
 goto <%= exit_point ? exit_point : 9999 %>
 end if
 end macro

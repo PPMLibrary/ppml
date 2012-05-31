@@ -9,23 +9,23 @@ macro ppm_init(debug_level=0)
 
 % if conf.mpi
 call MPI_Init(info)
-$fail(info.ne.0, "MPI_Init failed.")
+$fail("info.ne.0", "\"MPI_Init failed.\"")
 
 comm = MPI_COMM_WORLD
 
 call MPI_Comm_Size(comm,nproc,info)
-$fail(info.ne.0, "MPI_Comm_Size failed.")
+$fail("info.ne.0", "\"MPI_Comm_Size failed.\"")
 
 call MPI_Comm_Rank(comm,rank,info)
-$fail(info.ne.0, "MPI_Comm_Rank failed.")
+$fail("info.ne.0", "\"MPI_Comm_Rank failed.\"")
 % end
 
 call define_args
 call parse_args(info)
-$fail(info.ne.0, "Parse args failed.")
+$fail("info.ne.0", "\"Parse args failed.\"")
 
 call ppm_init(<%= conf.ppm.dim %>, <%= conf.ppm.prec %>, &
               <%= conf.ppm.tolexp %>,comm,&
               <%= debug_level %>,info)
-$fail(info.ne.0, "ppm_init failed.")
+$fail("info.ne.0", "\"ppm_init failed.\"")
 end macro
