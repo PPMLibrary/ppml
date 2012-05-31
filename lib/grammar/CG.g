@@ -32,6 +32,7 @@ RHS_SCOPE;
 RHS_START;
 RHS_INNER;
 TIMELOOP;
+TEMPLATE;
 }
 
 @header {
@@ -113,34 +114,45 @@ prog
 // Scope detection - top level statements
 
 scope_statement
-    : open=scope_start
+    : t=template?
+      open=scope_start
         i=inner_stuff
       close=scope_end
-      -> ^(SCOPE $open $i $close)
+      -> ^(SCOPE $t? $open $i $close)
     | rhs_statement
+    ;
+
+template
+    : TEMPLATE_T LT_T v+=template_var (COMMA_T v+=template_var)* GT_T NEWLINE_T
+      -> ^(TEMPLATE $v+)
+    ;
+
+template_var
+    : n=ID_T COLON_T LEFT_SQUARE_T t+=ID_T (COMMA_T t+=ID_T)* RIGHT_SQUARE_T
+        -> ^(ARGS $n $t+)
     ;
 
 scope_start
     :
-    ( kind=PROGRAM_T name=ID_T NEWLINE_T { @context << :program }
-    | kind=MODULE_T name=ID_T NEWLINE_T { @context << :module }
-    | ABSTRACT_T? kind=INTERFACE_T name=ID_T? NEWLINE_T { @context << :interface }
-    | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T arglist? NEWLINE_T { @context << :subroutine }
-    | (ID_T)? kind=FUNCTION_T name=ID_T arglist?
-            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? NEWLINE_T { @context << :function }
+    (              kind=PROGRAM_T    name=ID_T           NEWLINE_T { @context << :program }
+    |              kind=MODULE_T     name=ID_T           NEWLINE_T { @context << :module }
+    | ABSTRACT_T?  kind=INTERFACE_T  name=ID_T?          NEWLINE_T { @context << :interface }
+    | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T  arglist? NEWLINE_T { @context << :subroutine }
+    | ID_T?        kind=FUNCTION_T   name=ID_T  arglist?
+            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)?  NEWLINE_T { @context << :function }
     ) -> ^(SCOPE_START TEXT[$kind.text] $name? TEXT[$scope_start.start,$scope_start.text])
     ;
 
 scope_end
     :
-        ( {@context.last==:program}?=>    ( ENDPROGRAM_T    | END_T PROGRAM_T    ) ID_T? NEWLINE_T
-        | {@context.last==:module}?=>     ( ENDMODULE_T     | END_T MODULE_T     ) ID_T? NEWLINE_T
-        | {@context.last==:interface}?=>  ( ENDINTERFACE_T  | END_T INTERFACE_T  ) ID_T? NEWLINE_T
-        | {@context.last==:subroutine}?=> ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
-        | {@context.last==:function}?=>   ( ENDFUNCTION_T   | END_T FUNCTION_T   ) ID_T? NEWLINE_T
-        )
-        { @context.pop }
-        -> ^(SCOPE_END TEXT[$scope_end.start,$scope_end.text])
+    ( {@context.last==:program   }?=> ( ENDPROGRAM_T    | END_T PROGRAM_T    ) ID_T? NEWLINE_T
+    | {@context.last==:module    }?=> ( ENDMODULE_T     | END_T MODULE_T     ) ID_T? NEWLINE_T
+    | {@context.last==:interface }?=> ( ENDINTERFACE_T  | END_T INTERFACE_T  ) ID_T? NEWLINE_T
+    | {@context.last==:subroutine}?=> ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
+    | {@context.last==:function  }?=> ( ENDFUNCTION_T   | END_T FUNCTION_T   ) ID_T? NEWLINE_T
+    )
+    { @context.pop }
+    -> ^(SCOPE_END TEXT[$scope_end.start,$scope_end.text])
     ;
 
 rhs_statement
@@ -370,6 +382,7 @@ RETURNS_T       : 'RETURNS'       | 'returns'       ;
 TIMELOOP_T      : 'TIMELOOP'      | 'timeloop'      ;
 ENDTIMELOOP_T   : 'ENDTIMELOOP'   | 'endtimeloop'   ;
 WITH_T          : 'WITH'          | 'with'          ;
+TEMPLATE_T      : 'TEMPLATE'      | 'template'      ;
 
 // Fortran Keywords
 
@@ -500,6 +513,8 @@ COMMENT_T : COMMENT { $channel=:hidden } ;
 EQUALS_T       : '='  ;
 LEFT_PAREN_T   : '('  ;
 RIGHT_PAREN_T  : ')'  ;
+LEFT_SQUARE_T  : '['  ;
+RIGHT_SQUARE_T : ']'  ;
 AMPERSAND_T    : '&'  ;
 DOUBLE_COLON_T : '::' ;
 COLON_T        : ':'  ;

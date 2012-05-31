@@ -12,9 +12,15 @@ module CG
 ENDTEMPLATE
 
         define_template( :scoped,      <<-'ENDTEMPLATE')
-% _erbout += @open.to_s
-% _erbout += @inner.to_s
-% _erbout += @close.to_s
+% if @template
+%   t = CG::ProcedureTemplate.new @template, @name, @open.to_s, @inner.to_s, @close.to_s
+%   t.update_scope @context
+%   _erbout += t
+% else
+%   _erbout += @open.to_s
+%   _erbout += @inner.to_s
+%   _erbout += @close.to_s
+% end
 ENDTEMPLATE
 
         define_template( :rhs,         <<-'ENDTEMPLATE')
@@ -22,6 +28,7 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :inner,       <<-'ENDTEMPLATE')
+% _temp_subs = @subroutines.join("")       unless @subroutines.empty?
 % unless @context.kind == :interface
 %   _erbout += @use.join("")  unless @use.empty?
 %   _erbout += "#{@indent}! use statements\n" if conf.comment_mode
@@ -43,12 +50,15 @@ ENDTEMPLATE
 %   end
 % end
 % _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
-% _erbout += @body.join("")              unless @body.empty?
+% if @context.kind == :module
+%   _erbout += @context.interfaces @indent
+% end
+% _erbout += @body.join("")                unless @body.empty?
 % unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
 %   _erbout += "9999 continue\n"           if @context.output_continue
 %   _erbout += @contains.to_s              unless @contains.nil?
 %   _erbout += "#{@indent}! subroutines\n" if conf.comment_mode
-%   _erbout += @subroutines.join("")       unless @subroutines.empty?
+%   _erbout += _temp_subs                  unless @subroutines.empty?
 % end
 ENDTEMPLATE
 

@@ -5,12 +5,15 @@ module CG
       @pattern     = pattern_to_regexp  pattern
     end
 
+    # Apply do_transform to any number of strings.
+    #
+    # @param *args [String] any number of Strings
     def transform *args
       res = args.map do
         |arg|
         do_transform arg if arg.is_a? String
       end
-      if res.length == 1 
+      if res.length == 1
         res[0]
       else
         res
@@ -43,19 +46,22 @@ module CG
       end
     end
 
+    # Destructive version of transform.
+    #
+    # @param *args [String] any number of Strings
     def transform! *args
       res = args.map do
         |arg|
         do_transform! arg if arg.is_a? String
       end
-      if res.length == 1 
+      if res.length == 1
         res[0]
       else
         res
       end
     end
 
-    # Destructive version of transform
+    # Destructive version of do_transform
     #
     # @param target [String] target string
     def do_transform! target
@@ -102,11 +108,120 @@ module CG
     #
     # @param pattern [String] the search pattern
     def pattern_to_regexp pattern
-      pattern = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
+      regexp = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
       if @splat or @max > 0
-        pattern << "\\((?<args>.*?)\\)"
+        regexp << "\\((?<args>.*?)\\)"
       end
-      pattern
+      regexp
+    end
+  end
+
+  class MultiTransform
+    def initialize patterns
+      @patterns = find_args          patterns
+      @regexp   = patterns_to_regexp patterns
+    end
+
+    # Apply do_transform to any number of strings.
+    #
+    # @param *args [String] any number of Strings
+    def transform *args
+      res = args.map do
+        |arg|
+        do_transform arg if arg.is_a? String
+      end
+      if res.length == 1
+        res[0]
+      else
+        res
+      end
+    end
+
+    # Replace all occurences of pattern in target with replacement.
+    #
+    # @param target [String] target string
+    def do_transform target
+      target.gsub /#{@regexp}/ do
+        |match|
+        sub = ""
+        key = $~[:key]
+        if @splat or @nmax > 0
+          args = Transform.arg_split $~[:args]
+          @patterns[key].each do
+            |piece|
+            if piece.is_a? Integer
+              sub = sub + args[piece-1]
+            elsif piece == :splat
+              sub = sub + args[@max[key]..args.length].join(',') unless @max[key] > args.length
+            else
+              sub = sub + piece
+            end
+          end
+        else
+          sub = @patterns[key].join ''
+        end
+        sub
+      end
+    end
+
+    # Destructive version of transform.
+    #
+    # @param *args [String] any number of Strings
+    def transform! *args
+      res = args.map do
+        |arg|
+        do_transform! arg if arg.is_a? String
+      end
+      if res.length == 1
+        res[0]
+      else
+        res
+      end
+    end
+
+    # Destructive version of do_transform
+    #
+    # @param target [String] target string
+    def do_transform! target
+      target.replace(do_transform target)
+    end
+
+
+    # Transforms all value strings in input into arrays of pieces
+    # where all arg references are replaced by either
+    # the integer value of the reference or :splat.
+    #
+    # @param replacement [Hash] pattern to replacement map
+    def find_args patterns
+      @max = Hash.new 0
+      @splat = false
+      patterns.each do |pattern, replacement|
+        patterns[pattern] = replacement.split(/(\$(?:\d+|\*))/).map do |piece|
+          if piece == "$*"
+            @splat = true
+            :splat
+          elsif piece =~ /^\$(\d+)$/
+            @max[pattern] = $~[1].to_i if $~[1].to_i > @max[pattern]
+            $~[1].to_i
+          else
+            piece
+          end
+        end
+      end
+      @nmax = 0
+      @max.values.each { |v| @nmax = v if v > @nmax }
+      patterns
+    end
+
+    # Creates a propper regexp that captures any key from input hash.
+    #
+    # @param pattern [Hash] pattern to replacement map
+    def patterns_to_regexp patterns
+      regexp = "(?<![a-z_0-9])(?<key>" + patterns.keys.join("|") + ")(?![a-z_0-9])"
+      if @splat or @nmax > 0
+        regexp << "\\((?<args>.*?)\\)"
+      end
+      regexp
     end
   end
 end

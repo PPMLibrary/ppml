@@ -4,7 +4,7 @@ module CG
   # adding various declarations to the scope when generating its code.
   class Scope
     attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent, :output_continue
-    attr_accessor :indent, :body_indent, :line
+    attr_accessor :indent, :body_indent, :line, :interfaces
 
     # Creates a new scope.
     #
@@ -15,6 +15,7 @@ module CG
       @kind = kind
       @name = name
       @use_statements = {}
+      @interfaces = Hash.new []
       @variables = {}
       @unmangled = {}
       @includes = []
@@ -31,7 +32,22 @@ module CG
     def use sym, str=nil
       @use_statements[sym] = str || "use #{sym.to_s}"
     end
-    
+
+    def interface name, line
+      raise "You can only add interfaces to module scopes" unless @kind == :module
+      @interfaces[name] <<= line
+    end
+
+    def interfaces indent
+      result = ""
+      @interfaces.each do |name, lines|
+        result += "\n#{indent}  interface #{name}\n"
+        result += "#{indent}    " + lines.join("\n#{indent}    ") + "\n"
+        result += "#{indent}  end interface #{name}\n"
+      end
+      result
+    end
+
     # Add a variable declaration directly into the symbol table
     #
     # @param [Hash] var contains a symbol => declaration statement hash

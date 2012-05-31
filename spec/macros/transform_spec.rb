@@ -27,4 +27,11 @@ module CG
       end
     end
   end
+
+  describe MultiTransform do
+    it "replaces multiple patterns in one pass" do
+      t = MultiTransform.new({"a" => "b", "c" => "d"})
+      t.transform("a+c").should == "b+d"
+    end
+  end
 end

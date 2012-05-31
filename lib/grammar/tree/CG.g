@@ -111,12 +111,28 @@ prog
 naked_code : (l+=line)* -> join(lines={$l}) ;
 
 scope_statement
-    : ^(SCOPE o=scope_start
+    : ^(SCOPE t=template?
+              o=scope_start
               i=inner_stuff
               c=scope_end)
-            -> scoped(open={$o.st},close={$c.st},inner={$i.st})
+            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars})
     | r=rhs_statement
         -> verbatim(in={$r.st})
+    ;
+
+template returns [vars]
+    : {
+$vars = Hash.new
+t_acc = []
+}
+      ^(TEMPLATE
+        (^(ARGS n=ID_T
+               (t=ID_T {t_acc << $t.text.to_s})+
+           {
+$vars[$n.text.to_s] = t_acc
+t_acc = []
+}
+           ))* )
     ;
 
 rhs_statement
@@ -167,10 +183,13 @@ type_statement
 
 // Scope handling
 
-scope_start
+scope_start returns [name]
     : {find_hidden}
-    ^(SCOPE_START kind=TEXT name=ID_T? text=TEXT) 
-    { setup_scope $kind.text, $name }
+      ^(SCOPE_START kind=TEXT n=ID_T? text=TEXT)
+      {
+setup_scope $kind.text, $n
+$name = $n
+}
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
     ;
 
