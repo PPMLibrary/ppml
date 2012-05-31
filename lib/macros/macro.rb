@@ -72,7 +72,7 @@ module CG
     end
 
     def expand_recursive_calls scope, binding
-      @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
+      @body.gsub!(/^(?<indent>[ \t]*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
         indent = $~[:indent]
         name = $~[:name]
         args = Macro.parse_arglist($~[:args])
