@@ -44,10 +44,18 @@ Feature: Line number
     When I preprocess
     """
     parent()
+    a = 2
+    parent()
+    ! comment
+    parent()
 
     """
     Then it should expand into
     """
     1
+    a = 2
+    3
+    ! comment
+    5
     
     """

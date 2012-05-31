@@ -13,14 +13,14 @@ Feature: Recursive macro expansion
     Given a macro "fail" with argument list ("condition,msg") is defined as
     """
     if (<%= condition %>) then
-      call ppm_error(errno, <%= msg %>)
+      call ppm_error(errno, "<%= msg %>")
       goto 9999
     end if
     """
     And a macro "ppm_init" with argument list ("msg") is defined as
     """
     call ppm_init(many,args,info)
-      $fail(info.ne.0, "<%= msg %>")
+      $fail("info.ne.0", msg)
     """
     When I preprocess
     """

@@ -4,7 +4,11 @@ require_relative 'transform'
 class String
 
   def indent amount
-    prefix = " " * amount
+    if amount.is_a? String
+      prefix = amount
+    else
+      prefix = " " * amount
+    end
     unless empty?
       lines = split("\n")
       lines = [''] if lines.empty?
@@ -59,15 +63,15 @@ module CG
       map = Macro.resolve_args @args, pos, named
       map["scope"] = scope
       map["result"] = result.to_s
-      expand_recursive_calls(scope) unless @recursive_expanded
+      binding = Macro.binding_from_map map
+      expand_recursive_calls(scope, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      expanded = erb.result Macro.binding_from_map(map)
+      expanded = erb.result binding
       expanded = scope.mangle expanded unless scope.nil?
       expanded
     end
 
-    def expand_recursive_calls(scope)
-      m = Preprocessor.instance.macros
+    def expand_recursive_calls scope, binding
       @body.gsub!(/^(?<indent>\s*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
         indent = $~[:indent]
         name = $~[:name]
@@ -77,15 +81,12 @@ module CG
         args.each do
           |name, value|
           if value == :required
-            positional.push name
+            positional.push eval(name, binding).to_s
           else
-            named[name] = value
+            named[name] = eval(value, binding).to_s
           end
         end
-        m[name].expand(scope,nil,positional,named).gsub!(/^(.*)$/) do
-          |line|
-          indent + line
-        end if m.has_key? name
+        "% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,#{positional},#{named}).indent(\"#{indent}\")"
       end
       @recursive_expanded = true
     end
@@ -227,9 +228,10 @@ module CG
       map["bodies"] = bodies
       map["scope"]  = context
       map["iter"]   = iter
-      expand_recursive_calls(context) unless @recursive_expanded
+      binding = Macro.binding_from_map map
+      expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      expanded = erb.result Macro.binding_from_map(map)
+      expanded = erb.result binding
       expanded = context.mangle expanded unless context.nil?
       expanded
     end
@@ -276,9 +278,10 @@ module CG
 
     def expand context, body
       map = {"scope" => context, "body" => body.to_s}
-      expand_recursive_calls(context) unless @recursive_expanded
+      binding = Macro.binding_from_map map
+      expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
-      expanded = erb.result Macro.binding_from_map(map)
+      expanded = erb.result binding
       expanded = context.mangle expanded unless context.nil?
       expanded
     end
