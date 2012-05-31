@@ -19,8 +19,9 @@ Feature: Recursive macro expansion
     """
     And a macro "ppm_init" with argument list ("msg") is defined as
     """
+    % m = msg.to_s * 2
     call ppm_init(many,args,info)
-      $fail("info.ne.0", msg)
+      $fail("info.ne.0", m)
     """
     When I preprocess
     """
@@ -31,7 +32,7 @@ Feature: Recursive macro expansion
     """
     call ppm_init(many,args,info)
       if (info.ne.0) then
-        call ppm_error(errno, "message")
+        call ppm_error(errno, "messagemessage")
         goto 9999
       end if
 

@@ -79,7 +79,7 @@ module CG
         <<CODE
 % pos = []
 % named = {}
-% CG::Macro.eval_args(#{args}, pos, named, get_binding)
+% CG::Macro.eval_args(#{args}, pos, named, binding)
 % _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,pos,named).indent(\"#{indent}\")
 CODE
       end
