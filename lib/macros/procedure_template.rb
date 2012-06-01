@@ -1,4 +1,4 @@
-require_relative 'Transform'
+require_relative 'transform'
 
 module CG
   class ProcedureTemplate
