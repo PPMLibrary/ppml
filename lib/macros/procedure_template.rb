@@ -2,8 +2,12 @@ require_relative 'transform'
 
 module CG
   class ProcedureTemplate
-    def initialize vars, name, open, inner, close
-      @combinations = ProcedureTemplate.cartesian_vars vars
+    def initialize vars, cartesian, name, open, inner, close
+      if cartesian
+        @combinations = ProcedureTemplate.cartesian_vars vars
+      else
+        @combinations = ProcedureTemplate.matched_vars vars
+      end
       @name  = name.to_str
       @open  = open
       @inner = inner
@@ -29,6 +33,24 @@ module CG
         combinations = newc
       end
       combinations
+    end
+
+    def self.matched_vars vars
+      tuples = []
+      first = true
+      vars.each do |var, types|
+        if first
+          types.each_with_index do |t,i|
+            tuples << {var => t}
+          end
+          first = false
+        else
+          types.each_with_index do |t,i|
+            tuples[i][var] = t
+          end
+        end
+      end
+      tuples
     end
 
     def update_scope scope

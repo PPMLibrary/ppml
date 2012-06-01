@@ -11,7 +11,7 @@ Feature: Templating for fortran
 
     contains
 
-      template<T:[integer, real]>
+      template <T:[integer, real]>
       subroutine first(x,y,info)
         T :: x
         T :: y
@@ -72,3 +72,80 @@ Feature: Templating for fortran
     end module scope
 
     """
+
+  Scenario: multiple variables
+    When I preprocess
+    """
+    module scope
+
+    contains
+
+      template <T:[integer, real], U:[real, integer]>
+      subroutine multi(x,y,info)
+        T :: x
+        U :: y
+        integer :: info
+        y = x
+      end subroutine multi
+
+      template * <T:[logical], U:[integer, real]>
+      subroutine multi(x,y,info)
+        T :: x
+        U :: y
+        integer :: info
+        y = x
+      end subroutine multi
+
+    end module scope
+
+    """
+    Then it should expand into
+    """
+    module scope
+    implicit none
+
+      interface multi
+        module procedure multi_integer_real
+        module procedure multi_real_integer
+        module procedure multi_logical_integer
+        module procedure multi_logical_real
+      end interface multi
+
+    contains
+
+      subroutine multi_integer_real(x,y,info)
+        implicit none
+        integer :: x
+        real :: y
+        integer :: info
+        y = x
+      end subroutine multi_integer_real
+
+      subroutine multi_real_integer(x,y,info)
+        implicit none
+        real :: x
+        integer :: y
+        integer :: info
+        y = x
+      end subroutine multi_real_integer
+
+      subroutine multi_logical_integer(x,y,info)
+        implicit none
+        logical :: x
+        integer :: y
+        integer :: info
+        y = x
+      end subroutine multi_logical_integer
+
+      subroutine multi_logical_real(x,y,info)
+        implicit none
+        logical :: x
+        real :: y
+        integer :: info
+        y = x
+      end subroutine multi_logical_real
+
+    end module scope
+
+    """
+

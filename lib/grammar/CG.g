@@ -123,14 +123,19 @@ scope_statement
     ;
 
 template
-    : TEMPLATE_T LT_T v+=template_var (COMMA_T v+=template_var)* GT_T NEWLINE_T
-      -> ^(TEMPLATE $v+)
+    : TEMPLATE_T s=STAR_T? LT_T v+=template_var (COMMA_T v+=template_var)* GT_T NEWLINE_T
+      -> ^(TEMPLATE $v+ $s?)
     ;
 
 template_var
     : n=ID_T COLON_T LEFT_SQUARE_T t+=ID_T (COMMA_T t+=ID_T)* RIGHT_SQUARE_T
         -> ^(ARGS $n $t+)
     ;
+
+// template_type
+//     : ID_T (LEFT_PAREN_T (~RIGHT_PAREN_T)* RIGHT_PAREN_T)?
+//       -> TEXT[$template_type.start, $template_type.text]
+//     ;
 
 scope_start
     :

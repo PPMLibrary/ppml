@@ -115,13 +115,14 @@ scope_statement
               o=scope_start
               i=inner_stuff
               c=scope_end)
-            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars})
+            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars},cart={$t.prod})
     | r=rhs_statement
         -> verbatim(in={$r.st})
     ;
 
-template returns [vars]
+template returns [vars,prod]
     : {
+$prod = false
 $vars = Hash.new
 t_acc = []
 }
@@ -132,7 +133,8 @@ t_acc = []
 $vars[$n.text.to_s] = t_acc
 t_acc = []
 }
-           ))* )
+           ))*
+            (STAR_T {$prod = true})?)
     ;
 
 rhs_statement
