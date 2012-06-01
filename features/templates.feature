@@ -88,7 +88,7 @@ Feature: Templating for fortran
         y = x
       end subroutine multi
 
-      template * <T:[logical], U:[integer, real]>
+      template * <T:[class(particle_t)], U:[integer(8), type(mesh_t)]>
       subroutine multi(x,y,info)
         T :: x
         U :: y
@@ -107,8 +107,8 @@ Feature: Templating for fortran
       interface multi
         module procedure multi_integer_real
         module procedure multi_real_integer
-        module procedure multi_logical_integer
-        module procedure multi_logical_real
+        module procedure multi_class_particle_t__integer_8_
+        module procedure multi_class_particle_t__type_mesh_t_
       end interface multi
 
     contains
@@ -129,21 +129,21 @@ Feature: Templating for fortran
         y = x
       end subroutine multi_real_integer
 
-      subroutine multi_logical_integer(x,y,info)
+      subroutine multi_class_particle_t__integer_8_(x,y,info)
         implicit none
-        logical :: x
-        integer :: y
+        class(particle_t) :: x
+        integer(8) :: y
         integer :: info
         y = x
-      end subroutine multi_logical_integer
+      end subroutine multi_class_particle_t__integer_8_
 
-      subroutine multi_logical_real(x,y,info)
+      subroutine multi_class_particle_t__type_mesh_t_(x,y,info)
         implicit none
-        logical :: x
-        real :: y
+        class(particle_t) :: x
+        type(mesh_t) :: y
         integer :: info
         y = x
-      end subroutine multi_logical_real
+      end subroutine multi_class_particle_t__type_mesh_t_
 
     end module scope
 

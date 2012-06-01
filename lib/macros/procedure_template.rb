@@ -73,7 +73,7 @@ module CG
     end
 
     def name_sufix comb
-      comb.values.join '_'
+      comb.values.map { |t| t.gsub(/\(|\)/,"_") }.join '_'
     end
   end
 end

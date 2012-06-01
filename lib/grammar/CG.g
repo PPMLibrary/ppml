@@ -128,14 +128,14 @@ template
     ;
 
 template_var
-    : n=ID_T COLON_T LEFT_SQUARE_T t+=ID_T (COMMA_T t+=ID_T)* RIGHT_SQUARE_T
+    : n=ID_T COLON_T LEFT_SQUARE_T t+=template_type (COMMA_T t+=template_type)* RIGHT_SQUARE_T
         -> ^(ARGS $n $t+)
     ;
 
-// template_type
-//     : ID_T (LEFT_PAREN_T (~RIGHT_PAREN_T)* RIGHT_PAREN_T)?
-//       -> TEXT[$template_type.start, $template_type.text]
-//     ;
+template_type
+    : (ID_T|TYPE_T) (LEFT_PAREN_T (ID_T|NUMBER_T) RIGHT_PAREN_T)?
+      -> ID_T[$template_type.start,$template_type.text]
+    ;
 
 scope_start
     :
