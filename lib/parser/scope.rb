@@ -85,7 +85,7 @@ module CG
       @unmangled.each_pair do |k,v|
         unmangled = k.to_s
         mangled = "#{prefix}_#{k.to_s}"
-        pattern = "(?<![a-z_0-9])" + unmangled +  "(?![a-z_0-9])"
+        pattern = "(?<![a-zA-Z_0-9])" + unmangled +  "(?![a-zA-Z_0-9])"
         body.gsub! /#{pattern}/, mangled
         raw_var mangled.to_sym => "#{v[0]} :: #{mangled} #{v[1]}".rstrip()
       end

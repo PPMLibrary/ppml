@@ -58,8 +58,7 @@ module CG
       @recursive_expanded = false
     end
 
-    def expand(scope, result=nil, pos=nil, named=nil, dotarg=nil)
-      pos.insert 0, dotarg if !dotarg.nil?
+    def expand(scope, result=nil, pos=nil, named=nil, recursive=false)
       map = Macro.resolve_args @args, pos, named
       map["scope"] = scope
       map["result"] = result.to_s
@@ -67,7 +66,7 @@ module CG
       expand_recursive_calls(scope, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = scope.mangle expanded unless scope.nil?
+      expanded = scope.mangle expanded unless scope.nil? or recursive
       expanded
     end
 
@@ -80,7 +79,7 @@ module CG
 % pos = []
 % named = {}
 % CG::Macro.eval_args(#{args}, pos, named, binding)
-% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,pos,named).indent(\"#{indent}\")
+% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,pos,named,recursive=true).indent(\"#{indent}\")
 CODE
       end
       @recursive_expanded = true
@@ -227,7 +226,7 @@ CODE
       @body, @modifiers = parse_modifiers @body
     end
 
-    def expand context, iter, args, named, mods, ma, ma_named, bodies
+    def expand context, iter, args, named, mods, ma, ma_named, bodies, recursive=false
       map = Macro.resolve_args @args, args, named
       map.merge! resolve_modifiers(mods, ma, ma_named)
       map["body"]   = bodies[:default] if bodies[:default]
@@ -238,7 +237,7 @@ CODE
       expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil?
+      expanded = context.mangle expanded unless context.nil? or recursive
       expanded
     end
 
@@ -282,13 +281,13 @@ CODE
       super "timeloop", body, "body"
     end
 
-    def expand context, body
+    def expand context, body, recursive=false
       map = {"scope" => context, "body" => body.to_s}
       binding = Macro.binding_from_map map
       expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil?
+      expanded = context.mangle expanded unless context.nil? or recursive
       expanded
     end
   end # TimeLoopMacro
@@ -296,8 +295,8 @@ CODE
   class IncludeMacro < Macro
     MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
 
-    def expand(scope, args=nil, named=nil)
-      super(scope, result=nil, args=args, named=named, dotarg=nil)
+    def expand(scope, args=nil, named=nil, recursive=false)
+      super(scope, result=nil, args=args, named=named, recursive=recursive)
     end
   end #IncludeMacro
 end
