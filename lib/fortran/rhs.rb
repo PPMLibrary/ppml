@@ -40,9 +40,8 @@ module CG
   class RHS < FortranFunction
     def initialize name, call, definition
       super name, "integer"
-      args fields: "type(ppm_v_field), pointer :: fields", 
-        discretizations: "type(ppm_v_discr_kind), pointer :: discretizations",
-        changes: "type(ppm_v_field), pointer :: changes"
+      args fields_discr: "class(ppm_v_field_discr_pair), pointer :: fields_discr", 
+        changes: "class(ppm_v_field), pointer :: changes"
       use :ppm_module_interfaces
       add_args call[0], definition[0]
       add_results call[1], definition[1]
