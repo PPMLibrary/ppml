@@ -11,7 +11,7 @@ Feature: Right hand side definition
   Scenario: basic rhs definition
     Given there is a rhs call to "testrhs"
     And setting predictable_mangle_prefix is on
-    And rhs call args are (:ppm_t_mesh,:ppm_t_particle,:ppm_t_mesh)
+    And rhs call args are (:ppm_t_equi_mesh,:ppm_t_particles_d,:ppm_t_equi_mesh)
     And rhs call results are (:positions,:real,:vector,:integer)
     When I preprocess
     """
@@ -33,18 +33,25 @@ Feature: Right hand side definition
         integer :: testrhs
         class(ppm_v_field_discr_pair), pointer :: fields_discr
         class(ppm_v_field), pointer :: changes
+        class(ppm_t_field_discr_pair), pointer :: fd_pair
         class(ppm_t_field), pointer :: f
-        class(ppm_t_mesh), pointer :: a
+        class(ppm_t_equi_mesh), pointer :: a
         class(ppm_t_field), pointer :: g
         class(ppm_t_field), pointer :: h
         class(ppm_t_field), pointer :: dx
         class(ppm_t_field), pointer :: df
         class(ppm_t_field), pointer :: dg
         class(ppm_t_field), pointer :: dh
-        f => fields%vec(1)
-        a => discretizations%vec(1)
-        g => fields%vec(2)
-        h => fields%vec(3)
+        fd_pair => fields_discr%vec(1)
+        f => fd_pair%field
+        select type(fd_pair%discretization)
+        class is (ppm_t_equi_mesh)
+          a => fd_pair%discretization
+        end select
+        fd_pair => fields_discr%vec(2)
+        g => fd_pair%field
+        fd_pair => fields_discr%vec(3)
+        h => fd_pair%field
         dx => changes%vec(1)
         df => changes%vec(2)
         dg => changes%vec(3)

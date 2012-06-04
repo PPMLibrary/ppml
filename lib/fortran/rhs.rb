@@ -43,6 +43,7 @@ module CG
       args fields_discr: "class(ppm_v_field_discr_pair), pointer :: fields_discr", 
         changes: "class(ppm_v_field), pointer :: changes"
       use :ppm_module_interfaces
+      var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair"
       add_args call[0], definition[0]
       add_results call[1], definition[1]
       add definition[2].map(&:to_s).map(&:strip)
@@ -58,9 +59,15 @@ ERRMSG
         |dc, i|
         names, type = dc
         var names[0].to_sym, "class(ppm_t_field), pointer :: #{names[0]}"
-        add "#{names[0]} => fields%vec(#{i+1})"
-        var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}" unless names[1].nil?
-        add "#{names[1]} => discretizations%vec(#{i+1})" unless names[1].nil?
+        add "fd_pair => fields_discr%vec(#{i+1})"
+        add "#{names[0]} => fd_pair%field"
+        unless names[1].nil?
+          var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}"
+          add "select type(fd_pair%discretization)"
+          add "class is (#{type})"
+          add "  #{names[1]} => fd_pair%discretization"
+          add "end select"
+        end
       end
     end
 
