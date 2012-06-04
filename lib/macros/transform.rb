@@ -108,7 +108,7 @@ module CG
     #
     # @param pattern [String] the search pattern
     def pattern_to_regexp pattern
-      regexp = "(?<![a-z_0-9])" + pattern + "(?![a-z_0-9])"
+      regexp = "(?<![a-zA-Z_0-9])" + pattern + "(?![a-zA-Z_0-9])"
       if @splat or @max > 0
         regexp << "\\((?<args>.*?)\\)"
       end
@@ -217,7 +217,7 @@ module CG
     #
     # @param pattern [Hash] pattern to replacement map
     def patterns_to_regexp patterns
-      regexp = "(?<![a-z_0-9])(?<key>" + patterns.keys.join("|") + ")(?![a-z_0-9])"
+      regexp = "(?<![a-zA-Z_0-9])(?<key>" + patterns.keys.join("|") + ")(?![a-zA-Z_0-9])"
       if @splat or @nmax > 0
         regexp << "\\((?<args>.*?)\\)"
       end
