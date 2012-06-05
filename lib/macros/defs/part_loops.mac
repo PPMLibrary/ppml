@@ -2,20 +2,26 @@ foreach macro particles(pset)
 modifier positions(x)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
+modifier prec(precision=mk)
+% if precision.to_s == "prec_s"
+%   precision = "ppm_kind_single"
+% else
+%   precision = "ppm_kind_double"
+% end
 % scope.var iter.to_sym,  "integer"
 % unless x == :required
-%   scope.var "#{x}_#{iter}".to_sym,  "real(mk), dimension(:,:), pointer", "=> null()"
+%   scope.var "#{x}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
 call <%= pset %>%get_xp(<%= "#{x}_#{iter}" %>,info)
 $or_fail("\"getting positions #{pset}\"")
 % end
 % sca_fields.each do |f|
-%   scope.var "#{f[0]}_#{iter}".to_sym,  "real(mk), dimension(:), pointer", "=> null()"
-call <%= pset %>%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+%   scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:), pointer", "=> null()"
+call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
 $or_fail("\"getting field #{f[1]} for #{pset}\"")
 % end unless sca_fields.nil?
 % vec_fields.each do |f|
-%   scope.var "#{f[0]}_#{iter}".to_sym, "real(mk), dimension(:,:), pointer", "=> null()"
-call <%= pset %>%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
+%   scope.var "#{f[0]}_#{iter}".to_sym, "real(#{precision}), dimension(:,:), pointer", "=> null()"
+call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
 $or_fail("\"getting field #{f[1]} for #{pset}\"")
 % end unless vec_fields.nil?
 do <%= iter %>=1,<%= pset %>%Npart
