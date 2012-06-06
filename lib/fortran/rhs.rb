@@ -59,7 +59,7 @@ ERRMSG
         |dc, i|
         names, type = dc
         var names[0].to_sym, "class(ppm_t_field), pointer :: #{names[0]}"
-        add "fd_pair => fields_discr%vec(#{i+1})"
+        add "fd_pair => fields_discr%at(#{i+1})"
         add "#{names[0]} => fd_pair%field"
         unless names[1].nil?
           var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}"
@@ -81,9 +81,9 @@ ERRMSG
         |dc, i|
         names, type = dc
         var names[0].to_sym, "class(ppm_t_field), pointer :: #{names[0]}"
-        add "#{names[0]} => changes%vec(#{i+1})"
+        add "#{names[0]} => changes%at(#{i+1})"
         var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}" unless names[1].nil?
-        add "#{names[1]} => discretizations%vec(#{i+1})" unless names[1].nil?
+        add "#{names[1]} => discretizations%at(#{i+1})" unless names[1].nil?
       end
     end
   end
