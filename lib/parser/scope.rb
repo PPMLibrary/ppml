@@ -110,7 +110,7 @@ module CG
     # argument from an ctrl file and the command line).
     # See {CG::GlobalModule#arg}
     def arg h
-      use GlobalModule.module_name
+      use GlobalModule.name
       GlobalModule.instance.arg h
     end
 

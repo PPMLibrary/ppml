@@ -6,13 +6,13 @@ module CG
 
     @@module_name = "rhs"
 
-    def self.module_name
+    def self.name
       return "#{conf.name_prefix}#{@@module_name}"
     end
 
     def initialize
       super "#{conf.name_prefix}#{@@module_name}"
-      use GlobalModule.module_name.to_sym
+      use GlobalModule.name.to_sym
       @defs = {}
       @calls = Hash.new(Set.new)
     end

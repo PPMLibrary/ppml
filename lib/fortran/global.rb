@@ -4,12 +4,12 @@ module CG
 
     @@module_name = "global"
 
-    def self.module_name
+    def self.name
       "#{conf.name_prefix}#{@@module_name}"
     end
 
     def initialize
-      super @@module_name
+      super "#{conf.name_prefix}#{@@module_name}"
       @da = FortranSubroutine.new "define_args"
       subroutine @da
       use :ppm_module_ctrl
