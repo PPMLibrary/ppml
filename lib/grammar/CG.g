@@ -33,6 +33,8 @@ RHS_START;
 RHS_INNER;
 TIMELOOP;
 TEMPLATE;
+VLIST;
+VPAIR;
 }
 
 @header {
@@ -341,8 +343,10 @@ imacro
 
 arglist
     : LEFT_PAREN_T
-       ( (args+=value | names+=ID_T EQUALS_T values+=value)
-         (COMMA_T (args+=value | names+=ID_T EQUALS_T values+=value))*
+       ( (args+=value | args+=value_list | names+=ID_T EQUALS_T 
+                                                    (values+=value | values+=value_list))
+         (COMMA_T (args+=value | args+=value_list | names+=ID_T EQUALS_T 
+                                                    (values+=value | values+=value_list)))*
        )?
       RIGHT_PAREN_T
       -> ^(ARGS $args* ^(NAMEDARGS $names*) ^(NAMEDARGS $values*))
@@ -367,6 +371,14 @@ allowed
     | boolean | logical | comparison
     | END_T | IN_T | TYPE_T | ABSTRACT_T
     ;
+
+value_list
+    : LEFT_SQUARE_T (vals+=value | vals+=value_pair) 
+    (COMMA_T (vals+=value | vals+=value_pair))* RIGHT_SQUARE_T
+      -> ^(VLIST $vals*)
+    ;
+
+value_pair : v1=ID_T ARROW_T v2=value -> ^(VPAIR $v1 $v2) ;
 
 value : ID_T | NUMBER_T | STRING_T ;
 

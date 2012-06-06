@@ -303,17 +303,45 @@ timeloop
 timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 
 arglist returns [pos,named,splat]
-    :  ^(ARGS a+=value*
+    : {posargs = []
+       nvals = []}
+      ^(ARGS ((a+=value
+              { posargs << a.template 
+              })
+              | (a+=value_list
+              { posargs << a.lst 
+              })
+              )*
             ^(NAMEDARGS na+=ID_T*)
-            ^(NAMEDARGS v+=value*))
-      { $pos = $a
-        $named = Hash[*$na.map(&:to_s).zip($v).flatten]}
+            ^(NAMEDARGS ((a+=value
+              { nvals << a.template 
+              })
+              | (a+=value_list
+              { nvals << a.lst 
+              })
+            )*))
+      { $pos = posargs
+        $named = Hash[$na.map(&:to_s).zip(nvals)]
+        }
     ;
 
 fline : ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
+
+value_list returns [lst]
+    : {v_acc = []}
+      ^(VLIST (v+=value {v_acc << v.template} |
+               v+=value_pair {v_acc << v.pair})*) 
+      { $lst = v_acc }
+    ;
+
+value_pair returns [pair]
+    : ^(VPAIR v1=value v2=value)
+    {$pair = [v1.template, v2.template]}
+    ;
 
 value
     : i=ID_T     -> verbatim(in={$i})
     | n=NUMBER_T -> verbatim(in={$n})
     | s=STRING_T -> verbatim(in={$s})
     ;
+
