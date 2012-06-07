@@ -51,7 +51,7 @@ module CG
     # Add a variable declaration directly into the symbol table
     #
     # @param [Hash] var contains a symbol => declaration statement hash
-    # @param [Symbol] type argument, Milan will explain this to you.
+    # @param [Symbol] type argument, useful to create RHS definitions
     def raw_var var, type=nil
       @types[var.keys[0]] = type if type
       @variables.merge! var

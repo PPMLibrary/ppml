@@ -25,7 +25,6 @@ module CG
     # @param [String] body of the RHS definition
     def definition name, args, result, body
       @defs[name] = [Hash[args.map(&:name).zip(args.map(&:disc))], Hash[result.map(&:name).zip(result.map(&:disc))], body]
-      STDERR.puts @defs[name]
     end
 
     # Add a call to the RHS. This method must be called whenever a RHS is called. 
@@ -68,7 +67,8 @@ module CG
         time: "real(#{prec}) :: time",
         changes: "class(ppm_v_field), pointer :: changes"
       use :ppm_module_interfaces
-      var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair"
+      var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair => null()"
+      var :di, "class(ppm_t_discr_info_), pointer :: di => null()"
 
       add_args call_types[0], definition[0]
       add_results call_types[1], definition[1]
@@ -85,7 +85,7 @@ module CG
       raise <<-ERRMSG if call_types.length != defn.length
 Called RHS #{@name} with #{call_types.length} arguments instead of #{defn.length}
   Call arguments : #{call_types.join ', '}
-  Definition     : #{defn.join ', '}
+  Definition     : #{defn.keys.join ', '}
 ERRMSG
       # create items  of [[def_field, def_disc], call_arg_type]
       defn.zip(call_types).each_with_index do
@@ -108,19 +108,37 @@ ERRMSG
       end
     end
 
+    # setup all output arguments of right hand side. This retrieves the arguments from
+    # the changes vector and creates variables with appropriate names and types.
+    #
+    # @param [Array] result_types argument types (from where the RHS will be used)
+    # @param [Hash] defn of arguments (from the RHS declaration)
     def add_results call, defn
       raise <<-ERRMSG if call.length != defn.length
 Called RHS #{@name} with #{call.length} results instead of #{defn.length}
   Call results : #{call.join ', '}
-  Definition   : #{defn.join ', '}
+  Definition   : #{defn.keys.join ', '}
 ERRMSG
-      defn.zip(call).each_with_index do
-        |dc, i|
-        names, type = dc
-        var names[0].to_sym, "class(ppm_t_field), pointer :: #{names[0]}"
-        add "#{names[0]} => changes%at(#{i+1})"
-        var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}" unless names[1].nil?
-        add "#{names[1]} => discretizations%at(#{i+1})" unless names[1].nil?
+      # create items  of [[def_change, def_disc], result_type]
+      defn.zip(call).each_with_index do |dc, i|
+        res_disc, type = dc
+        var res_disc[0].to_sym, "class(ppm_t_field), pointer :: #{res_disc[0]}"
+        add "#{res_disc[0]} => changes%at(#{i+1})"
+        #var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}" unless names[1].nil?
+        #add "#{names[1]} => discretizations%at(#{i+1})" unless names[1].nil?
+        unless res_disc[1].nil?
+          if type.nil?
+            raise "RHS #{@name} requires for output argument #{res_disc[0]} "+
+              "a discretization to be passed when calling"
+          end
+          var res_disc[1].to_sym, "class(#{type}), pointer :: #{res_disc[1]}"
+          add "di => #{res_disc[0]}%discr_info%begin()"
+          add "select type(disc => di%discr_ptr)"
+          add "class is (#{type})"
+          add "  #{res_disc[1]} => disc"
+          add "end select"
+
+        end
       end
     end
   end
