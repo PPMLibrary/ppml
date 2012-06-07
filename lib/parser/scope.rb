@@ -113,6 +113,16 @@ module CG
       use GlobalModule.name
       GlobalModule.instance.arg h
     end
+  
+    # Setup an right hand side call. This will use the RHS module in the current
+    # scope and request a right hand side function to be generated that presents
+    # fields and discretizations as given here.
+    #
+    # @param [String] name generic name of the right hand side
+    # @param [Array] arguments passed this right hand side
+    def rhs_call name, arguments
+      RHSModule.instance.call_to(name, arguments, [])
+    end
 
     # Return the type of a given symbol if set previously by {#var}
     #
