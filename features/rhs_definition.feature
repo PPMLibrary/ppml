@@ -42,20 +42,20 @@ Feature: Right hand side definition
         class(ppm_t_field), pointer :: df
         class(ppm_t_field), pointer :: dg
         class(ppm_t_field), pointer :: dh
-        fd_pair => fields_discr%vec(1)
+        fd_pair => fields_discr%at(1)
         f => fd_pair%field
         select type(fd_pair%discretization)
         class is (ppm_t_equi_mesh)
           a => fd_pair%discretization
         end select
-        fd_pair => fields_discr%vec(2)
+        fd_pair => fields_discr%at(2)
         g => fd_pair%field
-        fd_pair => fields_discr%vec(3)
+        fd_pair => fields_discr%at(3)
         h => fd_pair%field
-        dx => changes%vec(1)
-        df => changes%vec(2)
-        dg => changes%vec(3)
-        dh => changes%vec(4)
+        dx => changes%at(1)
+        df => changes%at(2)
+        dg => changes%at(3)
+        dh => changes%at(4)
         mangled_dgdata = b%get_wp(dg)
       end function testrhs
       

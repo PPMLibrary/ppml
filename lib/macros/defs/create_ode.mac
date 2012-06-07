@@ -1,0 +1,33 @@
+macro create_ode(fields,rhs,rhsfields,scheme=ODEscheme)
+% scope.use :ppm_module_numerics
+% scope.raw_var eulerf: "integer, parameter :: eulerf = ppm_param_ode_scheme_eulerf"
+% scope.raw_var tvdrk2: "integer, parameter :: tvdrk2 = ppm_param_ode_scheme_tvdrk2"
+% scope.raw_var midrk2: "integer, parameter :: midrk2 = ppm_param_ode_scheme_midrk2"
+% scope.raw_var rk4: "integer, parameter :: rk4 = ppm_param_ode_scheme_rk4"
+% scope.raw_var sts: "integer, parameter :: sts = ppm_param_ode_scheme_sts"
+% scope.raw_var result.to_sym =>  "type(ppm_t_ode) :: #{result}"
+% scope.raw_var info: "integer :: info"
+% scope.arg name: :ODEscheme, type: "integer", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
+% scope.var :fields, "class(ppm_v_main_abstr), pointer"
+allocate(fields,stat=info)
+$or_fail("\"Allocating fields vector\"")
+% scope.var :rhs_fields, "class(ppm_v_field_discr_pair), pointer"
+allocate(rhs_fields,stat=info)
+$or_fail("\"Allocating rhs_fields vector\"")
+% scope.var :el, "class(ppm_t_main_abstr), pointer"
+% fields.each do |f|
+%   if f.is_a? Array
+allocate(pair,stat=info)
+pair%field => <%= f[0] %>
+pair%discretization => <%= f[1] %>
+call fields%push(pair,info)
+$or_fail("Pushing pair failed")
+%   else
+el => <%= f %>
+call fields%push(el,info)
+$or_fail("\"Pushing element failed\"")
+%   end
+% end
+call <%= result %>%create(<%= scheme %>,fields,<%= rhs %>,rhs_fields,info)
+
+end macro

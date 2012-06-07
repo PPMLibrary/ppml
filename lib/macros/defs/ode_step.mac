@@ -1,0 +1,7 @@
+macro ode_step(ode,t,dt,istage)
+% scope.use :ppm_module_numerics
+% scope.raw_var info: "integer :: info"
+
+call <%= ode %>%step(<%= t %>,<%= dt %>,<%= istage %>,info)
+
+end macro
