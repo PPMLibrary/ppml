@@ -197,7 +197,7 @@ scope_start returns [name]
       {
 setup_scope $kind.text, $n
 @scope.output_continue = true
-@scope.raw_var caller: "character(len=#{$n.text.to_s}) :: caller = '#{$n.text.to_s}'"
+@scope.raw_var caller: "character(len=#{$n.text.to_s.length}) :: caller = '#{$n.text.to_s}'"
 @scope.raw_var   info: "integer :: info"
 $name = $n
 }
