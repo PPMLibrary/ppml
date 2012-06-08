@@ -14,10 +14,10 @@ IMPLICIT NONE
 !----------------------------------------------------------------------
 !PPM internal parameters used only to access entries in the
 !mesh data structures.
-INTEGER,PARAMETER,PUBLIC   :: ppm_mdata_ghosts = 1
-INTEGER,PARAMETER,PUBLIC   :: ppm_mdata_reqput = 2
-INTEGER,PARAMETER,PUBLIC   :: ppm_mdata_cartesian = 3
-INTEGER,PARAMETER,PUBLIC   :: ppm_mdata_lflags = 3
+INTEGER, PARAMETER, PUBLIC   :: ppm_mdata_ghosts = 1
+INTEGER, PARAMETER, PUBLIC   :: ppm_mdata_reqput = 2
+INTEGER, PARAMETER, PUBLIC   :: ppm_mdata_cartesian = 3
+INTEGER, PARAMETER, PUBLIC   :: ppm_mdata_lflags = 3
 
 !----------------------------------------------------------------------
 ! Module variables 

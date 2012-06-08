@@ -49,12 +49,12 @@ SUBROUTINE subpatch_create(p,mesh,istart,iend,istart_p,iend_p,info)
 
     start_subroutine("subpatch_create")
 
-    p%meshID = mesh%ID
-    p%mesh   => mesh
-    p%istart = istart
-    p%iend   = iend
-    p%istart_p = istart_p
-    p%iend_p   = iend_p
+    p%meshID   =  mesh%ID
+    p%mesh     => mesh
+    p%istart   =  istart
+    p%iend     =  iend
+    p%istart_p =  istart_p
+    p%iend_p   =  iend_p
 
     end_subroutine()
 END SUBROUTINE subpatch_create

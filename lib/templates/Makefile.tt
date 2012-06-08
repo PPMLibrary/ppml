@@ -11,7 +11,7 @@ PPMDIR    = <%= conf.ppm.base_path %>
 PPMNUMDIR = <%= conf.ppm.numerics.base_path %>
 
 # Flags and settings, when you compile
-FC      = <%= conf.build.compiler %>
+FC      = <%= conf.build.compiler %> -ffree-form -ffree-line-length-none
 LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis # -lppmnumerics
 OPT     = <%= conf.build.optflags %> -FR
 INCL    = -I$(PPMDIR)/include/ppm -I$(PPMNUMDIR)/include/ppm

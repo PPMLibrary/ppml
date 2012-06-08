@@ -12,7 +12,7 @@ program pse
 
   f = create_field(2, "Field1")
 
-  field_discretize_on(f,c)
+  discretize(f,c)
 
   ghost_mapping(c)
   create_neighlist(c)
