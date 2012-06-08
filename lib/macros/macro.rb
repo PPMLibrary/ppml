@@ -127,7 +127,7 @@ CODE
             name = $~[:name]
             macros[name] = ForeachMacro.new name, file, $~[:args]
           elsif l =~ TimeLoopMacro::MACRO_START
-            macros["timeloop"] = TimeLoopMacro.new file
+            macros["timeloop"] = TimeLoopMacro.new file, $~[:args]
           elsif l =~ IncludeMacro::MACRO_START
             name = $~[:name]
             macros[name] = IncludeMacro.new name, file, $~[:args]
@@ -279,14 +279,17 @@ CODE
   end # ForeachMacro
 
   class TimeLoopMacro < Macro
-    MACRO_START = /^ *timeloop +macro *\(body\) *$/i
+    MACRO_START = /^ *timeloop +macro *\((?<args>#{ARGS})\) *$/i
 
-    def initialize body
-      super "timeloop", body, "body"
+    def initialize body, tparam_args
+      super "timeloop", body, tparam_args
     end
 
-    def expand context, body, recursive=false
-      map = {"scope" => context, "body" => body.to_s}
+    def expand context, time, tparams, tparams_named, body, recursive=false
+      map = Macro.resolve_args @args, tparams, tparams_named
+      map["scope"] = context
+      map["time"] = time.to_s
+      map["body"] = body.to_s
       binding = Macro.binding_from_map map
       expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"

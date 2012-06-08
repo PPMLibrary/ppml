@@ -317,10 +317,10 @@ foreach_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 timeloop
     : {dont_indent_old = @dont_indent
        @dont_indent = true}
-      ^(TIMELOOP b=loop_body 
+      ^(TIMELOOP t=ID_T tp=arglist b=loop_body 
         {find_hidden} timeloop_end)
        {@dont_indent = dont_indent_old}
-      -> timeloop(context={@scope}, body={$b.body.to_s + (@empty_lines || '')})
+      -> timeloop(context={@scope},time={$t},tparams={tp}, body={$b.body.to_s + (@empty_lines || '')})
     ;
 
 timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});

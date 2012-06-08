@@ -326,17 +326,17 @@ qualified_body
 
 
 timeloop
-    : TIMELOOP_T NEWLINE_T
+    : t=ID_T EQUALS_T TIMELOOP_T tp=arglist NEWLINE_T
         body=loop_body
       e=timeloop_end
-      -> ^(TIMELOOP $body $e)
+      -> ^(TIMELOOP $t $tp $body $e)
     ;
 
 timeloop_end : (ENDTIMELOOP_T | END_T TIMELOOP_T) NEWLINE_T
    -> ^(SCOPE_END TEXT[$timeloop_end.start,$timeloop_end.text]);
 
 fcmacro
-    :  results=return_args name=ID_T  args=arglist NEWLINE_T
+    :  results=return_args name=ID_T args=arglist NEWLINE_T
       -> ^(FMACRO $name $results $args)
     ;
 

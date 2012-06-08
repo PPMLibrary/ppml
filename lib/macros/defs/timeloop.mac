@@ -1,7 +1,22 @@
-timeloop macro(body)
-% scope.var :time_loop_step, "integer"
-% scope.var :time_loop_time, "real"
-do while (<%= "time_loop_time < " + conf.stop.time.to_s unless conf.stop.time.nil? %><%= " .and. " unless conf.stop.time.nil? or conf.stop.step.nil? %><%= "time_loop_step < " + conf.stop.step.to_s unless conf.stop.step.nil? %>)
+timeloop macro(tstart=start_time,deltat=time_step,tend=stop_time)
+% if conf.step.type == :real
+%   scope.raw_var time.to_sym => "real(mk) :: #{time}"
+% elsif conf.step.type == :integer
+%   scope.raw_var time.to_sym => "integer :: #{time}"
+% end
+%
+% if conf.step.type == :real
+%   scope.arg name: :start_time, type: "real(mk)", default: "0.0_mk", min: "0.0_mk", ctrl_name: "'start_time'", help: "'Start time'"
+%   scope.arg name: :time_step, type: "real(mk)", default: "0.1_mk", min: "0.0_mk", ctrl_name: "'time_step'", help: "'Time step'"
+%   scope.arg name: :stop_time, type: "real(mk)", default: "1.0_mk", min: "0.0_mk", ctrl_name: "'stop_time'", help: "'End time'"
+% elsif conf.step.type == :integer
+%   scope.arg name: :start_time, type: "integer", default: "0", min: "0", ctrl_name: "'start_step'", help: "'Start step'"
+%   scope.arg name: :time_step, type: "real(mk)", default: "1", min: "1", ctrl_name: "'time_step'", help: "'Time step'"
+%   scope.arg name: :stop_time, type: "integer", default: "100", min: "0", ctrl_name: "'stop_step'", help: "'End step'"
+% end
+%
+<%= time %> = <%= tstart %>
+do while (<%= time %> .le. <%= tend %>)
 <%= body.indent 2 -%>
 end do
 end macro

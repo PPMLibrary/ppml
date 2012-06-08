@@ -92,7 +92,7 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :timeloop, <<-'ENDTEMPLATE')
-% _erbout += CG::Preprocessor.instance.expand("timeloop", @context, @body)
+% _erbout += CG::Preprocessor.instance.expand("timeloop", @context, @time, @tparams.pos, @tparams.named, @body)
 ENDTEMPLATE
       end
     end
