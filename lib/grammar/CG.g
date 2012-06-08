@@ -172,8 +172,8 @@ rhs_statement
     ;
 
 rhs_start
-    : RHS_T name=ID_T args=rhs_arglist RETURNS_T ret=rhs_arglist NEWLINE_T
-        -> ^(RHS_START $name $args $ret)
+    : RHS_T name=ID_T args=rhs_arglist NEWLINE_T
+        -> ^(RHS_START $name $args)
     ;
 
 rhs_end
@@ -181,9 +181,11 @@ rhs_end
         -> ^(SCOPE_END TEXT[$rhs_end.start,$rhs_end.text])
     ;
 
-rhs_inner_stuff 
-    : l+=fline*
-        -> ^(RHS_INNER $l*) 
+rhs_inner_stuff
+    : pre+=fline*
+      GET_FIELDS_T ret=rhs_arglist NEWLINE_T
+      post+=fline*
+        -> ^(RHS_INNER $pre* $ret $post*) 
     ;
 
 rhs_arglist
@@ -397,7 +399,7 @@ FOR_T           : 'FOR'           | 'for'           ;
 IN_T            : 'IN'            | 'in'            ;
 RHS_T           : 'RHS'           | 'rhs'           ;
 ENDRHS_T        : 'ENDRHS'        | 'endrhs'        ;
-RETURNS_T       : 'RETURNS'       | 'returns'       ;
+GET_FIELDS_T    : 'GET_FIELDS'    | 'get_fields'    ;
 TIMELOOP_T      : 'TIMELOOP'      | 'timeloop'      ;
 ENDTIMELOOP_T   : 'ENDTIMELOOP'   | 'endtimeloop'   ;
 WITH_T          : 'WITH'          | 'with'          ;

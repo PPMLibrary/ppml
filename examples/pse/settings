@@ -3,18 +3,17 @@
 conf.project_name = "pse"
 conf.binary = "pse"
 conf.build.optflags = "-O3"
-<<<<<<< Updated upstream
-conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm"
-conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"
-=======
 conf.ppm.base_path = "/Users/milanm/Work/PhD/lib/ppm"
 conf.ppm.numerics.base_path = "/Users/milanm/Work/PhD/lib/ppmnumerics"
->>>>>>> Stashed changes
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
 conf.ppm.tolexp = 10
 conf.ppm.dim = 2
+
+# termination
+conf.stop.time = 1
+conf.stop.step = 1000
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"

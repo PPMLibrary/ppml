@@ -1,3 +1,5 @@
-rhs pse_rhs(f) returns (df=>p)
-
+rhs pse_rhs(f)
+  integer :: test
+  get_fields(df=>p)
+  test = 10 ! YAY
 end rhs

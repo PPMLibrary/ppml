@@ -15,7 +15,9 @@ Feature: Right hand side definition
     And rhs call results are (:ppm_t_particles_d,nil,nil,nil)
     When I preprocess
     """
-    rhs testrhs(f=>a,g,h) returns (dx=>x,df,dg,dh)
+    rhs testrhs(f=>a,g,h)
+      integer :: test
+      get_fields(dx=>x,df,dg,dh)
       dgdata = get_data(dg)
     end rhs
 
@@ -45,6 +47,7 @@ Feature: Right hand side definition
         class(ppm_t_field_), pointer :: df
         class(ppm_t_field_), pointer :: dg
         class(ppm_t_field_), pointer :: dh
+        integer :: test
         testrhs = 0
         fd_pair => fields_discr%at(1)
         f => fd_pair%field

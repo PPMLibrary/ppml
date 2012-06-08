@@ -1,7 +1,7 @@
 timeloop macro(body)
 % scope.var :time_loop_step, "integer"
 % scope.var :time_loop_time, "real"
-while (time_loop_time < <%= conf.stop.time %> .and. time_loop_step < <%= conf.stop.step %>)
+do while (<%= "time_loop_time < " + conf.stop.time.to_s unless conf.stop.time.nil? %><%= " .and. " unless conf.stop.time.nil? or conf.stop.step.nil? %><%= "time_loop_step < " + conf.stop.step.to_s unless conf.stop.step.nil? %>)
 <%= body.indent 2 -%>
-end while
+end do
 end macro

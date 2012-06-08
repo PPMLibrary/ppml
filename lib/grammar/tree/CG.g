@@ -141,21 +141,26 @@ rhs_statement
     :  ^(RHS_SCOPE s=rhs_start
                    i=rhs_inner_stuff
                    e=scope_end)
-        -> rhs(name={s.name},args={s.args},ret={s.ret},inner={$i.body})
+        -> rhs(name={s.name},args={s.args},ret={i.ret},pre={i.pre},post={i.post})
     ;
 
-rhs_start returns [name,args,ret]
+rhs_start returns [name,args]
     : { find_hidden }
-    ^(RHS_START n=ID_T a=rhs_args r=rhs_args)
+    ^(RHS_START n=ID_T a=rhs_args)
         { setup_scope "rhs", $n }
-      { $name=$n
-        $args=a.args
-        $ret=r.args }
+      {
+$name=$n
+$args=a.args
+}
     ;
 
-rhs_inner_stuff returns [body]
-    : ^(RHS_INNER l+=fline*)
-        { $body=$l }
+rhs_inner_stuff returns [ret,pre,post]
+    : ^(RHS_INNER pr+=fline* r=rhs_args po+=fline*)
+        {
+$ret =$r.args
+$pre =$pr
+$post=$po
+}
     ;
 
 rhs_args returns [args]
@@ -192,7 +197,7 @@ scope_start returns [name]
       {
 setup_scope $kind.text, $n
 @scope.output_continue = true
-@scope.raw_var caller: "character(len=#{$n.text.to_s.length}) :: caller = '#{$n.text.to_s}'"
+@scope.raw_var caller: "character(len=#{$n.text.to_s}) :: caller = '#{$n.text.to_s}'"
 @scope.raw_var   info: "integer :: info"
 $name = $n
 }

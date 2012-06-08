@@ -26,10 +26,10 @@ Feature: time loop macro
       implicit none
       integer :: mangled_time_loop_step
       real :: mangled_time_loop_time
-      while (mangled_time_loop_time < 10 .and. mangled_time_loop_step < 1000)
+      do while (mangled_time_loop_time < 10 .and. mangled_time_loop_step < 1000)
         ! some code here
         a = 10
-      end while
+      end do
     end program timetest
 
     """

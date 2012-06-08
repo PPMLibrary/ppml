@@ -23,8 +23,8 @@ module CG
     # @param [Array] args list of the RHS (=rhs_fields)
     # @param [Array] result list of changes
     # @param [String] body of the RHS definition
-    def definition name, args, result, body
-      @defs[name] = [Hash[args.map(&:name).zip(args.map(&:disc))], Hash[result.map(&:name).zip(result.map(&:disc))], body]
+    def definition name, args, result, pre, post
+      @defs[name] = [Hash[args.map(&:name).zip(args.map(&:disc))], Hash[result.map(&:name).zip(result.map(&:disc))], pre, post]
     end
 
     # Add a call to the RHS. This method must be called whenever a RHS is called. 
@@ -51,10 +51,11 @@ module CG
       end
       super
     end
+
   end
 
   class RHS < FortranFunction
-    
+
     # Create an instance of the RHS definition with a given definition and call
     #
     # @param [String] name of the RHS
@@ -69,12 +70,14 @@ module CG
       use :ppm_module_interfaces
       var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair => null()"
       var :di, "class(ppm_t_discr_info_), pointer :: di => null()"
-      
-      add "#{name} = 0"
 
+      add definition[2].map(&:to_s).map(&:strip)
+
+      add "#{name} = 0"
       add_args call_types[0], definition[0]
       add_results call_types[1], definition[1]
-      add definition[2].map(&:to_s).map(&:strip)
+
+      add definition[3].map(&:to_s).map(&:strip)
     end
 
     # setup all arguments of right hand side. This retrieves the arguments from

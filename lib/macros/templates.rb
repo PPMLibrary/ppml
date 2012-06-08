@@ -24,7 +24,7 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :rhs,         <<-'ENDTEMPLATE')
-% CG::RHSModule.instance.definition @name.to_s, @args, @ret, @inner
+% CG::RHSModule.instance.definition @name.to_s, @args, @ret, @pre, @post
 ENDTEMPLATE
 
         define_template( :inner,       <<-'ENDTEMPLATE')

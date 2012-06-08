@@ -1,5 +1,6 @@
 client pse
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
+  integer :: istage
 
   ppm_init()
 
@@ -15,16 +16,16 @@ client pse
   ghost_mapping(c)
   create_neighlist(c)
 
-  !   - d = define_operator
+  ! abstract_L = define_op(2, [2, 0, 0, 2], [1, 1, 1, 1], "Laplacian")
   !   - compute_operator       (d,c)
-  !   - o = initialize_ode     (r)
-  o = create_ode([f=>c],pse_rhs,[f],eulerf)
-  !   - loop                   (condition)
-  !     - step_ode             (o,c)
+
+  o = create_ode([f=>c], pse_rhs, [f], eulerf)
+
+!  timeloop
+!    do istage=1,4
+!     - step_ode             (o,c)
+!    end do
+!  end timeloop
 
   ppm_finalize()
-
-  ! - define_rhs r(a)
-  !   - a = apply_operator     (d,a)
-
 end client
