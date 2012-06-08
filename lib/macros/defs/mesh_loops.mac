@@ -70,14 +70,14 @@ do while (associated(sbpitr))
 %
 % unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil?
 !boundaries of the array on which the full symmetric stencil can be applied
-    stnclint(1) = MAX(1,               sbpitr%lo_a(1) + <%= st_i %>)
-    stnclint(2) = MIN(sbpitr%nnodes(1),sbpitr%hi_a(2) - <%= st_i %>)
-    stnclint(3) = MAX(1,               sbpitr%lo_a(3) + <%= st_j %>)
-    stnclint(4) = MIN(sbpitr%nnodes(2),sbpitr%hi_a(4) - <%= st_j %>)
-%   unless st_k.nil?
-     stnclint(5) = MAX(1,               sbpitr%lo_a(5) + <%= st_k %>)
-     stnclint(6) = MIN(sbpitr%nnodes(3),sbpitr%hi_a(6) - <%= st_k %>)
-%   end
+    stnclint(1) = MAX(1,               1-sbpitr%ghostsize(1) + <%= st_i %>)
+    stnclint(2) = MIN(sbpitr%nnodes(1),sbpitr%nnodes(1)+sbpitr%ghostsize(2) - <%= st_i %>)
+    stnclint(3) = MAX(1,               1-sbpitr%ghostsize(3) + <%= st_j %>)
+    stnclint(4) = MIN(sbpitr%nnodes(2),sbpitr%nnodes(2)+sbpitr%ghostsize(5) - <%= st_j %>)
+%  unless st_k.nil?
+    stnclint(5) = MAX(1,               1-sbpitr%ghostsize(5) + <%= st_k %>)
+    stnclint(6) = MIN(sbpitr%nnodes(3),sbpitr%nnodes(3)+sbpitr%ghostsize(6) - <%= st_k %>)
+%  end
 % end
 %
 % unless bodies.all.nil?
@@ -101,7 +101,7 @@ do while (associated(sbpitr))
 % scope.var :incl_ghosts, "INTEGER,DIMENSION(6)"
 %   end
     WHERE (sbpitr%bc.LT.0 .OR. &
-                sbpitr%bc.EQ.ppm_param_bcdef_periodic)
+                sbpitr%bc.NE.ppm_param_bcdef_freespace)
         incl_ghosts = 1
     ELSEWHERE
         incl_ghosts = 0
