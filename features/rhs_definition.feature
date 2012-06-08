@@ -11,11 +11,11 @@ Feature: Right hand side definition
   Scenario: basic rhs definition
     Given there is a rhs call to "testrhs"
     And setting predictable_mangle_prefix is on
-    And rhs call args are (:ppm_t_equi_mesh,:ppm_t_particles_d,:ppm_t_equi_mesh)
-    And rhs call results are (:positions,:real,:vector,:integer)
+    And rhs call args are (:ppm_t_equi_mesh,nil,nil)
+    And rhs call results are (:ppm_t_particles_d,nil,nil,nil)
     When I preprocess
     """
-    rhs testrhs(f=>a,g,h) returns (dx,df,dg,dh)
+    rhs testrhs(f=>a,g,h) returns (dx=>x,df,dg,dh)
       dgdata = get_data(dg)
     end rhs
 
@@ -34,15 +34,18 @@ Feature: Right hand side definition
         class(ppm_v_field_discr_pair), pointer :: fields_discr
         real(ppm_kind_double) :: time
         class(ppm_v_field), pointer :: changes
-        class(ppm_t_field_discr_pair), pointer :: fd_pair
-        class(ppm_t_field), pointer :: f
+        class(ppm_t_field_discr_pair), pointer :: fd_pair => null()
+        class(ppm_t_discr_info_), pointer :: di => null()
+        class(ppm_t_field_), pointer :: f
         class(ppm_t_equi_mesh), pointer :: a
-        class(ppm_t_field), pointer :: g
-        class(ppm_t_field), pointer :: h
-        class(ppm_t_field), pointer :: dx
-        class(ppm_t_field), pointer :: df
-        class(ppm_t_field), pointer :: dg
-        class(ppm_t_field), pointer :: dh
+        class(ppm_t_field_), pointer :: g
+        class(ppm_t_field_), pointer :: h
+        class(ppm_t_field_), pointer :: dx
+        class(ppm_t_particles_d), pointer :: x
+        class(ppm_t_field_), pointer :: df
+        class(ppm_t_field_), pointer :: dg
+        class(ppm_t_field_), pointer :: dh
+        testrhs = 0
         fd_pair => fields_discr%at(1)
         f => fd_pair%field
         select type(fd_pair%discretization)
@@ -54,6 +57,11 @@ Feature: Right hand side definition
         fd_pair => fields_discr%at(3)
         h => fd_pair%field
         dx => changes%at(1)
+        di => dx%discr_info%begin()
+        select type(disc => di%discr_ptr)
+        class is (ppm_t_particles_d)
+          x => disc
+        end select
         df => changes%at(2)
         dg => changes%at(3)
         dh => changes%at(4)
