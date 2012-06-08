@@ -1,3 +1,9 @@
 macro create_mesh(topology,offset)
+% scope.raw_var({result.to_sym => "type(ppm_t_equi_mesh), pointer :: #{result}"},
+%                 :ppm_t_equi_mesh)
 
+allocate(<%= result %>,stat=info)
+$or_fail_alloc("\"Could not allocate <%= result %>\"")
+call <%= result %>%create(<%= topology %>,offset,info,Nm=Nm,&
+    ghostsize=ighostsize,name='Test_Mesh_1')
 end macro

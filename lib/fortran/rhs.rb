@@ -69,6 +69,8 @@ module CG
       use :ppm_module_interfaces
       var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair => null()"
       var :di, "class(ppm_t_discr_info_), pointer :: di => null()"
+      
+      add "#{name} = 0"
 
       add_args call_types[0], definition[0]
       add_results call_types[1], definition[1]
@@ -91,7 +93,7 @@ ERRMSG
       defn.zip(call_types).each_with_index do
         |dc, i|
         field_disc, type = dc
-        var field_disc[0].to_sym, "class(ppm_t_field), pointer :: #{field_disc[0]}"
+        var field_disc[0].to_sym, "class(ppm_t_field_), pointer :: #{field_disc[0]}"
         add "fd_pair => fields_discr%at(#{i+1})"
         add "#{field_disc[0]} => fd_pair%field"
         unless field_disc[1].nil?
@@ -122,7 +124,7 @@ ERRMSG
       # create items  of [[def_change, def_disc], result_type]
       defn.zip(call).each_with_index do |dc, i|
         res_disc, type = dc
-        var res_disc[0].to_sym, "class(ppm_t_field), pointer :: #{res_disc[0]}"
+        var res_disc[0].to_sym, "class(ppm_t_field_), pointer :: #{res_disc[0]}"
         add "#{res_disc[0]} => changes%at(#{i+1})"
         #var names[1].to_sym, "class(#{type}), pointer :: #{names[1]}" unless names[1].nil?
         #add "#{names[1]} => discretizations%at(#{i+1})" unless names[1].nil?

@@ -1,7 +1,18 @@
-macro create_particles(topology, np=Npart)
+macro create_particles(topology, np=Npart, prec=mk)
 % scope.use :ppm_module_particles_typedef
-% scope.raw_var({result.to_sym => "type(ppm_t_particles_d) :: #{result}"})
+% if prec == "mk"
+%   prec = conf.ppm.prec
+% end
+% if prec == "ppm_kind_single"
+%   scope.raw_var({result.to_sym => "type(ppm_t_particles_s), pointer :: #{result}"},
+%                 :ppm_t_particles_s)
+% else
+%   scope.raw_var({result.to_sym => "type(ppm_t_particles_d), pointer :: #{result}"},
+%                 :ppm_t_particles_d)
+% end
 % scope.raw_var({info: "integer :: info"})
 % scope.arg name: :Npart, type: "integer", default: "10000", ctrl_name: "'Npart'", help: "'Global number of particles'"
+allocate(<%= result %>,stat=info)
+$or_fail_alloc("\"Could not allocate <%= result %>\"")
 call <%= result %>%initialize(<%= np %>, info, topoid=<%= topology %>)
 end macro

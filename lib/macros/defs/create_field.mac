@@ -1,6 +1,10 @@
 macro create_field(ndim,name)
 % scope.use :ppm_module_field_typedef
-% scope.raw_var ({ result.to_sym => "type(ppm_t_field) :: #{result}" })
+% scope.raw_var ({ result.to_sym => "class(ppm_t_field_), pointer :: #{result}" })
 % scope.raw_var ({ :info => "integer :: info" })
+
+allocate(ppm_t_field::<%= result %>,stat=info)
+$or_fail_alloc("\"Allocating the <%= result %> field\"")
+
 call <%= result %>%create(<%= ndim %>, info, name=<%= name %>)
 end macro
