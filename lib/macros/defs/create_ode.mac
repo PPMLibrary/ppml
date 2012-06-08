@@ -55,7 +55,7 @@ $or_fail("\"Pushing pair failed\"")
 % scope.rhs_call(rhs, rhs_ftypes, change_ftypes)
 <%= :rhs_ptr %> => <%= rhs %>
 
-% scope.raw_var result[0].to_sym =>  "type(ppm_t_ode) :: #{result}"
+% scope.raw_var result[0].to_sym =>  "type(ppm_t_ode) :: #{result[0]}"
 call <%= result[0] %>%create(<%= scheme %>,fields,<%= :rhs_ptr %>,rhs_fields,info)
 
 % scope.raw_var result[1].to_sym => "integer :: #{result[1]}"
