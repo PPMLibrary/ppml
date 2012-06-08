@@ -33,4 +33,3 @@ Feature: time loop macro
     end program timetest
 
     """
-

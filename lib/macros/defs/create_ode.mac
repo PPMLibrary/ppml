@@ -7,7 +7,6 @@ macro create_ode(fields,rhs,rhs_fields,scheme=ODEscheme)
 % scope.raw_var rk4: "integer, parameter :: rk4 = ppm_param_ode_scheme_rk4"
 % scope.raw_var sts: "integer, parameter :: sts = ppm_param_ode_scheme_sts"
 
-% scope.raw_var result.to_sym =>  "type(ppm_t_ode) :: #{result}"
 % scope.raw_var info: "integer :: info"
 % scope.global_use :ppm_module_user_numerics
 % scope.arg name: :ODEscheme, type: "integer", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
@@ -56,6 +55,9 @@ $or_fail("\"Pushing pair failed\"")
 % scope.rhs_call(rhs, rhs_ftypes, change_ftypes)
 <%= :rhs_ptr %> => <%= rhs %>
 
-call <%= result %>%create(<%= scheme %>,fields,<%= :rhs_ptr %>,rhs_fields,info)
+% scope.raw_var result[0].to_sym =>  "type(ppm_t_ode) :: #{result}"
+call <%= result[0] %>%create(<%= scheme %>,fields,<%= :rhs_ptr %>,rhs_fields,info)
 
+% scope.raw_var result[1].to_sym => "integer :: #{result[1]}"
+<%= result[1] %> = <%= result[0] %>%integrator%scheme_nstages
 end macro
