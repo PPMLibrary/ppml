@@ -141,9 +141,10 @@ template_type
 
 scope_start
     :
-    (              kind=PROGRAM_T    name=ID_T           NEWLINE_T { @context << :program }
-    |              kind=MODULE_T     name=ID_T           NEWLINE_T { @context << :module }
-    | ABSTRACT_T?  kind=INTERFACE_T  name=ID_T?          NEWLINE_T { @context << :interface }
+    (              kind=PROGRAM_T    name=ID_T           NEWLINE_T { @context << :program    }
+    |              kind=CLIENT_T     name=ID_T           NEWLINE_T { @context << :client     }
+    |              kind=MODULE_T     name=ID_T           NEWLINE_T { @context << :module     }
+    | ABSTRACT_T?  kind=INTERFACE_T  name=ID_T?          NEWLINE_T { @context << :interface  }
     | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T  arglist? NEWLINE_T { @context << :subroutine }
     | ID_T?        kind=FUNCTION_T   name=ID_T  arglist?
             (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)?  NEWLINE_T { @context << :function }
@@ -153,6 +154,7 @@ scope_start
 scope_end
     :
     ( {@context.last==:program   }?=> ( ENDPROGRAM_T    | END_T PROGRAM_T    ) ID_T? NEWLINE_T
+    | {@context.last==:client    }?=> ( ENDPROGRAM_T    | END_T CLIENT_T     ) ID_T? NEWLINE_T
     | {@context.last==:module    }?=> ( ENDMODULE_T     | END_T MODULE_T     ) ID_T? NEWLINE_T
     | {@context.last==:interface }?=> ( ENDINTERFACE_T  | END_T INTERFACE_T  ) ID_T? NEWLINE_T
     | {@context.last==:subroutine}?=> ( ENDSUBROUTINE_T | END_T SUBROUTINE_T ) ID_T? NEWLINE_T
@@ -400,6 +402,8 @@ TIMELOOP_T      : 'TIMELOOP'      | 'timeloop'      ;
 ENDTIMELOOP_T   : 'ENDTIMELOOP'   | 'endtimeloop'   ;
 WITH_T          : 'WITH'          | 'with'          ;
 TEMPLATE_T      : 'TEMPLATE'      | 'template'      ;
+CLIENT_T        : 'CLIENT'        | 'client'        ;
+ENDCLIENT_T     : 'ENDCLIENT'     | 'endclient'     ;
 
 // Fortran Keywords
 

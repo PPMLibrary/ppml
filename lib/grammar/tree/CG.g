@@ -187,19 +187,38 @@ type_statement
 
 scope_start returns [name]
     : {find_hidden}
-      ^(SCOPE_START kind=TEXT n=ID_T? text=TEXT)
+        ({@input.look(3).text.to_s == "client"}?=>
+          ^(SCOPE_START kind=TEXT n=ID_T? text=TEXT)
+      {
+setup_scope $kind.text, $n
+@scope.output_continue = true
+@scope.raw_var caller: "character(len=#{$n.text.to_s.length}) :: caller = '#{$n.text.to_s}'"
+@scope.raw_var   info: "integer :: info"
+$name = $n
+}
+      -> client(in={@empty_lines + @current_indent + $text.text})
+        | ^(SCOPE_START kind=TEXT n=ID_T? text=TEXT)
       {
 setup_scope $kind.text, $n
 $name = $n
 }
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
+        )
     ;
 
 scope_end
-    : { cleanup_scope }
-      ^(SCOPE_END text=TEXT)
-      {@first_line = @current_indent}
+    : ( {@scope.kind == :client}?=>
+        ^(SCOPE_END text=TEXT)
+        {
+cleanup_scope
+@first_line = @current_indent
+}
+      -> client(in={@empty_lines + @current_indent + $text.text})
+      | { cleanup_scope }
+        ^(SCOPE_END text=TEXT)
+        {@first_line = @current_indent}
       -> verbatim(in={@empty_lines + @current_indent + $text.text})
+      )
     ;
 
 inner_stuff

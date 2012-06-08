@@ -3,8 +3,8 @@ module CG
   # Represents the current scope in the prepocessed code. Provides methods for
   # adding various declarations to the scope when generating its code.
   class Scope
-    attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent, :output_continue
-    attr_accessor :indent, :body_indent, :line, :interfaces
+    attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent
+    attr_accessor :indent, :body_indent, :line, :interfaces, :output_continue
 
     # Creates a new scope.
     #

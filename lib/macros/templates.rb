@@ -75,6 +75,10 @@ ENDTEMPLATE
 
         define_template( :verbatim,    "<%= @in %>")
 
+        define_template( :client, <<-'ENDTEMPLATE')
+<%= @in.gsub(/client/i, "program") %>
+ENDTEMPLATE
+
         define_template( :fcall_macro, <<-'ENDTEMPLATE')
 <%= CG::Preprocessor.instance.expand(@name, @context, @result, @args.pos, @args.named, @dotarg) %>
 ENDTEMPLATE

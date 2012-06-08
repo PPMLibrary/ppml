@@ -1,7 +1,5 @@
-program pse
+client pse
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
-
-  start_subroutine("pse")
 
   ppm_init()
 
@@ -29,5 +27,4 @@ program pse
   ! - define_rhs r(a)
   !   - a = apply_operator     (d,a)
 
-  end_subroutine()
-end program
+end client
