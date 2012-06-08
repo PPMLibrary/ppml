@@ -285,9 +285,8 @@ line
     ;
 
 fcmacro
-    : ^(FMACRO n=ID_T r=ID_T?
-            a=arglist d=ID_T?)
-          -> fcall_macro(name={$n},context={@scope},result={$r},args={a},dotarg={$d})
+    : ^(FMACRO n=ID_T r=return_args a=arglist)
+          -> fcall_macro(name={$n},context={@scope},results={r},args={a})
     ;
 
 imacro
@@ -325,6 +324,12 @@ timeloop
     ;
 
 timeloop_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
+
+return_args returns [args]
+    : {rargs = []}
+      ^(RETARGS (r+=ID_T {rargs << r})*)
+      {$args = rargs}
+    ;
 
 arglist returns [pos,named,splat]
     : {posargs = []

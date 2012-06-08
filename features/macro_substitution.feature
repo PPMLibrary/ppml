@@ -94,3 +94,24 @@ Feature: macro substitution
     
     """
 
+  Scenario: Multiple return arguments
+    Given the standard macro path is "examples/testdata/macros"
+    When I preprocess
+    """
+    program p
+      a, b = minmax(x, y)
+    end program
+
+    """
+    Then it should expand into
+    """
+    program p
+      implicit none
+      real :: a
+      real :: b
+      
+      a = min(x, y)
+      b = max(x, y)
+    end program
+
+    """

@@ -26,6 +26,7 @@ BODY;
 FLINE;
 TEXT;
 ARGS;
+RETARGS;
 NAMEDARGS;
 FDARG;
 RHS_SCOPE;
@@ -54,18 +55,17 @@ rescue ANTLR3::Error::RecognitionError => re
 @members {
 def fmacro_call?
   m = Preprocessor.instance.macros
-  if input.peek(2) == TokenData::EQUALS_T
-    if input.peek(4) == TokenData::DOT_T
-        m.has_key?(input.look(5).text)
-    else
-        m.has_key?(input.look(3).text)
-    end
+  i = 2
+  while (input.peek(i) != TokenData::EQUALS_T) \
+    and (input.peek(i) != TokenData::NEWLINE_T) \
+    and (input.peek(i) != TokenData::LEFT_PAREN_T) \
+    and (input.peek(i) != -1) do
+    i += 1
+  end
+  if input.peek(i) == TokenData::EQUALS_T
+    m.has_key?(input.look(i+1).text)
   else
-    if input.peek(2) == TokenData::DOT_T
-        m.has_key?(input.look(3).text)
-    else
-        m.has_key?(input.look(1).text)
-    end
+    m.has_key?(input.look(1).text)
   end
 end
 
@@ -336,8 +336,13 @@ timeloop_end : (ENDTIMELOOP_T | END_T TIMELOOP_T) NEWLINE_T
    -> ^(SCOPE_END TEXT[$timeloop_end.start,$timeloop_end.text]);
 
 fcmacro
-    : (result=ID_T EQUALS_T)? ((name=ID_T) | (dotarg=ID_T DOT_T name=ID_T)) args=arglist NEWLINE_T
-      -> ^(FMACRO $name $result? $args $dotarg?)
+    :  results=return_args name=ID_T  args=arglist NEWLINE_T
+      -> ^(FMACRO $name $results $args)
+    ;
+
+return_args
+    : (results+=ID_T (COMMA_T results+=ID_T)* EQUALS_T)?
+      -> ^(RETARGS $results*)
     ;
 
 imacro

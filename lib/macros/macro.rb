@@ -61,7 +61,11 @@ module CG
     def expand(scope, result=nil, pos=nil, named=nil, recursive=false)
       map = Macro.resolve_args @args, pos, named
       map["scope"] = scope
-      map["result"] = result.to_s
+      if result.length > 1
+        map["result"] = result.map(&:to_s)
+      elsif result.length == 1
+        map["result"] = result[0].to_s
+      end unless result.nil?
       binding = Macro.binding_from_map map
       expand_recursive_calls(scope, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"

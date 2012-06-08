@@ -80,7 +80,7 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :fcall_macro, <<-'ENDTEMPLATE')
-<%= CG::Preprocessor.instance.expand(@name, @context, @result, @args.pos, @args.named, @dotarg) %>
+<%= CG::Preprocessor.instance.expand(@name, @context, @results.args, @args.pos, @args.named) %>
 ENDTEMPLATE
 
         define_template( :include_macro, <<-'ENDTEMPLATE')
