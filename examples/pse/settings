@@ -3,7 +3,7 @@
 conf.project_name = "pse"
 conf.binary = "pse"
 conf.build.optflags = "-O3"
-conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm_ds"
+conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm"
 conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"
 
 # numerics settings

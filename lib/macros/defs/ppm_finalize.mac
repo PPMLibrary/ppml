@@ -3,10 +3,10 @@ macro ppm_finalize()
 % scope.var :info, "integer"
 
 call ppm_finalize(info)
-$fail("info.ne.0", "\"ppm_finalize failed.\"")
+$or_fail("\"ppm_finalize failed.\"")
 
 % if configatron.mpi
 call MPI_Finalize(info)
-$fail("info.ne.0", "\"MPI_Finalize failed.\"")
+$or_fail("\"MPI_Finalize failed.\"")
 % end
 end macro

@@ -14,13 +14,20 @@ module CG
       subroutine @da
       use :ppm_module_ctrl
       use :ppm_module_data
+      if (!conf.ppm.prec.nil?  )
+        var :mk, "integer, parameter :: mk = #{conf.ppm.prec}"
+      else
+        var :mk, "integer, parameter :: mk = ppm_kind_single"
+      end
     end
 
     def arg o
       var o[:name], "#{o[:type]} :: #{o[:name]}"
+      @da.add o[:init] unless o[:init].nil?
       txt = "call arg(#{o[:name]}, '#{o[:name]}'"
       o.delete :name
       o.delete :type
+      o.delete :init
       o.each do |k,v|
         txt += ", &\n         #{k} = #{v}"
       end
