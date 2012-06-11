@@ -17,7 +17,7 @@ client pse
   ghost_mapping(c)
   create_neighlist(c)
 
-  !Lap = define_op(2, [2, 0, 0, 2], [1, 1, 1, 1], "Laplacian")
+  Lap = define_op(2, [2, 0, 0, 2], [1, 1, 1, 1], "Laplacian")
   !L = compute_op(Lap, c, "DC-PSE")
 
   o, nstages = create_ode([f=>c], pse_rhs, [f], eulerf)
