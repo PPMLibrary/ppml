@@ -29,7 +29,7 @@ Feature: Right hand side definition
       implicit none
       contains
       function testrhs(fields_discr, time, changes)
-        use ppm_module_interfaces
+        use ppm_module_core
         implicit none
         real(mk), dimension(:), pointer :: mangled_dgdata
         integer :: testrhs

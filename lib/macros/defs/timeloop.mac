@@ -18,5 +18,6 @@ timeloop macro(tstart=start_time,deltat=time_step,tend=stop_time)
 <%= time %> = <%= tstart %>
 do while (<%= time %> .le. <%= tend %>)
 <%= body.indent 2 -%>
+  <%= time %> = <%= time %> + <%= deltat %>
 end do
 end macro
