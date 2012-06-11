@@ -1,13 +1,14 @@
 client pse
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
+  real(ppm_kind_double), parameter :: dt = 0.01_mk
 
   ppm_init()
 
-  t = create_topology(bcd)
+  topo = create_topology(bcd)
 
-  c = create_particles(t)
-  global_mapping(c,t)
+  c = create_particles(topo)
+  global_mapping(c,topo)
 
   f = create_field(2, "Field1")
 
