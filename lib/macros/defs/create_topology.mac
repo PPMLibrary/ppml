@@ -1,6 +1,6 @@
 macro create_topology(boundary_condition,decomp=nil,assign=nil)
 % scope.use :ppm_module_mktopo
-% scope.var :info, "integer"
+% scope.raw_var info: "integer :: info"
 % scope.raw_var({result.to_sym => "integer :: #{result}"})
 % scope.var :cost, "real(mk), dimension(:), pointer"
 
