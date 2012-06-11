@@ -55,10 +55,10 @@ class PPM < Thor
       end
     end
     File.open "gen/#{conf.name_prefix}global.f90", 'w+' do |f|
-      f.puts CG::GlobalModule.instance.to_s
+      f.puts CG::Preprocessor.instance.process(CG::GlobalModule.instance.to_s)
     end
     File.open "gen/#{conf.name_prefix}rhs.f90", 'w+' do |f|
-      f.puts CG::RHSModule.instance.to_s
+      f.puts CG::Preprocessor.instance.process(CG::RHSModule.instance.to_s)
     end
   end
 

@@ -93,23 +93,23 @@ ENDIF
 end macro
 
 macro start_subroutine(name=default_name)
-REAL(KIND(1.D0))                   :: t0
-CHARACTER(LEN=ppm_char)            :: caller = "<%= name.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )%>"
+real(kind(1.D0))                   :: ppm_internal_t0
+character(len=ppm_char)            :: caller = "<%= name.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )%>"
 
 !-------------------------------------------------------------------------
 !  Initialise
 !-------------------------------------------------------------------------
-CALL substart(caller,t0,info)
+CALL substart(caller,ppm_internal_t0,info)
 end macro
 
 macro end_subroutine(exit_point=9999)
-    CALL substop(caller,t0,info)
+    call substop(caller,ppm_internal_t0,info)
     <%= exit_point %> CONTINUE
 end macro
 
 macro start_function(name="default_name")
 % scope.raw_var info: "INTEGER                 :: info"
-    CHARACTER(LEN=ppm_char)            :: caller = <%= name %>
+    character(LEN=ppm_char)            :: caller = <%= name %>
 
     info = 0
 end macro
@@ -177,8 +177,6 @@ $dealloc_pointer(p)
 % end
 % end
 end macro
-
-
 
 macro alloc_pointer(pointer,dim,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )

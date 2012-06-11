@@ -121,7 +121,12 @@ module CG
       use GlobalModule.name
       GlobalModule.instance.use mod
     end
-  
+
+    def global_var var
+      use GlobalModule.name
+      GlobalModule.instance.var *var.flatten
+    end
+
     # Setup an right hand side call. This will use the RHS module in the current
     # scope and request a right hand side function to be generated that presents
     # fields and discretizations as given here.

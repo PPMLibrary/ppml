@@ -1,5 +1,5 @@
 macro create_field(ndim,name)
-% scope.use :ppm_module_field_typedef
+% scope.use :ppm_module_core
 % scope.raw_var ({ result.to_sym => "class(ppm_t_field_), pointer :: #{result}" })
 % scope.raw_var ({ :info => "integer :: info" })
 

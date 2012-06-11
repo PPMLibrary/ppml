@@ -7,11 +7,11 @@ end macro
 
 macro compute_op(operator, discretization, method_name)
 % scope.raw_var info: "integer :: info"
-% scope.raw_var result.to_sym => "class(ppm_t_operator_discr), pointer :: #{result} => null()"
+% scope.global_var result.to_sym => "class(ppm_t_operator_discr), pointer :: #{result} => null()"
 call <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, info, method=<%= method_name %>)
 end macro
 
 macro apply_op(operator, input)
-% scope.raw_war info: "integer :: info"
+% scope.raw_var info: "integer :: info"
 call <%= operator %>%compute(<%= input %>, <%= result %>, info)
 end macro

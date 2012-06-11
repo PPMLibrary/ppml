@@ -1,11 +1,14 @@
 module CG
   class FortranSubroutine
+    attr_accessor :print_continue
+
     def initialize name
       @name = name
       @use = {}
       @vars = {}
       @args = {}
       @code = []
+      @print_continue = false
     end
 
     def use sym, str=nil
@@ -43,9 +46,11 @@ module CG
         cs = "\n" + @code.join("\n")
         cs.gsub! /\n/, "\n  "
       end
+      unless @code.empty?
+      end
       <<EOF
 subroutine #{@name}#{args}#{us}
-  implicit none#{vs}#{cs}
+  implicit none#{vs}#{cs}#{"9999 continue" if @print_continue}
 end subroutine #{@name}
 EOF
     end

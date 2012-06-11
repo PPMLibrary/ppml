@@ -1,5 +1,5 @@
 macro global_mapping(discretization,topology)
-% scope.use :ppm_module_map
+% scope.use :ppm_module_core
 % scope.var :info, "integer"
 call <%= discretization %>%map(info,global=.true.,topoid=<%= topology %>)
 end macro

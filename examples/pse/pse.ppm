@@ -1,17 +1,28 @@
 client pse
+  use ppm_module_io_vtk
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
-  real(ppm_kind_double), parameter :: dt = 0.01_mk
-  real(ppm_kind_double), parameter :: mu    = 0.5_mk
-  real(ppm_kind_double), parameter :: sigma = 0.02_mk
+  real(ppm_kind_double), parameter     :: dt    = 0.01_mk
+  real(ppm_kind_double), parameter     :: mu    = 0.5_mk
+  real(ppm_kind_double), parameter     :: sigma = 0.02_mk
+  integer, dimension(2)                :: seed
+  real(ppm_kind_double), dimension(:,:), pointer :: displace
 
   ppm_init()
 
   topo = create_topology(bcd)
 
   c = create_particles(topo)
-  global_mapping(c,topo)
 
+  allocate(displace(2,c%Npart))
+  call random_number(displace)
+  displace = (displace - 0.5_mk) * c%h_avg * 0.15_mk
+  call c%move(displace, info)
+  call c%apply_bc(info)
+  call c%set_cutoff(4._mk * c%h_avg, info)
+
+  global_mapping(c,topo)
+  
   f = create_field(1, "concentration")
 
   discretize(f,c)
@@ -24,7 +35,7 @@ client pse
 
   create_neighlist(c)
 
-  Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
+  Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
   L = compute_op(Lap, c, "DC-PSE")
 
   o, nstages = create_ode([f=>c], pse_rhs, [f], eulerf)
@@ -32,8 +43,11 @@ client pse
   t = timeloop(0.0_mk,deltat=dt)
     do istage=1,nstages
       ode_step(o, t, dt, istage)
+      write(*,*) "time: ", t
     end do
   end timeloop
+
+  call ppm_vtk_particles("output", c, info)
 
   ppm_finalize()
 end client

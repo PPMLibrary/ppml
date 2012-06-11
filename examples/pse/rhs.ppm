@@ -1,4 +1,4 @@
 rhs pse_rhs(f)
   get_fields(df=>p)
-  !compute(dcop,f,df)
+  df = apply_op(Lap, f)
 end rhs
