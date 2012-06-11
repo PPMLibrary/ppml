@@ -1,0 +1,5 @@
+macro print(fields, resolution)
+% fields.each do |f|
+
+% end
+end macro

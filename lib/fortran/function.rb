@@ -1,5 +1,7 @@
 module CG
   class FortranFunction
+    attr_accessor :print_continue
+
     def initialize name, result_type, result_name=nil
       @name = name
       @result_type = result_type
@@ -9,6 +11,7 @@ module CG
       @vars = {}
       @args = {}
       @code = []
+      @print_continue = false
     end
 
     def use sym, str=nil
@@ -50,7 +53,7 @@ module CG
       end
       <<EOF
 function #{@name}#{args}#{us}
-  implicit none#{vs}#{cs}
+  implicit none#{vs}#{cs}#{"\n9999 continue" if @print_continue}
 end function #{@name}
 EOF
     end

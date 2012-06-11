@@ -80,7 +80,7 @@ module CG
 
       add definition[3].map(&:to_s).map(&:strip)
 
-      print_continue = true
+      @print_continue = true
     end
 
     # setup all arguments of right hand side. This retrieves the arguments from
