@@ -67,7 +67,7 @@ module CG
       args fields_discr: "class(ppm_v_field_discr_pair), pointer :: fields_discr",
         time: "real(#{prec}) :: time",
         changes: "class(ppm_v_field), pointer :: changes"
-      use :ppm_module_interfaces
+      use :ppm_module_core
       var :fd_pair, "class(ppm_t_field_discr_pair), pointer :: fd_pair => null()"
       var :di, "class(ppm_t_discr_info_), pointer :: di => null()"
 
