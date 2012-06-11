@@ -1,5 +1,4 @@
 rhs pse_rhs(f)
-  integer :: test
   get_fields(df=>p)
-  test = 10 ! YAY
+  !compute(dcop,f,df)
 end rhs

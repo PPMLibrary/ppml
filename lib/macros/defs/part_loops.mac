@@ -6,14 +6,14 @@ modifier prec(precision=mk)
 % fields = []
 % sca_fields.each do |f|
 %   if f.is_a? Array
-%     fields << [f[0],f[1],:sca]
+%     fields << ["#{f[0]}_wp",f[1],:sca]
 %   else
 %     fields << ["#{f}_wp",f,:sca]
 %   end
 % end unless sca_fields.nil?
 % vec_fields.each do |f|
 %   if f.is_a? Array
-%     fields << [f[0],f[1],:vec]
+%     fields << ["#{f[0]}_wp",f[1],:vec]
 %   else
 %     fields << ["#{f}_wp",f,:vec]
 %   end
@@ -41,9 +41,9 @@ $or_fail("\"getting field #{f[1]} for #{pset}\"")
 do <%= iter %>=1,<%= pset %>%Npart
 % fields.each do |f|
 %   if f[2] == :sca
-%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
 %   else
-%     body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
 %   end
 % end
 % body.transform! "#{x}_#{iter}", "#{x}_#{iter}($1,#{iter})"

@@ -2,6 +2,8 @@ client pse
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
   real(ppm_kind_double), parameter :: dt = 0.01_mk
+  real(ppm_kind_double), parameter :: mu    = 0.5_mk
+  real(ppm_kind_double), parameter :: sigma = 0.02_mk
 
   ppm_init()
 
@@ -10,15 +12,20 @@ client pse
   c = create_particles(topo)
   global_mapping(c,topo)
 
-  f = create_field(2, "Field1")
+  f = create_field(1, "concentration")
 
   discretize(f,c)
 
   ghost_mapping(c)
+
+  foreach p in particles(c) with positions(x) sca_fields(f)
+    f_p = exp(-((x_p(1)-mu)**2)/sigma)*exp(-((x_p(2)-mu)**2)/sigma)
+  end foreach
+
   create_neighlist(c)
 
-  Lap = define_op(2, [2, 0, 0, 2], [1, 1, 1, 1], "Laplacian")
-  !L = compute_op(Lap, c, "DC-PSE")
+  Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
+  L = compute_op(Lap, c, "DC-PSE")
 
   o, nstages = create_ode([f=>c], pse_rhs, [f], eulerf)
 
