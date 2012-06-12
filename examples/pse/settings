@@ -8,11 +8,16 @@ conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
-conf.ppm.tolexp = 10
-conf.ppm.dim = 2
+conf.ppm.tolexp = -14
+#conf.ppm.dim = 2
+conf.ppm.dim = 3
 
 # time stepping
 conf.step.type = :real # :integer
+
+# I/O settings
+conf.out.format = :vtk # :hdf5
+conf.out.basename = "output"
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
