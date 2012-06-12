@@ -1,5 +1,23 @@
 macro print(fields, resolution)
-% fields.each do |f|
-
+% parts = Hash.new []
+% meshs = Hash.new []
+% fields.each do |pair|
+%   if scope.type_of(pair[1].to_s.to_sym) == :ppm_t_particles_d
+%     parts[pair[1].to_s] = parts[pair[1].to_s] << pair[0].to_s
+%   else
+%     meshs[pair[1].to_s] = meshs[pair[1].to_s] << pair[0].to_s
+%   end
+% end
+% scope.var :fieldlist, "class(ppm_v_main_abstr), pointer"
+% scope.var :temp_fix_assign, "class(ppm_t_main_abstr), pointer"
+% parts.each do |p,fs|
+allocate(fieldlist)
+%   fs.each do |f|
+<%= :temp_fix_assign %> => <%= f %>
+call <%= :fieldlist %>%push(<%= :temp_fix_assign %>, info)
+%   end
+call ppm_vtk_particles("output", <%= p %>, info)
+$or_fail("\"Failed to print fields on particle set\"")
+deallocate(fieldlist)
 % end
 end macro

@@ -1,7 +1,7 @@
 macro create_topology(boundary_condition,decomp=nil,assign=nil)
 % scope.use :ppm_module_mktopo
 % scope.raw_var info: "integer :: info"
-% scope.raw_var({result.to_sym => "integer :: #{result}"})
+% scope.raw_var({result.to_sym => "integer :: #{result} = 0"})
 % scope.var :cost, "real(mk), dimension(:), pointer"
 
 % scope.arg name: :min_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"

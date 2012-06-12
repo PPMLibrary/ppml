@@ -1,11 +1,6 @@
-client pse
-  use ppm_module_io_vtk
+client grayscott
   integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
-  integer :: istage
-  real(ppm_kind_double), parameter     :: dt    = 0.01_mk
-  real(ppm_kind_double), parameter     :: mu    = 0.5_mk
-  real(ppm_kind_double), parameter     :: sigma = 0.02_mk
-  integer, dimension(2)                :: seed
+  integer, dimension(2) :: seed
   real(ppm_kind_double), dimension(:,:), pointer :: displace
 
   ppm_init()
@@ -21,25 +16,26 @@ client pse
   call c%apply_bc(info)
   call c%set_cutoff(4._mk * c%h_avg, info)
 
-  global_mapping(c,topo)
+  global_mapping(c, topo)
   
-  f = create_field(1, "concentration")
+  U = create_field(1, "U")
+  V = create_field(1, "V")
 
-  discretize(f,c)
+  discretize(U,c)
+  discretize(V,c)
 
   ghost_mapping(c)
 
-  foreach p in particles(c) with positions(x) sca_fields(f)
-    f_p = exp(-((x_p(1)-mu)**2)/sigma)*exp(-((x_p(2)-mu)**2)/sigma)
+  foreach p in particles(c) with positions(x) sca_fields(V)
+    V_p = 1
   end foreach
-  print([f=>c], 10)
 
   create_neighlist(c)
 
   Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
   L = compute_op(Lap, c, "DC-PSE")
 
-  o, nstages = create_ode([f=>c], pse_rhs, [f], eulerf)
+  o, nstages = create_ode([U=>c,V=>c], grahscott_rhs, [U,V], eulerf)
 
   t = timeloop(0.0_mk,deltat=dt)
     ghost_mapping(c)
@@ -48,8 +44,6 @@ client pse
       write(*,*) "time: ", t
     end do
   end timeloop
-
-  print([f=>c], 10)
 
   ppm_finalize()
 end client

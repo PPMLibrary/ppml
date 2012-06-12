@@ -11,9 +11,9 @@ PPMDIR    = <%= conf.ppm.base_path %>
 PPMNUMDIR = <%= conf.ppm.numerics.base_path %>
 
 # Flags and settings, when you compile
-FC      = <%= conf.build.compiler %>
-LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis # -lppmnumerics
-OPT     = <%= conf.build.optflags %> -FR
+FC      = <%= conf.build.compiler %> -ffree-form -ffree-line-length-none
+LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis -llapack -lblas # -lppmnumerics
+OPT     = <%= conf.build.optflags %> -FR -O0 -g -fbounds-check -fbacktrace -ftrapv -fno-automatic -ffree-line-length-none
 INCL    = -I$(PPMDIR)/include/ppm -I$(PPMNUMDIR)/include/ppm
 
 ### Usually you should not change these variables below.
