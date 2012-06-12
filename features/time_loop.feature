@@ -31,7 +31,6 @@ Feature: time loop macro
         ! some code here
         a = 10
         print *, t
-        t = t + dt
       end do
     end program timetest
 
@@ -62,7 +61,6 @@ Feature: time loop macro
         ! some code here
         a = 10
         print *, istep
-        istep = istep + time_step
       end do
     end program timetest
 
