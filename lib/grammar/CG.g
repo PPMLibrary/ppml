@@ -182,9 +182,9 @@ rhs_end
     ;
 
 rhs_inner_stuff
-    : pre+=fline*
+    : pre+=line*
       GET_FIELDS_T ret=rhs_arglist NEWLINE_T
-      post+=fline*
+      post+=line*
         -> ^(RHS_INNER $pre* $ret $post*) 
     ;
 

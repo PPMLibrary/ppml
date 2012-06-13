@@ -155,7 +155,7 @@ $args=a.args
     ;
 
 rhs_inner_stuff returns [ret,pre,post]
-    : ^(RHS_INNER pr+=fline* r=rhs_args po+=fline*)
+    : ^(RHS_INNER pr+=line* r=rhs_args po+=line*)
         {
 $ret =$r.args
 $pre =$pr
