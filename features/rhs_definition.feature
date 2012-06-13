@@ -52,9 +52,9 @@ Feature: Right hand side definition
         testrhs = 0
         fd_pair => fields_discr%at(1)
         f => fd_pair%field
-        select type(fd_pair%discretization)
+        select type(fdpairdiscr => fd_pair%discretization)
         class is (ppm_t_equi_mesh)
-          a => fd_pair%discretization
+          a => fdpairdiscr
         end select
         fd_pair => fields_discr%at(2)
         g => fd_pair%field
@@ -62,9 +62,9 @@ Feature: Right hand side definition
         h => fd_pair%field
         dx => changes%at(1)
         di => dx%discr_info%begin()
-        select type(disc => di%discr_ptr)
+        select type(discrptr => di%discr_ptr)
         class is (ppm_t_particles_d)
-          x => disc
+          x => discrptr
         end select
         df => changes%at(2)
         dg => changes%at(3)

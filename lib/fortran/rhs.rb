@@ -108,9 +108,9 @@ ERRMSG
               "a discretization to be passed when calling"
           end
           var field_disc[1].to_sym, "class(#{type}), pointer :: #{field_disc[1]}"
-          add "select type(fd_pair%discretization)"
+          add "select type(fdpairdiscr => fd_pair%discretization)"
           add "class is (#{type})"
-          add "  #{field_disc[1]} => fd_pair%discretization"
+          add "  #{field_disc[1]} => fdpairdiscr"
           add "end select"
         end
       end
@@ -141,9 +141,9 @@ ERRMSG
           end
           var res_disc[1].to_sym, "class(#{type}), pointer :: #{res_disc[1]}"
           add "di => #{res_disc[0]}%discr_info%begin()"
-          add "select type(disc => di%discr_ptr)"
+          add "select type(discrptr => di%discr_ptr)"
           add "class is (#{type})"
-          add "  #{res_disc[1]} => disc"
+          add "  #{res_disc[1]} => discrptr"
           add "end select"
 
         end
