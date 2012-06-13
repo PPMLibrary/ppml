@@ -39,7 +39,7 @@ client pse
 
   create_neighlist(c)
 
-  if (ppm_dim.eq.2)
+  if (ppm_dim.eq.2) then
     Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
   else 
     Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")

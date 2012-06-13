@@ -1,3 +1,0 @@
-rhs grayscott_rhs(topology=t,discretization=pset,rhs=wp,drhs=dwp,idata,ldata,rdata)
-
-end rhs
