@@ -5,6 +5,7 @@ timeloop macro(tstart=start_time,deltat=time_step,tend=stop_time)
 %   scope.raw_var time.to_sym => "integer :: #{time}"
 % end
 %
+% scope.arg_group "Time Parameters"
 % if conf.step.type == :real
 %   scope.arg name: :start_time, type: "real(mk)", default: "0.0_mk", min: "0.0_mk", ctrl_name: "'start_time'", help: "'Start time'"
 %   scope.arg name: :time_step, type: "real(mk)", default: "0.1_mk", min: "0.0_mk", ctrl_name: "'time_step'", help: "'Time step'"

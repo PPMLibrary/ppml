@@ -31,7 +31,7 @@ module CG
       it "adds use statements with #use" do
         @s.use :some_module
         @s.use :other_module, 'use other_module, only: variable'
-        @s.use_statements.should == {some_module:'use some_module', other_module: 'use other_module, only: variable'}
+        @s.uses.should == {some_module:'use some_module', other_module: 'use other_module, only: variable'}
       end
 
       it "adds variables with #raw_var" do

@@ -9,20 +9,21 @@ macro print(fields, resolution)
 %     meshs[pair[1].to_s] = meshs[pair[1].to_s] << pair[0].to_s
 %   end
 % end
-% scope.var :fieldlist, "class(ppm_v_main_abstr), pointer"
-% scope.var :temp_fix_assign, "class(ppm_t_main_abstr), pointer"
+% scope.var :fieldlist, "class(ppm_v_main_abstr), pointer", " => null()"
+% scope.var :temp_fix_assign, "class(ppm_t_main_abstr), pointer", " => null()"
 % parts.each do |p,fs|
 if (MOD(<%= :r_it %>,<%= resolution %>).eq.0) then ! print to vtk
-allocate(fieldlist)
+  allocate(fieldlist)
 %   fs.each do |f|
-<%= :temp_fix_assign %> => <%= f %>
-call <%= :fieldlist %>%push(<%= :temp_fix_assign %>, info)
+  <%= :temp_fix_assign %> => <%= f %>
+  call <%= :fieldlist %>%push(<%= :temp_fix_assign %>, info)
+  $or_fail("\"Failed to push fields to field list.\"")
 %   end
 % scope.var :vtk_filename, "character(len=64)"
-write(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :r_it %> 
-call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info)
-$or_fail("\"Failed to print fields on particle set\"")
-deallocate(fieldlist)
+  write(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :r_it %> 
+  call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :fieldlist %>)
+  $or_fail("\"Failed to print fields on particle set\"")
+  deallocate(fieldlist)
 % end
 end if ! end print to vtk
 <%= :r_it %> = <%= :r_it %> + 1

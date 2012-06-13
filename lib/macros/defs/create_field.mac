@@ -7,4 +7,5 @@ allocate(ppm_t_field::<%= result %>,stat=info)
 $or_fail_alloc("\"Allocating the <%= result %> field\"")
 
 call <%= result %>%create(<%= ndim %>, info, name=<%= name %>)
+$or_fail("\"Create field failed!\"")
 end macro

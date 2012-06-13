@@ -8,13 +8,14 @@ conf.ppm.numerics.base_path = "/Users/milanm/Work/PhD/lib/ppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
-conf.ppm.tolexp = 10
+conf.ppm.tolexp = -14
 conf.ppm.dim = 2
 
 # time stepping
 conf.step.type = :real # :integer
 
-
+# something for io
+conf.out.basename = "output"
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
