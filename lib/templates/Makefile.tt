@@ -28,15 +28,16 @@ DEPS := $(PPMDIR)/utils/deps.sh
 LOG  := compile.log
 RUN  := $(PPMDIR)/utils/runcmd.sh
 
-# Directory where to move the program when running 'make install'
+# Directory for object files
 BUILDDIR   = obj
+# Directory where to move the program when running 'make install'
 DESTDIR    = ../bin
 
 # generic variables
 
-SOURCES := $(notdir $(wildcard *.f90))
-OBJECTS := $(SOURCES:%.f90=$(BUILDDIR)/%.o)
-DEPENDENCIES := $(SOURCES:%.f90=$(BUILDDIR)/%.d)
+SOURCES := $(notdir $(wildcard *.f))
+OBJECTS := $(SOURCES:%.f=$(BUILDDIR)/%.o)
+DEPENDENCIES := $(SOURCES:%.f=$(BUILDDIR)/%.d)
 
 
 ####### Build and Install Targets ########################################
@@ -45,14 +46,19 @@ all: $(PROGRAM)
 # Dont delete the given intermediate files
 .SECONDARY: #$(DEPENDENCIES)
 
-ENV = CPP="cpp" SED="$(SED)" OBJDIR="."
+CPCMD = cp $< $@
+$(BUILDDIR)/%.f : %.f
+	@printf "  CP   %-42s" $<; \
+        $(RUN) "$(CPCMD)" $(LOG) "Copying Error"
+
+ENV = CPP="cpp" SED="$(SED)" INC="$(INCL)" OBJDIR="$(BUILDDIR)"
 DEPCMD = $(DEPS) $< $@
-$(BUILDDIR)/%.d : %.f90
+$(BUILDDIR)/%.d : %.f $(BUILDDIR)/%.f
 	@printf "  DEP  %-42s" $<; \
 	$(ENV) $(RUN) "$(DEPCMD)" $(LOG) "Dependency Error"
 
 COMPILECMD = $(FC) $(INCL) $(FFLAGS) -c -o $@ $<
-$(BUILDDIR)/%.o : %.f90
+$(BUILDDIR)/%.o : $(BUILDDIR)/%.f
 	@printf "  FC   %-42s" $<; \
 	$(RUN) "$(COMPILECMD)" $(LOG) "Compile Error"
 
