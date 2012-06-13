@@ -1,15 +1,21 @@
 client grayscott
-  integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
+  integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
   integer, dimension(2) :: seed
   real(ppm_kind_double), dimension(:,:), pointer :: displace
+  integer               :: istage = 1
+
+  add_arg(k_rate,"real(mk)",0.0_mk,0.0_mk,'k_rate','Reaction rate')
+  
+  add_arg(a,"real(mk)",0.0_mk,0.0_mk,'a_param','Reaction parameter a')
+  add_arg(b,"real(mk)",0.0_mk,0.0_mk,'b_param','Reaction parameter b')
 
   ppm_init()
 
-  topo = create_topology(bcd)
+  topo = create_topology(bcdef)
 
   c = create_particles(topo)
 
-  allocate(displace(2,c%Npart))
+  allocate(displace(ppm_dim,c%Npart))
   call random_number(displace)
   displace = (displace - 0.5_mk) * c%h_avg * 0.15_mk
   call c%move(displace, info)
@@ -32,18 +38,37 @@ client grayscott
 
   create_neighlist(c)
 
-  Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
+  if (ppm_dim.eq.2) then
+    Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
+  else 
+    Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
+  end if 
   L = compute_op(Lap, c, "DC-PSE")
 
-  o, nstages = create_ode([U=>c,V=>c], grahscott_rhs, [U,V], eulerf)
+  o, nstages = create_ode([U,V], grayscott_rhs, [U=>c,V], eulerf)
 
-  t = timeloop(0.0_mk,deltat=dt)
+  t = timeloop()
     ghost_mapping(c)
     do istage=1,nstages
-      ode_step(o, t, dt, istage)
-      write(*,*) "time: ", t
+      ode_step(o, t, time_step, istage)
     end do
+    print([U=>c, V=> c], 10)
   end timeloop
+    
+  print([U=>c, V=> c], 10)
 
   ppm_finalize()
 end client
+
+rhs grayscott_rhs(U=>parts,V)
+  get_fields(dU,dV)
+
+  dU = apply_op(L, U)
+  dV = apply_op(L, V)
+
+  foreach p in particles(parts) with sca_fields(U,V,dU,dV)
+    dU_p = k_rate*((U_p**2)*V_p) - (1.0_mk+b)*U_p + a
+    dV_p = k_rate*(-(U_p**2)*V_p) + b*U_p;
+  end foreach
+
+end rhs
