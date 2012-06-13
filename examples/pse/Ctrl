@@ -45,11 +45,10 @@
 #-------------------------------------------------------------------------------
             min_phys =   0.000000000000000E+000,   0.000000000000000E+000 
             max_phys =    1.00000000000000,    1.00000000000000 
-domain_decomposition = 3
+domain_decomposition = 7
 processor_assignment = 1
-          ghost_size = 0.041000000000000E+000
-               Npart = 10000
+          ghost_size = 0.12000000000000E+000
+               Npart = 40000
            ODEscheme = 1
           start_time = 0.000000000000000E+000
-           time_step = 0.100000000000000
-           stop_time = 1.00000000000000
+           stop_time = 0.001000000000000

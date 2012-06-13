@@ -1,12 +1,13 @@
 client pse
   use ppm_module_io_vtk
-  integer, dimension(4) :: bcd = ppm_param_bcdef_periodic
+  integer, dimension(6) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
-  real(ppm_kind_double), parameter     :: dt    = 0.01_mk
+  real(ppm_kind_double), parameter     :: dt    = 0.00001_mk
   real(ppm_kind_double), parameter     :: mu    = 0.5_mk
   real(ppm_kind_double), parameter     :: sigma = 0.02_mk
   integer, dimension(2)                :: seed
   real(ppm_kind_double), dimension(:,:), pointer :: displace
+  integer                              :: idim
 
   ppm_init()
 
@@ -14,7 +15,7 @@ client pse
 
   c = create_particles(topo)
 
-  allocate(displace(2,c%Npart))
+  allocate(displace(ppm_dim,c%Npart))
   call random_number(displace)
   displace = (displace - 0.5_mk) * c%h_avg * 0.15_mk
   call c%move(displace, info)
@@ -30,26 +31,32 @@ client pse
   ghost_mapping(c)
 
   foreach p in particles(c) with positions(x) sca_fields(f)
-    f_p = exp(-((x_p(1)-mu)**2)/sigma)*exp(-((x_p(2)-mu)**2)/sigma)
+    f_p = 1.0_mk
+    do idim = 1, ppm_dim
+      f_p = f_p*exp(-((x_p(idim)-mu)**2)/sigma)
+    end do
   end foreach
-  print([f=>c], 10)
 
   create_neighlist(c)
 
-  Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
+  if (ppm_dim.eq.2) then
+    Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
+  else 
+    Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
+  end if 
   L = compute_op(Lap, c, "DC-PSE")
 
-  o, nstages = create_ode([f=>c], pse_rhs, [f], eulerf)
+  o, nstages = create_ode([f=>c], pse_rhs, [f], rk4)
 
   t = timeloop(0.0_mk,deltat=dt)
-    ghost_mapping(c)
     do istage=1,nstages
+      ghost_mapping(c)
       ode_step(o, t, dt, istage)
-      write(*,*) "time: ", t
     end do
+    !write(*,*) "time: ", t
+    print([f=>c], 10)
   end timeloop
 
-  print([f=>c], 10)
 
   ppm_finalize()
 end client

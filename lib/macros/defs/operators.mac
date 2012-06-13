@@ -1,4 +1,7 @@
 macro define_op(ndim, degree, coeffs, name)
+% # this defines a operator as a linear combination of differentials
+% # with degrees degree and coefficients coeffs.
+% # E.g. laplace in 2D has ndim = 2, degree = [2,0, 0,2] and coeffs = [1.0, 1.0]
 % scope.raw_var info: "integer :: info"
 % scope.global_var result.to_sym => "type(ppm_t_operator), pointer :: #{result} => null()"
 allocate(<%= result %>)
@@ -14,4 +17,5 @@ end macro
 macro apply_op(operator, input)
 % scope.raw_var info: "integer :: info"
 call <%= operator %>%compute(<%= input %>, <%= result %>, info)
+$or_fail("\"Operator computation failed\"")
 end macro

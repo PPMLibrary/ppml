@@ -14,6 +14,10 @@ conf.ppm.dim = 2
 # time stepping
 conf.step.type = :real # :integer
 
+# I/O settings
+conf.out.format = :vtk # :hdf5
+conf.out.basename = "output"
+
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
 conf.bench.nprocs = [1,2,4,8,16]

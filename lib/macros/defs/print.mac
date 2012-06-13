@@ -1,4 +1,5 @@
 macro print(fields, resolution)
+% scope.var :r_it, "integer", "= 0"
 % parts = Hash.new []
 % meshs = Hash.new []
 % fields.each do |pair|
@@ -11,13 +12,18 @@ macro print(fields, resolution)
 % scope.var :fieldlist, "class(ppm_v_main_abstr), pointer"
 % scope.var :temp_fix_assign, "class(ppm_t_main_abstr), pointer"
 % parts.each do |p,fs|
+if (MOD(<%= :r_it %>,<%= resolution %>).eq.0) then ! print to vtk
 allocate(fieldlist)
 %   fs.each do |f|
 <%= :temp_fix_assign %> => <%= f %>
 call <%= :fieldlist %>%push(<%= :temp_fix_assign %>, info)
 %   end
-call ppm_vtk_particles("output", <%= p %>, info)
+% scope.var :vtk_filename, "character(len=64)"
+write(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :r_it %> 
+call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info)
 $or_fail("\"Failed to print fields on particle set\"")
 deallocate(fieldlist)
 % end
+end if ! end print to vtk
+<%= :r_it %> = <%= :r_it %> + 1
 end macro
