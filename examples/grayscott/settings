@@ -1,20 +1,22 @@
 
 # basic settings
-conf.project_name = "grayscott"
-conf.binary = "grayscott"
+conf.project_name = "pse"
+conf.binary = "pse"
 conf.build.optflags = "-O3"
-conf.ppm.base_path = "/Users/milanm/Work/PhD/lib/ppm"
-conf.ppm.numerics.base_path = "/Users/milanm/Work/PhD/lib/ppmnumerics"
+conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm"
+conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
 conf.ppm.tolexp = -14
 conf.ppm.dim = 2
+#conf.ppm.dim = 3
 
 # time stepping
 conf.step.type = :real # :integer
 
-# something for io
+# I/O settings
+conf.out.format = :vtk # :hdf5
 conf.out.basename = "output"
 
 # cluster execution and benchmarking

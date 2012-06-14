@@ -70,8 +70,8 @@ rhs grayscott_rhs(U=>parts,V)
   dV = apply_op(L, V)
 
   foreach p in particles(parts) with sca_fields(U,V,dU,dV)
-    dU_p = k_rate*((U_p**2)*V_p) - (1.0_mk+b)*U_p + a
-    dV_p = k_rate*(-(U_p**2)*V_p) + b*U_p;
+    dU_p = dU_p + k_rate*((U_p**2)*V_p) - (1.0_mk+b)*U_p + a
+    dV_p = dV_p + k_rate*(-(U_p**2)*V_p) + b*U_p;
   end foreach
 
 end rhs
