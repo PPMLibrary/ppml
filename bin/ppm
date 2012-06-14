@@ -148,7 +148,8 @@ class BenchmarkGroup < Thor::Group
 
   def copy_files
     FileUtils.copy "bin/#{@client}", "bench/"
-    FileUtils.copy "Ctrl", "bench/"
+    @ctrl = conf.bench.ctrl
+    FileUtils.copy @ctrl, "bench/"
     @nprocs = conf.bench.nprocs
     if conf.bench.runargs.nil?
       @runargs = {}
@@ -157,6 +158,7 @@ class BenchmarkGroup < Thor::Group
       @runargs = conf.bench.runargs
     end
     @nreps = conf.bench.nreps
+    @job_preamble = conf.bench.to_hash[conf.bench.target.to_sym][:preamble]
     template "../lib/templates/benchmark_script.tt", "bench/job.sh"
     chmod 'bench/job.sh', 0755
   end

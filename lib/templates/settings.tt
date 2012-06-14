@@ -20,6 +20,7 @@ conf.out.basename = "output"
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
+conf.bench.ctrl = "Ctrl"
 conf.bench.nprocs = [1,2,4,8,16]
 conf.bench.nreps = 5
 conf.bench.runargs = {1 => '',2 => '',4 => '',8 => '',16 => ''}
