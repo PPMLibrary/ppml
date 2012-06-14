@@ -12,8 +12,13 @@ PPMNUMDIR = <%= conf.ppm.numerics.base_path %>
 
 # Flags and settings, when you compile
 FC      = <%= conf.build.compiler %>
+<<<<<<< Updated upstream:lib/templates/Makefile.tt
 LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis -llapack -lblas
 OPT     = <%= conf.build.optflags %> -FR
+=======
+LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis -llapack -lblas # -lppmnumerics
+OPT     = <%= conf.build.optflags %> -FR -O3
+>>>>>>> Stashed changes:lib/templates/Makefile.tt
 INCL    = -I$(PPMDIR)/include/ppm -I$(PPMNUMDIR)/include/ppm
 
 ### Usually you should not change these variables below.
