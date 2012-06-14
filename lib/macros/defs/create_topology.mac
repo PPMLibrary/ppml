@@ -3,7 +3,7 @@ macro create_topology(boundary_condition,decomp=nil,assign=nil)
 % scope.raw_var info: "integer :: info"
 % scope.raw_var({result.to_sym => "integer :: #{result} = 0"})
 % scope.var :cost, "real(mk), dimension(:), pointer", " => null()"
-
+% scope.arg_group "Domain Parameters"
 % scope.arg name: :min_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"
 % scope.arg name: :max_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "allocate(max_phys(#{conf.ppm.dim}))"
 % scope.arg name: :domain_decomposition, type: "integer", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"

@@ -24,7 +24,7 @@ ENDTEMPLATE
 ENDTEMPLATE
 
         define_template( :rhs,         <<-'ENDTEMPLATE')
-% CG::RHSModule.instance.definition @name.to_s, @args, @ret, @pre, @post
+% CG::RHSModule.instance.definition @name.to_s, @args, @ret, @pre, @post, @context
 ENDTEMPLATE
 
         define_template( :inner,       <<-'ENDTEMPLATE')
@@ -32,7 +32,7 @@ ENDTEMPLATE
 % unless @context.kind == :interface
 %   _erbout += @use.join("")  unless @use.empty?
 %   _erbout += "#{@indent}! use statements\n" if conf.comment_mode
-%   _erbout += @indent + @context.use_statements.values.join("\n#{@indent}") + "\n" unless @context.use_statements.empty?
+%   _erbout += @context.use_statements(@indent)
 % end
 % unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
 %   unless @implicit.nil?
@@ -42,14 +42,14 @@ ENDTEMPLATE
 %   end
 % end
 % unless @context.includes.empty?
-%   _erbout += "#{@indent}include '" + @context.includes.uniq.join("'\n#{indent}include '") + "'\n"
+%   _erbout += @context.include_statements(@indent)
 % end
 % unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
 %   if conf.comment_mode
 %     _erbout += "#{@indent}! variable definitions\n"
 %   end
 % end
-% _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
+% _erbout += @context.var_statements(@indent)
 % if @context.kind == :module
 %   _erbout += @context.interfaces @indent
 % end

@@ -8,10 +8,21 @@ allocate(<%= result %>)
 call <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name=<%= name %>)
 end macro
 
-macro compute_op(operator, discretization, method_name)
+macro discretize_op(operator, discretization, num_method, method_params)
 % scope.raw_var info: "integer :: info"
 % scope.global_var result.to_sym => "class(ppm_t_operator_discr), pointer :: #{result} => null()"
-call <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, info, method=<%= method_name %>)
+% scope.var :opopts, "type(ppm_t_options_op)"
+% mp = ''
+% method_params.each do |p|
+%   if p.is_a? Array
+%     mp = mp + ", #{p[0]}=#{p[1]}"
+%   else
+%       raise "Operator method parameters should be given as name=value pairs"
+%   end
+% end
+call <%= :opopts %>%create(<%= num_method %>,info<%= mp %>)
+$or_fail("\"failed to initialize option object for operator\"")
+call <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, <%= :opopts %>, info)
 end macro
 
 macro apply_op(operator, input)

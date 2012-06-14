@@ -9,6 +9,7 @@ macro create_ode(fields,rhs,rhs_fields,scheme=ODEscheme)
 
 % scope.raw_var info: "integer :: info"
 % scope.global_use :ppm_module_user_numerics
+% scope.arg_group "ODE Parameters"
 % scope.arg name: :ODEscheme, type: "integer", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
 % scope.var :fields, "class(ppm_v_main_abstr), pointer"
 % scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc), pointer"

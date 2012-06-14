@@ -140,8 +140,9 @@ t_acc = []
 rhs_statement
     :  ^(RHS_SCOPE s=rhs_start
                    i=rhs_inner_stuff
+                   {scope = @scope}
                    e=scope_end)
-        -> rhs(name={s.name},args={s.args},ret={i.ret},pre={i.pre},post={i.post})
+        -> rhs(name={s.name},args={s.args},ret={i.ret},pre={i.pre},post={i.post},context={scope})
     ;
 
 rhs_start returns [name,args]

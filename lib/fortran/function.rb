@@ -2,7 +2,7 @@ module CG
   class FortranFunction
     attr_accessor :print_continue
 
-    def initialize name, result_type, result_name=nil
+    def initialize name, result_type, result_name=nil, context=nil
       @name = name
       @result_type = result_type
       @result_name = result_name.nil? ? @name : result_name
@@ -12,6 +12,7 @@ module CG
       @args = {}
       @code = []
       @print_continue = false
+      @context = context
     end
 
     def use sym, str=nil
@@ -36,8 +37,16 @@ module CG
       unless @use.empty?
         us = "\n  " + @use.values.join("\n  ")
       end
+      if @context
+        cuse = @context.use_statements("  ")
+        us = us + "\n" + cuse[0...cuse.length-1].to_s if cuse.length != 0
+      end
       unless @vars.empty?
         vs = "\n  " + @vars.values.join("\n  ")
+      end
+      if @context
+        cvars = @context.var_statements("  ")
+        vs = vs + "\n" + cvars[0...cvars.length-1].to_s if cvars.length != 0
       end
       args = ""
       unless @args.empty?

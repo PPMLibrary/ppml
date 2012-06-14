@@ -3,7 +3,7 @@ module CG
   # Represents the current scope in the prepocessed code. Provides methods for
   # adding various declarations to the scope when generating its code.
   class Scope
-    attr_reader :kind, :name, :use_statements, :variables, :includes, :child, :parent
+    attr_reader :kind, :name, :uses, :variables, :includes, :child, :parent
     attr_accessor :indent, :body_indent, :line, :interfaces, :output_continue
 
     # Creates a new scope.
@@ -14,7 +14,7 @@ module CG
     def initialize kind, name, parent=nil
       @kind = kind
       @name = name
-      @use_statements = {}
+      @uses = {}
       @interfaces = Hash.new []
       @variables = {}
       @unmangled = {}
@@ -25,12 +25,36 @@ module CG
       parent.set_child self if !parent.nil?
     end
 
+    def use_statements indent
+      unless @uses.empty?
+        indent + @uses.values.join("\n#{indent}") + "\n"
+      else
+        ""
+      end
+    end
+
+    def include_statements indent
+      unless @includes.empty?
+        indent + "include '" + @includes.uniq.join("'\ninclude '#{indent}") + "'\n"
+      else
+        ""
+      end
+    end
+
+    def var_statements indent
+      unless @variables.empty?
+        indent + @variables.values.join("\n#{indent}") + "\n"
+      else
+        ""
+      end
+    end
+
     # Add a new use statement
     #
     # @param [Symbol] sym of the module to be used
     # @param str containing the fortran use statement if the default "use module" is not desired
     def use sym, str=nil
-      @use_statements[sym] = str || "use #{sym.to_s}"
+      @uses[sym] = str || "use #{sym.to_s}"
     end
 
     def interface name, line
@@ -112,6 +136,11 @@ module CG
     def arg h
       use GlobalModule.name
       GlobalModule.instance.arg h
+    end
+
+    def arg_group g
+      use GlobalModule.name
+      GlobalModule.instance.arg_group g
     end
 
     # Add a module to be used by the global module

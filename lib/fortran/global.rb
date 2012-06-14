@@ -12,8 +12,7 @@ module CG
       super "#{conf.name_prefix}#{@@module_name}"
       @da = FortranSubroutine.new "define_args"
       subroutine @da
-      use :ppm_module_ctrl
-      use :ppm_module_data
+      use :ppm_module_core
       if (!conf.ppm.prec.nil?  )
         var :mk, "integer, parameter :: mk = #{conf.ppm.prec}"
       else
@@ -33,6 +32,10 @@ module CG
       end
       txt += ")"
       @da.add txt
+    end
+
+    def arg_group g
+      @da.add "call arg_group('#{g}')"
     end
   end
 end

@@ -1,5 +1,6 @@
 client pse
   use ppm_module_io_vtk
+  use ppm_module_timestats
   integer, dimension(6) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
   real(ppm_kind_double), parameter     :: dt    = 0.00001_mk
@@ -8,7 +9,8 @@ client pse
   integer, dimension(2)                :: seed
   real(ppm_kind_double), dimension(:,:), pointer :: displace
   integer                              :: idim
-
+  integer                              :: timer
+  real(ppm_kind_double)                :: timing
   ppm_init()
 
   topo = create_topology(bcd)
@@ -44,16 +46,24 @@ client pse
   else 
     Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
   end if 
-  L = compute_op(Lap, c, "DC-PSE")
+  L = discretize_op(Lap, c, ppm_param_op_dcpse, [order=>2,c=>0.5_mk])
 
   o, nstages = create_ode([f=>c], pse_rhs, [f], rk4)
+  call ppm_tstats_setup(1,info)
+  call ppm_tstats_add('pse',timer,info)
 
   t = timeloop(0.0_mk,deltat=dt)
     do istage=1,nstages
       ghost_mapping(c)
+      call ppm_tstats_tic(timer,1,info)
       ode_step(o, t, dt, istage)
+      call ppm_tstats_toc(timer,1,timing,info)
     end do
     !write(*,*) "time: ", t
+
+    call ppm_tstats_collect('time.dat',info)
+
+
     print([f=>c], 10)
   end timeloop
 
