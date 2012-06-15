@@ -9,6 +9,16 @@ output = template;
 
 @header {
 require_relative 'scope'
+
+module ANTLR3
+  module AST
+    class CommonTreeNodeStream
+      def last_marker
+        @last_marker
+      end
+    end
+  end
+end
 }
 
 @init {
