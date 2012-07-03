@@ -13,6 +13,6 @@ macro create_particles(topology, np=Npart, prec=mk)
 % scope.raw_var({info: "integer :: info"})
 % scope.arg name: :Npart, type: "integer", default: "10000", ctrl_name: "'Npart'", help: "'Global number of particles'"
 allocate(<%= result %>,stat=info)
-$or_fail_alloc("\"Could not allocate <%= result %>\"")
+or_fail_alloc("Could not allocate <%= result %>")
 call <%= result %>%initialize(<%= np %>, info, topoid=<%= topology %>)
 end macro

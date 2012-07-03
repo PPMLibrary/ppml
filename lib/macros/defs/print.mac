@@ -17,12 +17,12 @@ if (MOD(<%= :r_it %>,<%= resolution %>).eq.0) then ! print to vtk
 %   fs.each do |f|
   <%= :temp_fix_assign %> => <%= f %>
   call <%= :fieldlist %>%push(<%= :temp_fix_assign %>, info)
-  $or_fail("\"Failed to push fields to field list.\"")
+  or_fail("Failed to push fields to field list.")
 %   end
 % scope.var :vtk_filename, "character(len=64)"
   write(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :r_it %> 
   call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :fieldlist %>)
-  $or_fail("\"Failed to print fields on particle set\"")
+  or_fail("Failed to print fields on particle set")
   deallocate(fieldlist)
 % end
 end if ! end print to vtk

@@ -27,7 +27,7 @@ modifier prec(precision=mk)
 % unless x == :required
 %   scope.var "#{x}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
 call <%= pset %>%get_xp(<%= "#{x}_#{iter}" %>,info)
-$or_fail("\"getting positions #{pset}\"")
+or_fail("getting positions <%= "#{pset}" %>")
 % end
 % fields.each do |f|
 %   if f[2] == :sca
@@ -36,7 +36,7 @@ $or_fail("\"getting positions #{pset}\"")
 %     scope.var "#{f[0]}_#{iter}".to_sym, "real(#{precision}), dimension(:,:), pointer", "=> null()"
 %   end
 call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
-$or_fail("\"getting field #{f[1]} for #{pset}\"")
+or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 % end
 do <%= iter %>=1,<%= pset %>%Npart
 % fields.each do |f|

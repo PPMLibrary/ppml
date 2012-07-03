@@ -37,6 +37,8 @@ module CG
       reload_macros
 
       @templates = Templates.get_all
+
+      @state_stack = []
     end
 
     def cwd path
@@ -65,20 +67,29 @@ module CG
       @macros.reject {|n,m| !(m.is_a? FunctionMacro)}
     end
 
+
+
     def process string
       # STDERR.puts "Parsing String\n\n#{string}"
       # print_lexer_tokens string
       # print_tree_tokens string
+      
+      saveState
+
       @lexer = Lexer.new string
       @tokens = ANTLR3::CommonTokenStream.new @lexer
       unless all_hidden? @tokens
         @parser = Parser.new @tokens
         @tree_tokens = ANTLR3::AST::CommonTreeNodeStream.new @parser.prog.tree
         @tree_parser = TreeParser.new @tree_tokens, {templates: @templates}
-        @tree_parser.prog.template.to_s
+        result = @tree_parser.prog.template.to_s
       else
-        @tokens.map(&:text).join ''
+        result = @tokens.map(&:text).join ''
       end
+
+      restoreState
+      
+      result
     end
 
     def expand(name, *args)
@@ -91,7 +102,33 @@ module CG
     end
 
     private
+    
+    class PreprocessorState
 
+      attr_accessor :lexer, :tokens, :parser, :tree_tokens, :tree_parser
+
+    end
+
+    def saveState
+      newState = PreprocessorState.new
+      newState.lexer = @lexer
+      newState.tokens = @tokens
+      newState.parser = @parser
+      newState.tree_tokens = @tree_tokens
+      newState.tree_parser = @tree_parser
+
+      @state_stack.push newState
+    end
+
+    def restoreState
+      oldState = @state_stack.pop
+      @lexer = oldState.lexer
+      @tokens = oldState.tokens
+      @parser = oldState.parser
+      @tree_tokens = oldState.tree_tokens
+      @tree_parser = oldState.tree_parser
+    end
+    
     def initialize_macros_hash
       @macros = {}
       @macros.instance_variable_set :@preprocessor, self

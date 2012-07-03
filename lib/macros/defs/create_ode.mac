@@ -14,11 +14,11 @@ macro create_ode(fields,rhs,rhs_fields,scheme=ODEscheme)
 % scope.var :fields, "class(ppm_v_main_abstr), pointer"
 % scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc), pointer"
 allocate(fields,stat=info)
-$or_fail_alloc("\"Allocating fields vector\"")
+or_fail_alloc("Allocating fields vector")
 % scope.var :rhs_fields, "class(ppm_v_field_discr_pair), pointer"
 % scope.var :pair, "class(ppm_t_field_discr_pair), pointer"
 allocate(rhs_fields,stat=info)
-$or_fail_alloc("\"Allocating rhs_fields vector\"")
+or_fail_alloc("Allocating rhs_fields vector")
 % scope.var :el, "class(ppm_t_main_abstr), pointer"
 
 % change_ftypes = []

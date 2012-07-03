@@ -21,19 +21,19 @@ Feature: Recursive macro expansion
     """
     % m = msg.to_s * 2
     call ppm_init(many,args,info)
-      $fail("info.ne.0", m)
+    fail("info.ne.0", <%= m %>)
     """
     When I preprocess
     """
-    ppm_init(message)
+    ppm_init("message")
     
     """
     Then it should expand into
     """
     call ppm_init(many,args,info)
-      if (info.ne.0) then
-        call ppm_error(errno, "messagemessage")
-        goto 9999
-      end if
+    if (info.ne.0) then
+      call ppm_error(errno, "messagemessage")
+      goto 9999
+    end if
 
     """

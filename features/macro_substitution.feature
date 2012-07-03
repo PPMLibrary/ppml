@@ -57,7 +57,7 @@ Feature: macro substitution
 
     Examples: splat arguments
        | name  | args      | body                                          | input            | result      |
-       | splat | a=5,*rest | <% if rest.is_a? Array %><%= rest %><% end %> | splat(1,2,3,4)\n | [2, 3, 4]\n |
+       | splat | a=b,*rest | <% if rest.is_a? Array %><%= a %> = (/<%= rest.join(', ') %>/)<% end %> | splat(c,2,3,4)\n | c = (/2, 3, 4/)\n |
 
   Scenario: Full example of named args
     Given the standard macro path is "examples/testdata/macros"
@@ -80,7 +80,7 @@ Feature: macro substitution
   Scenario: String arguments
     Given a macro "fail" with argument list ("msg") is defined as
     """
-    ppm_error(<%= msg %>)
+    ppm_error("<%= msg %>")
 
     """
     When I preprocess
@@ -114,4 +114,37 @@ Feature: macro substitution
       b = max(x, y)
     end program
 
+    """
+
+  Scenario: Recursive macros
+    Given a macro "rectest" with argument list ("msg") is defined as
+    """
+    ! inside rectest
+    ppm_error("<%= msg %>")
+
+    """
+    Given a macro "test" with argument list ("brg") is defined as
+    """
+    ! inside test
+    rectest("<%= brg %>")
+
+    """
+    When I preprocess
+    """
+    subroutine t
+      ! inside t
+      test("some message")
+    end subroutine t
+
+    """
+    Then it should expand into
+    """
+    subroutine t
+      implicit none
+      ! inside t
+      ! inside test
+      ! inside rectest
+      ppm_error("some message")
+    end subroutine t
+    
     """

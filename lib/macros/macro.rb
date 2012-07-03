@@ -55,7 +55,6 @@ module CG
       if args
         @args = Macro.build_arglist args
       end
-      @recursive_expanded = false
     end
 
     def expand(scope, result=nil, pos=nil, named=nil, recursive=false)
@@ -67,26 +66,12 @@ module CG
         map["result"] = result[0].to_s
       end unless result.nil?
       binding = Macro.binding_from_map map
-      expand_recursive_calls(scope, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = scope.mangle expanded unless scope.nil? or recursive
+      expanded = Preprocessor.instance.process expanded+"\n"
+      expanded = expanded[0...-1]
+      expanded = scope.mangle expanded unless scope.nil?
       expanded
-    end
-
-    def expand_recursive_calls scope, binding
-      @body.gsub!(/^(?<indent>[ \t]*)\$(?<name>#{NAME})\((?<args>.*)\)/) do
-        indent = $~[:indent]
-        name = $~[:name]
-        args = Macro.parse_arglist($~[:args])
-        <<CODE
-% pos = []
-% named = {}
-% CG::Macro.eval_args(#{args}, pos, named, binding)
-% _erbout += Preprocessor.instance.macros[\"#{name}\"].expand(scope,nil,pos,named,recursive=true).indent(\"#{indent}\")
-CODE
-      end
-      @recursive_expanded = true
     end
 
     def self.eval_args args, pos, named, binding
@@ -210,6 +195,12 @@ CODE
           result.delete(:splat)
         end
         raise ArgumentError if result.values.include? :required
+        result.each_pair do |k,v|
+          if (v.to_s.start_with?("'") and v.to_s.end_with?("'")) or
+             (v.to_s.start_with?('"') and v.to_s.end_with?('"'))
+            result[k] = v.to_s[1...-1]
+          end
+        end
         result
       end
 
@@ -238,10 +229,11 @@ CODE
       map["scope"]  = context
       map["iter"]   = iter
       binding = Macro.binding_from_map map
-      expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil? or recursive
+      expanded = Preprocessor.instance.process expanded+"\n"
+      expanded = expanded[0...-1]
+      expanded = context.mangle expanded unless context.nil?
       expanded
     end
 
@@ -291,10 +283,11 @@ CODE
       map["time"] = time.to_s
       map["body"] = body.to_s
       binding = Macro.binding_from_map map
-      expand_recursive_calls(context, binding) unless @recursive_expanded
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil? or recursive
+      expanded = Preprocessor.instance.process expanded+"\n"
+      expanded = expanded[0...-1]
+      expanded = context.mangle expanded unless context.nil?
       expanded
     end
   end # TimeLoopMacro
@@ -303,7 +296,7 @@ CODE
     MACRO_START = /^ *include +macro +(?<name>#{NAME}) *\((?<args>#{ARGS})\) *$/i
 
     def expand(scope, args=nil, named=nil, recursive=false)
-      super(scope, result=nil, args=args, named=named, recursive=recursive)
+      super(scope, result=nil, args=args, named=named)
     end
   end #IncludeMacro
 end

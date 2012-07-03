@@ -58,7 +58,8 @@ def find_empty_lines i
   stop = i
   return if stop < 0
   i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE_T
-  @empty_lines = t.extract_text(i+1,stop)
+  @empty_lines = t.extract_text(i+1,stop) unless t[i+1].nil?
+  #@empty_lines = t.extract_text(i+1,stop)
   @empty_lines = strip(@empty_lines) if @dont_indent
 end
 
