@@ -68,9 +68,9 @@ module CG
       binding = Macro.binding_from_map map
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
+      expanded = scope.mangle expanded unless scope.nil?
       expanded = Preprocessor.instance.process expanded+"\n", scope
       expanded = expanded[0...-1]
-      expanded = scope.mangle expanded unless scope.nil?
       expanded
     end
 
@@ -231,9 +231,9 @@ module CG
       binding = Macro.binding_from_map map
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
+      expanded = context.mangle expanded unless context.nil?
       expanded = Preprocessor.instance.process expanded+"\n", context
       expanded = expanded[0...-1]
-      expanded = context.mangle expanded unless context.nil?
       expanded
     end
 
@@ -285,9 +285,9 @@ module CG
       binding = Macro.binding_from_map map
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
+      expanded = context.mangle expanded unless context.nil?
       expanded = Preprocessor.instance.process expanded+"\n", context
       expanded = expanded[0...-1]
-      expanded = context.mangle expanded unless context.nil?
       expanded
     end
   end # TimeLoopMacro
