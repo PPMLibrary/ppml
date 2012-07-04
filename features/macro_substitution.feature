@@ -148,3 +148,41 @@ Feature: macro substitution
     end subroutine t
     
     """
+  
+  Scenario: Macro with recursive foreach calls
+    Given a foreach macro named "particles" with argument list (particle_set)
+    And body
+    """
+    do <%= iter %>=1,<%= particle_set %>%Npart
+    <%= body.indent 2 -%>
+    end do
+
+    """
+    Given a macro "test" with argument list ("pset,f") is defined as
+    """
+    ! inside test
+    foreach p in particles(<%= pset %>)
+      f_p = 0.0_mk
+    end foreach
+
+    """
+    When I preprocess
+    """
+    subroutine t
+      ! inside t
+      test(parts,velocity)
+    end subroutine t
+
+    """
+    Then it should expand into
+    """
+    subroutine t
+      implicit none
+      ! inside t
+      ! inside test
+      do p=1,parts%Npart
+        f_p = 0.0_mk
+      end do
+    end subroutine t
+    
+    """
