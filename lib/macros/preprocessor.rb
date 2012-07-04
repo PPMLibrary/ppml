@@ -99,6 +99,10 @@ module CG
       STDERR.print " in scope #{args[0].name}" if args[0]
       STDERR.puts " with wrong number of arguments"
       raise
+    rescue SyntaxError => e
+      STDERR.print "Fatal Error: Called macro #{name}"
+      STDERR.puts " but macro has a syntactical error "
+      raise
     end
 
     private
