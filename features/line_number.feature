@@ -29,3 +29,43 @@ Feature: Line number
     6
     
     """
+  
+  Scenario: recursive line number printing
+    Given a macro "line" is defined as
+    """
+    <%= scope.line %>
+    
+    """
+    And a macro "test" is defined as
+    """
+    ! test1
+    line()
+    ! test2
+    
+    """
+    When I preprocess
+    """
+    ! bla
+    test()
+    ! hello
+    test()
+    ! world
+    test()
+
+    """
+    Then it should expand into
+    """
+    ! bla
+    ! test1
+    2
+    ! test2
+    ! hello
+    ! test1
+    4
+    ! test2
+    ! world
+    ! test1
+    6
+    ! test2
+    
+    """

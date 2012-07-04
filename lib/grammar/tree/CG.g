@@ -28,6 +28,19 @@ end
 
 @members {
 
+def initialize( input, options = {}, scope = nil)
+  super( input, options )
+  
+  if scope.nil?
+    @scope = Scope.new nil, nil
+  else
+    @scope = scope
+    # in recursive calls, just take the scope.line of the parent preprocessor
+    @line_offset = scope.line
+  end
+
+end
+
 def find_hidden
   t      = Preprocessor.instance.tokens
   tree   = @input.look
@@ -47,9 +60,14 @@ def find_hidden
 end
 
 def update_line_number
-  t = Preprocessor.instance.tokens
-  i = @input.look.start_index
-  @scope.line = t[i].line
+  if !@line_offset.nil?
+    # in recursive calls, just take the scope.line of the parent preprocessor
+    @scope.line = @line_offset
+  else # otherwise...
+    t = Preprocessor.instance.tokens
+    i = @input.look.start_index 
+    @scope.line = t[i].line 
+  end
 end
 
 def find_empty_lines i

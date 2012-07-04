@@ -69,7 +69,7 @@ module CG
 
 
 
-    def process string
+    def process string, scope=nil
       # STDERR.puts "Parsing String\n\n#{string}"
       # print_lexer_tokens string
       # print_tree_tokens string
@@ -81,7 +81,7 @@ module CG
       unless all_hidden? @tokens
         @parser = Parser.new @tokens
         @tree_tokens = ANTLR3::AST::CommonTreeNodeStream.new @parser.prog.tree
-        @tree_parser = TreeParser.new @tree_tokens, {templates: @templates}
+        @tree_parser = TreeParser.new @tree_tokens, {templates: @templates}, scope
         result = @tree_parser.prog.template.to_s
       else
         result = @tokens.map(&:text).join ''
