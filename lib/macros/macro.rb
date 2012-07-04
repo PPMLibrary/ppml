@@ -221,18 +221,18 @@ module CG
       @body, @modifiers = parse_modifiers @body
     end
 
-    def expand context, iter, args, named, mods, ma, ma_named, bodies, recursive=false
+    def expand scope, iter, args, named, mods, ma, ma_named, bodies, recursive=false
       map = Macro.resolve_args @args, args, named
       map.merge! resolve_modifiers(mods, ma, ma_named)
       map["body"]   = bodies[:default] if bodies[:default]
       map["bodies"] = bodies
-      map["scope"]  = context
+      map["scope"]  = scope
       map["iter"]   = iter
       binding = Macro.binding_from_map map
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil?
-      expanded = Preprocessor.instance.process expanded+"\n", context
+      expanded = scope.mangle expanded unless scope.nil?
+      expanded = Preprocessor.instance.process expanded+"\n", scope
       expanded = expanded[0...-1]
       expanded
     end
@@ -277,16 +277,16 @@ module CG
       super "timeloop", body, tparam_args
     end
 
-    def expand context, time, tparams, tparams_named, body, recursive=false
+    def expand scope, time, tparams, tparams_named, body, recursive=false
       map = Macro.resolve_args @args, tparams, tparams_named
-      map["scope"] = context
+      map["scope"] = scope
       map["time"] = time.to_s
       map["body"] = body.to_s
       binding = Macro.binding_from_map map
       erb = ERB.new @body, nil, "%-"
       expanded = erb.result binding
-      expanded = context.mangle expanded unless context.nil?
-      expanded = Preprocessor.instance.process expanded+"\n", context
+      expanded = scope.mangle expanded unless scope.nil?
+      expanded = Preprocessor.instance.process expanded+"\n", scope
       expanded = expanded[0...-1]
       expanded
     end
