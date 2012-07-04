@@ -50,7 +50,7 @@ do while (associated(sbpitr))
 %     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}($1,i,j)"
 %   end
     CALL sbpitr%get_field(<%= f[0] %>, <%= f[1] %>, info)
-    $or_fail("\"#{f[0]}\"","ppm_err_sub_failed")
+    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
 %
 % else
 %   if f[2] == :sca
@@ -61,7 +61,7 @@ do while (associated(sbpitr))
 %     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}($1,i,j,k)"
 %   end
     CALL sbpitr%get_field(<%= f[0] %>, <%= f[1] %>, info)
-    $or_fail("\"#{f[0]}\"","ppm_err_sub_failed")
+    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
 % end
 %
 %   ft.transform! bodies.all, bodies.real, bodies.interior, bodies.west, bodies.east

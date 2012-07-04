@@ -95,7 +95,7 @@ end macro
 
 macro start_subroutine(name=default_name)
 real(kind(1.D0))                   :: ppm_internal_t0
-character(len=ppm_char)            :: caller = "<%= name.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )%>"
+character(len=ppm_char)            :: caller = "<%= name.to_s %>"
 
 !-------------------------------------------------------------------------
 !  Initialise
@@ -110,7 +110,7 @@ end macro
 
 macro start_function(name="default_name")
 % scope.raw_var info: "INTEGER                 :: info"
-    character(LEN=ppm_char)            :: caller = <%= name %>
+    character(LEN=ppm_char)            :: caller = "<%= name.to_s %>"
 
     info = 0
 end macro
@@ -174,7 +174,7 @@ macro dealloc_pointers(*list)
 % list.each do |ptr|
 % p = ptr.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % p = p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
-dealloc_pointer(p)
+dealloc_pointer(<%= "#{p}" %>)
 % end
 % end
 end macro
@@ -182,36 +182,36 @@ end macro
 macro alloc_pointer(pointer,dim,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % d = dim.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
-    check_false("\"ASSOCIATED(#{p})\"","\"pointer already associated\"")
+    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
     ALLOCATE(<%= p %>(<%= d %>),STAT=<%=info%>)
-    or_fail_alloc("<%= #{p} %>")
+    or_fail_alloc("<%= "#{p}" %>")
 end macro
 
 macro alloc_pointer_with_bounds1(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("\"ASSOCIATED(#{p})\"","\"pointer already associated\"")
+    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
     ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1)),STAT=<%=info%>)
     or_fail_alloc("<%= "#{p}" %>")
 end macro
 macro alloc_pointer_with_bounds2(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("\"ASSOCIATED(#{p})\"","\"pointer already associated\"")
+    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
     ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2)),STAT=<%=info%>)
     or_fail_alloc("<%= "#{p}" %>")
 end macro
 macro alloc_pointer_with_bounds3(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("\"ASSOCIATED(#{p})\"","\"pointer already associated\"")
+    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
     ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2),&
                       <%=lo%>(3):<%=hi%>(3)),STAT=<%=info%>)
-    or_fail_alloc("<%= #{p} %>")
+    or_fail_alloc("<%= "#{p}" %>")
 end macro
 macro alloc_pointer_with_bounds4(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    $check_false("\"ASSOCIATED(#{p})\"","\"pointer already associated\"")
+    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
     ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2),&
                       <%=lo%>(3):<%=hi%>(3),<%=lo%>(4):<%=hi%>(4)),STAT=<%=info%>)
-    or_fail_alloc("<%= #{p} %>")
+    or_fail_alloc("<%= "#{p}" %>")
 end macro
 
 

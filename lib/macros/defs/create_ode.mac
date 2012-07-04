@@ -36,7 +36,7 @@ allocate(<%= :pair %>,stat=info)
 % change_ftypes << scope.type_of(f.to_s.to_sym)
 %   end
 call <%= :fields %>%push(<%= :el %>,info)
-$or_fail("\"Pushing element failed\"")
+or_fail("Pushing element failed")
 % end
 
 % rhs_fields.each do |f|
@@ -50,7 +50,7 @@ allocate(<%= :pair %>,stat=info)
 % rhs_ftypes << nil
 %   end
 call <%= :rhs_fields %>%push(<%= :pair %>,info)
-$or_fail("\"Pushing pair failed\"")
+or_fail("Pushing pair failed")
 % end
 
 % scope.rhs_call(rhs, rhs_ftypes, change_ftypes)
