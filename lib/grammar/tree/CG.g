@@ -268,7 +268,7 @@ inner_stuff
                 |s+=imacro
                 )*)
           { @first_line = nil }
-            (b+=inner_line)*)
+            (b+=line)*)
         -> inner(context={@scope},use={$u},implicit={$i.st},contains={$c.st},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
@@ -278,10 +278,10 @@ type_body
             ^(CONTAINS (c=contains_line
              (s+=procedure_statement
              |s+=generic_statement
-             |s+=inner_line)+)?)
+             |s+=line)+)?)
              //|s+=imacro)+)?)
           { @first_line = nil }
-            (b+=inner_line)*)
+            (b+=line)*)
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
     ;
 
@@ -292,15 +292,6 @@ generic_statement :   { find_hidden } ^(GENERIC   c=TEXT) -> verbatim(in={@empty
 
 // Actual code
 
-inner_line
-    : { find_hidden
-       @first_line ||= @current_indent }
-        ( l=line -> verbatim(in={$l.st.to_s})
-        | tdef=type_statement -> verbatim(in={@empty_lines + $tdef.st.to_s})
-        )
-    ;
-
-
 line
     : { my_indent, my_empty = find_hidden
         @first_line ||= my_indent
@@ -309,6 +300,7 @@ line
         | loop=foreach       -> verbatim(in={my_empty + indent($loop.st.to_s, my_indent)})
         | tl=timeloop        -> verbatim(in={my_empty + indent($tl.st.to_s, my_indent)})
         | imac=imacro        -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
+        | tdef=type_statement -> verbatim(in={@empty_lines + $tdef.st.to_s})
         | fortran=fline      -> verbatim(in={@empty_lines + (@dont_indent ? "" : @current_indent) + $fortran.st.to_s})
         | ss=scope_statement -> verbatim(in={@empty_lines + $ss.st.to_s})
         )
