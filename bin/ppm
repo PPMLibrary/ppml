@@ -118,7 +118,6 @@ class NewProjectGroup < Thor::Group
 
   def create_client_skel
     template "../lib/templates/client.tt", "#{name}.ppm"
-    template "../lib/templates/rhs.tt", "#{name}.rhs"
   end
 
   def create_client_config
