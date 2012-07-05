@@ -13,22 +13,22 @@ modifier prec(precision=mk)
 %
 % sca_fields.each do |f|
 %   if f.is_a? Array
-%     fields << ["#{f[0]}_#{dim}",f[1],:sca]
+%     fields << ["#{f[0]}_wp_#{dim}",f[1],:sca]
 %   else
 %     fields << ["#{f}_wp_#{dim}",f,:sca]
 %   end
 % end unless sca_fields.nil?
 % vec_fields.each do |f|
 %   if f.is_a? Array
-%     fields << [f[0],f[1],:vec]
+%     fields << ["#{f[0]}_wp_#{dim}",f[1],:vec]
 %   else
 %     fields << ["#{f}_wp",f,:vec]
 %   end
 % end unless vec_fields.nil?
-% if precision.to_s == "prec_s"
-%   precision = "ppm_kind_single"
-% else
-%   precision = "ppm_kind_double"
+% if precision.to_s == "ppm_kind_single"
+%   prec_suffix = "_s"
+% elsif precision.to_s == "ppm_kind_double"
+%   prec_suffix = "_d"
 % end
 % scope.var :i, "INTEGER" 
 % scope.var :j, "INTEGER"
@@ -43,25 +43,25 @@ do while (associated(sbpitr))
 % fields.each do |f|
 % if k.nil?
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}(i,j)"
+%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}_#{iter}(i,j)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}($1,i,j)"
+%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}_#{iter}($1,i,j)"
 %   end
-    CALL sbpitr%get_field(<%= f[0] %>, <%= f[1] %>, info)
-    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
+    CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}_#{iter}" %>, info)
+    or_fail("<%= "#{f[0]}_#{iter}" %>",ppm_err_sub_failed)
 %
 % else
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}(i,j,k)"
+%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}_#{iter}(i,j,k)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[1]}_#{iter}", "#{f[0]}($1,i,j,k)"
+%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:,:,:), pointer", "=> null()"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}_#{iter}($1,i,j,k)"
 %   end
-    CALL sbpitr%get_field(<%= f[0] %>, <%= f[1] %>, info)
-    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
+    CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}_#{iter}" %>, info)
+    or_fail("<%= "#{f[0]}_#{iter}" %>",ppm_err_sub_failed)
 % end
 %
 %   ft.transform! bodies.all, bodies.real, bodies.interior, bodies.west, bodies.east
