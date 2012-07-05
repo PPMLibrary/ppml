@@ -11,13 +11,14 @@ def default_settings
   configatron.comment_mode = false
 end
 
-def read_configuration
+def read_configuration dest_dir = '.'
+  dest_dir += '/'
   default_settings
-  if File.exists? CONFIG_FILE_NAME
-    eval File.open(CONFIG_FILE_NAME).read
+  if File.exists? dest_dir+CONFIG_FILE_NAME
+    eval File.open(dest_dir+CONFIG_FILE_NAME).read
     if not conf.ppm.base_path.nil? and File.exists? "#{conf.ppm.base_path}/#{CONFIG_FILE_NAME}"
       eval File.open("#{conf.ppm.base_path}/#{CONFIG_FILE_NAME}").read
-      eval File.open(CONFIG_FILE_NAME).read
+      eval File.open(dest_dir+CONFIG_FILE_NAME).read
     end
   end
 end
