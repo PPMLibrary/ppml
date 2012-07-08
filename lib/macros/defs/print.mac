@@ -1,4 +1,5 @@
 macro print(fields, resolution)
+% # TODO make this work in the rhs too
 % scope.var :r_it, "integer", "= 0"
 % parts = Hash.new []
 % meshs = Hash.new []
@@ -24,7 +25,7 @@ if (MOD(<%= :r_it %>,<%= resolution %>).eq.0) then ! print to vtk
   call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :fieldlist %>)
   or_fail("Failed to print fields on particle set")
   deallocate(fieldlist)
-% end
 end if ! end print to vtk
+% end
 <%= :r_it %> = <%= :r_it %> + 1
 end macro

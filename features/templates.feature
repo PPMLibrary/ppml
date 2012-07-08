@@ -149,3 +149,57 @@ Feature: Templating for fortran
 
     """
 
+  Scenario: templates and macros
+    Given a macro "pmac" with argument list ("type") is defined as
+    """
+    ! inside pmac
+    print *,'<%= type %>'
+
+    """
+    When I preprocess
+    """
+    module scope
+
+    contains
+
+      template <T:[integer, real]>
+      subroutine sub(x,info)
+        T :: x
+        integer :: info
+        pmac(T)
+      end subroutine sub
+
+    end module scope
+
+    """
+    Then it should expand into
+    """
+    module scope
+    implicit none
+
+      interface sub
+        module procedure sub_integer
+        module procedure sub_real
+      end interface sub
+
+    contains
+
+      subroutine sub_integer(x,info)
+        implicit none
+        integer :: x
+        integer :: info
+        ! inside pmac
+        print *,'integer'
+      end subroutine sub_integer
+
+      subroutine sub_real(x,info)
+        implicit none
+        real :: x
+        integer :: info
+        ! inside pmac
+        print *,'real'
+      end subroutine sub_real
+
+    end module scope
+
+    """
