@@ -90,6 +90,12 @@ module CG
       restoreState
       
       result
+    rescue
+      STDERR.puts "An exception occured, here is some relevant output:"
+      STDERR.puts "You were parsing:\n\n#{string}"
+      print_lexer_tokens string
+      print_tree_tokens string
+      raise
     end
 
     def expand(name, *args)
@@ -100,8 +106,12 @@ module CG
       STDERR.puts " with wrong number of arguments"
       raise
     rescue SyntaxError => e
-      STDERR.print "Fatal Error: Called macro #{name}"
-      STDERR.puts " but macro has a syntactical error "
+      STDERR.print "Fatal Error: Macro #{name}"
+      STDERR.puts " contains a syntactical error"
+      raise
+    rescue NoMethodError => e
+      STDERR.print "Fatal Error: Macro #{name}"
+      STDERR.puts " calls an undefined method"
       raise
     end
 
