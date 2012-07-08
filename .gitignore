@@ -5,6 +5,7 @@ doc/*
 examples/testdata/output
 examples/testproject/build
 pkg/*
+*.orig
 *.tokens
 examples/*/gen
 examples/*/bin
