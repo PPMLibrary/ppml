@@ -4,7 +4,7 @@ Feature: Foreach Macros
   provide a looping macro.
 
   Scenario: basic foreach macro
-    Given a foreach macro named "particles" with argument list (particle_set)
+    Given a foreach macro named "parts" with argument list (particle_set)
     And body
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
@@ -15,7 +15,7 @@ Feature: Foreach Macros
     When I preprocess
     """
       ! leading comment
-      foreach p in particles(P)
+      foreach p in parts(P)
         ! do something to p
         p = 20
       end foreach
@@ -67,53 +67,45 @@ Feature: Foreach Macros
 
     """
 
-  Scenario: particle foreach macro
-    Given a foreach macro named "particles" with argument list (pset)
-    And body
-    """
-    modifier positions(x)
-    modifier fields(*fields)
-    modifier types(*types)
-    % unless x == :required
-    call P%get_xp(<%= "#{x}_#{iter}" %>,info)
-    % end
-    % fields.each do |f|
-    call P%get_field(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
-    %   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
-    % end
-    do <%= iter %>=1,<%= pset %>%Npart
-    % fields.each do |f|
-    %   body.transform! "#{f[0]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
-    % end
-    <%= body.indent 2 -%>
-    end do
-
-    """
-    And a foreach macro named "neighbors" with argument list (pset)
-    And body
-    """
-    do <%= iter %>=1,<%= particle_set %>%Npart
-    <%= body.indent 2 -%>
-    end do
-
-    """
+  Scenario: particle neighlist foreach macro
+    Given setting predictable_mangle_prefix is on
     When I preprocess
     """
       ! leading comment
-      foreach p in particles(P) with fields(w=weight,dw=change)
-        ! updating w
-        w_p = w_p + dt*dw_p
+      foreach p in particles(P) with neighbors(nlist) sca_fields(w=weight,dw=change)
+        foreach q in neighbors(p,nlist) with sca_fields(w=weight,dw=change)
+          ! updating w
+          dw_p = w_p*w_q
+        end foreach
       end foreach
 
     """
     Then it should expand into
     """
       ! leading comment
-      call P%get_field(weight,w_p,info)
-      call P%get_field(change,dw_p,info)
-      do p=1,P%Npart
-        ! updating w
-        w_p(p) = w_p(p) + dt*dw_p(p)
+      call P%get(weight,mangled_w_wp,info)
+      IF (info.NE.0) THEN
+        info = ppm_error_error
+        CALL ppm_error(ppm_err_sub_failed, &
+          "getting field weight for P",&
+          caller, 5 , info)
+        GOTO 9999
+      END IF
+      call P%get(change,mangled_dw_wp,info)
+      IF (info.NE.0) THEN
+        info = ppm_error_error
+        CALL ppm_error(ppm_err_sub_failed, &
+          "getting field change for P",&
+          caller, 5 , info)
+        GOTO 9999
+      END IF
+      mangled_nlist = P%get_neighlist()
+      do mangled_p=1,P%Npart
+        do mangled_nvq=1,mangled_nlist%nvlist(mangled_p)
+          mangled_q = mangled_nlist%vlist(mangled_nvq,mangled_p)
+          ! updating w
+          mangled_dw_wp(mangled_p) = mangled_w_wp(mangled_p)*mangled_w_wp(mangled_q)
+        end do
       end do
 
     """
