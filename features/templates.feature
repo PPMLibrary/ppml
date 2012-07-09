@@ -72,6 +72,56 @@ Feature: Templating for fortran
     end module scope
 
     """
+  
+  Scenario: basic templates using suffixes
+    When I preprocess
+    """
+    module scope
+
+    contains
+
+      template <T:[integer, real]> suffixes [i,r]
+      subroutine first(x,y,info)
+        T :: x
+        T :: y
+        integer :: info
+        y = x
+      end subroutine first
+
+    end module scope
+
+    """
+    Then it should expand into
+    """
+    module scope
+    implicit none
+
+      interface first
+        module procedure first_i
+        module procedure first_r
+      end interface first
+
+    contains
+
+      subroutine first_i(x,y,info)
+        implicit none
+        integer :: x
+        integer :: y
+        integer :: info
+        y = x
+      end subroutine first_i
+
+      subroutine first_r(x,y,info)
+        implicit none
+        real :: x
+        real :: y
+        integer :: info
+        y = x
+      end subroutine first_r
+
+    end module scope
+
+    """
 
   Scenario: multiple variables
     When I preprocess

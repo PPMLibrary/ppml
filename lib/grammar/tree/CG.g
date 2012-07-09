@@ -144,15 +144,17 @@ scope_statement
               o=scope_start
               i=inner_stuff
               c=scope_end)
-            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars},cart={$t.prod})
+            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars},cart={$t.prod},iface={$t.iface},suffixes={$t.sfx})
     | r=rhs_statement
         -> verbatim(in={$r.st})
     ;
 
-template returns [vars,prod]
+template returns [vars,prod,iface,sfx]
     : {
 $prod = false
+$iface = true
 $vars = Hash.new
+$sfx = nil
 t_acc = []
 }
       ^(TEMPLATE
@@ -163,7 +165,9 @@ $vars[$n.text.to_s] = t_acc
 t_acc = []
 }
            ))*
-            (STAR_T {$prod = true})?)
+            (STAR_T {$prod = true})?
+            (NOINTERFACE_T {$iface = false})?
+            (s=value_list {$sfx = s.lst})?)
     ;
 
 rhs_statement

@@ -2,7 +2,7 @@ require_relative 'transform'
 
 module CG
   class ProcedureTemplate
-    def initialize vars, cartesian, name, open, inner, close
+    def initialize vars, cartesian, name, open, inner, close, suffixes=nil
       if cartesian
         @combinations = ProcedureTemplate.cartesian_vars vars
       else
@@ -12,6 +12,16 @@ module CG
       @open  = open
       @inner = inner
       @close = close
+      @suffixes = nil
+      if !suffixes.nil?
+        if suffixes.length != @combinations.length
+          raise "Fatal Error: #{suffixes.length} suffixes were provided, but #{@combinations.length} specializations exist for this scope"
+        end
+        @suffixes = {}
+        @combinations.zip(suffixes).each do |c,s|
+          @suffixes[c] = s
+        end
+      end
     end
 
     # Transform a hashtable storing lists of values into a list
@@ -55,14 +65,14 @@ module CG
 
     def update_scope scope
       @combinations.each do |comb|
-        scope.interface @name, "module procedure #{@name}_#{name_sufix(comb)}"
+        scope.interface @name, "module procedure #{@name}_#{name_suffix(comb)}"
       end
     end
 
     def to_str
       result = ""
       @combinations.each do |comb|
-        nameupdate = Transform.new @name, "#{@name}_#{name_sufix(comb)}"
+        nameupdate = Transform.new @name, "#{@name}_#{name_suffix(comb)}"
         typeupdate = MultiTransform.new comb
         result += "\n"
         result += nameupdate.transform @open
@@ -72,8 +82,12 @@ module CG
       result
     end
 
-    def name_sufix comb
-      comb.values.map { |t| t.gsub(/\(|\)/,"_") }.join '_'
+    def name_suffix comb
+      if @suffixes.nil?
+        comb.values.map { |t| t.gsub(/\(|\)/,"_") }.join '_'
+      else
+        @suffixes[comb]
+      end
     end
   end
 end

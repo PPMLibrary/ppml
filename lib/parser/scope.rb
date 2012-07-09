@@ -58,7 +58,7 @@ module CG
     end
 
     def interface name, line
-      raise "You can only add interfaces to module scopes" unless @kind == :module
+      raise "Fatal Error: You can only add interfaces to module scopes" unless @kind == :module
       @interfaces[name] <<= line
     end
 
