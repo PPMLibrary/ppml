@@ -90,7 +90,7 @@ module CG
     def read_body file
       body = ''
       while l=file.gets
-        raise "Nested macro definitions are not allowed" if l =~ self.class::MACRO_START
+        raise "Fatal Error: Nested macro definitions are not allowed" if l =~ self.class::MACRO_START
         return body if l =~ self.class::MACRO_STOP
         body << l
       end
