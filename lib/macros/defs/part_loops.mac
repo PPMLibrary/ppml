@@ -36,31 +36,36 @@ modifier neighbors(nlist)
 %     props << ["#{p}_wp",p,:vec]
 %   end
 % end unless vec_props.nil?
-% if precision.to_s == "ppm_kind_single"
+% prec = "mk"
+% if precision.to_s == "ppm_kind_single" or
+%    precision.to_s == "prec_s"
 %   prec_suffix = "_s"
-% elsif precision.to_s == "ppm_kind_double"
+%   prec = "ppm_kind_single"
+% elsif precision.to_s == "ppm_kind_double" or
+%       precision.to_s == "prec_d"
 %   prec_suffix = "_d"
+%   prec = "ppm_kind_double"
 % end
 % scope.var iter.to_sym,  "integer"
 % unless x == :required
-%   scope.var "#{x}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%   scope.var "#{x}".to_sym,  "real(#{prec}), dimension(:,:), pointer", "=> null()"
 call <%= pset %>%get_xp(<%= "#{x}" %>,info)
 or_fail("getting positions <%= "#{pset}" %>")
 % end
 % fields.each do |f|
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "real(#{prec}), dimension(:), pointer", "=> null()"
 %   else
-%     scope.var "#{f[0]}".to_sym, "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
 call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info)
 or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 % end
 % props.each do |p|
 %   if p[2] == :sca
-%     scope.var "#{p[0]}".to_sym,  "real(#{precision}), dimension(:), pointer", "=> null()"
+%     scope.var "#{p[0]}".to_sym,  "real(#{prec}), dimension(:), pointer", "=> null()"
 %   else
-%     scope.var "#{p[0]}".to_sym, "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%     scope.var "#{p[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
 call <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info)
 or_fail("getting field <%= "#{p[1]}" %> for <%= "#{pset}" %>")
