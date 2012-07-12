@@ -8,7 +8,7 @@ conf.ppm.numerics.base_path = "<%= @ppmnumerics_base_path %>"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
-conf.ppm.tolexp = 10
+conf.ppm.tolexp = -14
 conf.ppm.dim = 2
 
 # time stepping
