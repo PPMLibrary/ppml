@@ -5,7 +5,7 @@ macro define_op(ndim, degree, coeffs, name)
 % scope.raw_var info: "integer :: info"
 % scope.global_var result.to_sym => "type(ppm_t_operator), pointer :: #{result} => null()"
 allocate(<%= result %>)
-call <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name=<%= name %>)
+call <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name='<%= name %>')
 end macro
 
 macro discretize_op(operator, discretization, num_method, method_params)

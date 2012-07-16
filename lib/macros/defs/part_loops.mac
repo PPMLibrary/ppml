@@ -36,7 +36,7 @@ modifier neighbors(nlist)
 %     props << ["#{p}_wp",p,:vec]
 %   end
 % end unless vec_props.nil?
-% prec = "mk"
+% prec = precision.to_s
 % if precision.to_s == "ppm_kind_single" or
 %    precision.to_s == "prec_s"
 %   prec_suffix = "_s"
