@@ -113,9 +113,9 @@ ERRMSG
               "a discretization to be passed when calling"
           end
           var var_disc[1].to_sym, "class(#{type[1]}), pointer :: #{var_disc[1]}"
-          add "select type(fdpairdiscr => vd_pair%discr)"
+          add "select type(vdpairdiscr => vd_pair%discr)"
           add "class is (#{type[1]})"
-          add "  #{var_disc[1]} => fdpairdiscr"
+          add "  #{var_disc[1]} => vdpairdiscr"
           add "end select"
         end
       end
