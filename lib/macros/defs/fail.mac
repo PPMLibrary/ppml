@@ -95,7 +95,7 @@ end macro
 
 macro start_subroutine(name=default_name)
 real(kind(1.D0))                   :: ppm_internal_t0
-character(len=ppm_char)            :: caller = "<%= name.to_s %>"
+character(len=ppm_char)            :: caller = <%= name.to_s %>
 
 !-------------------------------------------------------------------------
 !  Initialise
@@ -110,7 +110,7 @@ end macro
 
 macro start_function(name="default_name")
 % scope.raw_var info: "INTEGER                 :: info"
-    character(LEN=ppm_char)            :: caller = "<%= name.to_s %>"
+    character(LEN=ppm_char)            :: caller = <%= name.to_s %>
 
     info = 0
 end macro

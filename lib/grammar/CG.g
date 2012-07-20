@@ -518,8 +518,15 @@ ID_T : (ALPHA | '_') (ALNUM | '_' | '%')* ;
 // Constants
 
 CODE_T
-    : '<#' .* '#>' 
+    : START_CODE .* STOP_CODE
     ;
+
+fragment
+START_CODE : '<#' ;
+
+fragment
+STOP_CODE : '#>' ;
+
 
 STRING_T
     : '"' ('\\"'|~'"')* '"' 
