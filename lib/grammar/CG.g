@@ -391,7 +391,7 @@ value_list
 
 value_pair : v1=ID_T ARROW_T v2=value -> ^(VPAIR $v1 $v2) ;
 
-value : ID_T | NUMBER_T | STRING_T ;
+value : ID_T | NUMBER_T | STRING_T | CODE_T;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -516,6 +516,10 @@ NE_T :  '/=' ;
 ID_T : (ALPHA | '_') (ALNUM | '_' | '%')* ;
 
 // Constants
+
+CODE_T
+    : '<#' .* '#>' 
+    ;
 
 STRING_T
     : '"' ('\\"'|~'"')* '"' 

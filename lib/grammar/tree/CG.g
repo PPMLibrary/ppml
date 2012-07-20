@@ -398,5 +398,6 @@ value
     : i=ID_T     -> verbatim(in={$i})
     | n=NUMBER_T -> verbatim(in={$n})
     | s=STRING_T -> verbatim(in={$s})
+    | c=CODE_T -> verbatim(in={$c})
     ;
 

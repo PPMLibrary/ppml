@@ -196,9 +196,8 @@ module CG
         end
         raise ArgumentError if result.values.include? :required
         result.each_pair do |k,v|
-          if (v.to_s.start_with?("'") and v.to_s.end_with?("'")) or
-             (v.to_s.start_with?('"') and v.to_s.end_with?('"'))
-            result[k] = v.to_s[1...-1]
+          if v.to_s =~ /\A<#(.+)#>\z/
+            result[k] = $~[1]
           end
         end
         result
