@@ -63,7 +63,7 @@ module CG
       it "returns the body with arguments replaced" do
         m = FunctionMacro.new("test",<<-'BODY','a,b,c')
         plain text line
-        substituting <%= a %>, "<%= b %>" and <%= c %>
+        substituting <%= a %>, <%= b %> and <%= c %>
         more text
         BODY
         m.expand(nil,nil,['e','"string, args"','g'],nil).should == <<-REPLACEMENT
