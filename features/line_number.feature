@@ -29,33 +29,43 @@ Feature: Line number
     6
     
     """
-
-  Scenario: recursive macros
+  
+  Scenario: recursive line number printing
     Given a macro "line" is defined as
     """
     <%= scope.line %>
     
     """
-    And a macro "parent" is defined as
+    And a macro "test" is defined as
     """
-    $line()
+    ! test1
+    line()
+    ! test2
     
     """
     When I preprocess
     """
-    parent()
-    a = 2
-    parent()
-    ! comment
-    parent()
+    ! bla
+    test()
+    ! hello
+    test()
+    ! world
+    test()
 
     """
     Then it should expand into
     """
-    1
-    a = 2
-    3
-    ! comment
-    5
+    ! bla
+    ! test1
+    2
+    ! test2
+    ! hello
+    ! test1
+    4
+    ! test2
+    ! world
+    ! test1
+    6
+    ! test2
     
     """

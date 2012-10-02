@@ -13,8 +13,10 @@ ENDTEMPLATE
 
         define_template( :scoped,      <<-'ENDTEMPLATE')
 % if @template
-%   t = CG::ProcedureTemplate.new @template, @cart, @name, @open.to_s, @inner.to_s, @close.to_s
-%   t.update_scope @context
+%   t = CG::ProcedureTemplate.new @template, @cart, @name, @open.to_s, @inner.to_s, @close.to_s, @suffixes
+%   if @iface
+%     t.update_scope @context
+%   end
 %   _erbout += t
 % else
 %   _erbout += @open.to_s

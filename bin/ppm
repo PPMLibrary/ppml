@@ -38,14 +38,17 @@ class PPM < Thor
     File.dirname(__FILE__)
   end
 
-  desc 'newproject NAME [-d | --defaults]', 'Create a new project in NAME'
+  desc 'newproject NAME [-d | --defaults] [-D | destination]', 'Create a new project in NAME'
   def newproject(*args)
     invoke NewProjectGroup, args
   end
 
   desc 'generate', 'Generate fortran code from ppm sources'
-  def generate
-    read_configuration
+  method_option :destination, :type => :string, :aliases => "-D", :default => '.'
+  def generate cli=true
+    Dir.chdir(options[:destination]) unless options[:destination] == '.' or !cli
+    self.destination_root = Dir.pwd
+    read_configuration   
     remove_file "gen/compile.log"
     Dir["*.ppm"].each do |src|
       o = CG::Preprocessor.instance.process(File.new(src).read)
@@ -63,8 +66,11 @@ class PPM < Thor
   end
 
   desc 'build', 'Build the simulation binary'
+  method_option :destination, :type => :string, :aliases => "-D", :default => '.'
   def build
-    generate
+    Dir.chdir(options[:destination]) unless options[:destination] == '.'
+    self.destination_root = Dir.pwd
+    generate cli=false
     template "../lib/templates/Makefile.tt", "gen/Makefile", force: true
     inside 'gen' do
       run 'make'
@@ -86,28 +92,32 @@ class NewProjectGroup < Thor::Group
   include Thor::Actions
   argument :name
   class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+  class_option :destination, :type => :string, :aliases => "-D", :default => '.'
   def self.source_root
     File.dirname(__FILE__)
   end
 
   def create_dirs
+    Dir.chdir(options[:destination]) unless options[:destination] == '.'
+    self.destination_root = Dir.pwd
     # The project directory
-    empty_directory name
+    empty_directory "#{name}"
+    Dir.chdir(name) 
+    self.destination_root = Dir.pwd
     # where user defined macros are created
-    empty_directory "#{name}/macros"
+    empty_directory "macros"
     # where the generated fortran code is placed
-    empty_directory "#{name}/gen"
+    empty_directory "gen"
     # where the object files are placed
-    empty_directory "#{name}/gen/obj"
+    empty_directory "gen/obj"
     # where the executable is placed
-    empty_directory "#{name}/bin"
+    empty_directory "bin"
     # where the run is executed
-    empty_directory "#{name}/run"
+    empty_directory "run"
   end
 
   def create_client_skel
-    template "../lib/templates/client.tt", "#{name}/#{name}.ppm"
-    template "../lib/templates/rhs.tt", "#{name}/#{name}.rhs"
+    template "../lib/templates/client.tt", "#{name}.ppm"
   end
 
   def create_client_config
@@ -123,7 +133,7 @@ class NewProjectGroup < Thor::Group
       @ppmnumerics_base_path = ask("Please point me to the PPM numerics base path:")
     end
 
-    template "../lib/templates/settings.tt", "#{name}/#{configuration_file_name}"
+    template "../lib/templates/settings.tt", "#{configuration_file_name}"
   end
 end
 

@@ -9,6 +9,16 @@ output = template;
 
 @header {
 require_relative 'scope'
+
+module ANTLR3
+  module AST
+    class CommonTreeNodeStream
+      def last_marker
+        @last_marker
+      end
+    end
+  end
+end
 }
 
 @init {
@@ -17,6 +27,19 @@ require_relative 'scope'
 
 
 @members {
+
+def initialize( input, options = {}, scope = nil)
+  super( input, options )
+  
+  if scope.nil?
+    @scope = Scope.new nil, nil
+  else
+    @scope = scope
+    # in recursive calls, just take the scope.line of the parent preprocessor
+    @line_offset = scope.line
+  end
+
+end
 
 def find_hidden
   t      = Preprocessor.instance.tokens
@@ -37,9 +60,14 @@ def find_hidden
 end
 
 def update_line_number
-  t = Preprocessor.instance.tokens
-  i = @input.look.start_index
-  @scope.line = t[i].line
+  if !@line_offset.nil?
+    # in recursive calls, just take the scope.line of the parent preprocessor
+    @scope.line = @line_offset
+  else # otherwise...
+    t = Preprocessor.instance.tokens
+    i = @input.look.start_index 
+    @scope.line = t[i].line 
+  end
 end
 
 def find_empty_lines i
@@ -48,7 +76,8 @@ def find_empty_lines i
   stop = i
   return if stop < 0
   i -= 1 while i >= 0 and !t[i].nil? and t[i].type == EMPTY_LINE_T
-  @empty_lines = t.extract_text(i+1,stop)
+  @empty_lines = t.extract_text(i+1,stop) unless t[i+1].nil?
+  #@empty_lines = t.extract_text(i+1,stop)
   @empty_lines = strip(@empty_lines) if @dont_indent
 end
 
@@ -115,15 +144,17 @@ scope_statement
               o=scope_start
               i=inner_stuff
               c=scope_end)
-            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars},cart={$t.prod})
+            -> scoped(name={$o.name.to_s},context={@scope},open={$o.st},close={$c.st},inner={$i.st},template={$t.vars},cart={$t.prod},iface={$t.iface},suffixes={$t.sfx})
     | r=rhs_statement
         -> verbatim(in={$r.st})
     ;
 
-template returns [vars,prod]
+template returns [vars,prod,iface,sfx]
     : {
 $prod = false
+$iface = true
 $vars = Hash.new
+$sfx = nil
 t_acc = []
 }
       ^(TEMPLATE
@@ -134,7 +165,9 @@ $vars[$n.text.to_s] = t_acc
 t_acc = []
 }
            ))*
-            (STAR_T {$prod = true})?)
+            (STAR_T {$prod = true})?
+            (NOINTERFACE_T {$iface = false})?
+            (s=value_list {$sfx = s.lst})?)
     ;
 
 rhs_statement
@@ -239,7 +272,7 @@ inner_stuff
                 |s+=imacro
                 )*)
           { @first_line = nil }
-            (b+=inner_line)*)
+            (b+=line)*)
         -> inner(context={@scope},use={$u},implicit={$i.st},contains={$c.st},subroutines={$s},body={$b},indent={@first_line || ''})
     ;
 
@@ -249,10 +282,10 @@ type_body
             ^(CONTAINS (c=contains_line
              (s+=procedure_statement
              |s+=generic_statement
-             |s+=inner_line)+)?)
+             |s+=line)+)?)
              //|s+=imacro)+)?)
           { @first_line = nil }
-            (b+=inner_line)*)
+            (b+=line)*)
         -> type_inner(context={@scope},contains={$c.st},procedures={$s},body={$b},indent={@first_line || ''})
     ;
 
@@ -263,15 +296,6 @@ generic_statement :   { find_hidden } ^(GENERIC   c=TEXT) -> verbatim(in={@empty
 
 // Actual code
 
-inner_line
-    : { find_hidden
-       @first_line ||= @current_indent }
-        ( l=line -> verbatim(in={$l.st.to_s})
-        | tdef=type_statement -> verbatim(in={@empty_lines + $tdef.st.to_s})
-        )
-    ;
-
-
 line
     : { my_indent, my_empty = find_hidden
         @first_line ||= my_indent
@@ -280,6 +304,7 @@ line
         | loop=foreach       -> verbatim(in={my_empty + indent($loop.st.to_s, my_indent)})
         | tl=timeloop        -> verbatim(in={my_empty + indent($tl.st.to_s, my_indent)})
         | imac=imacro        -> verbatim(in={@empty_lines + indent($imac.st.to_s)})
+        | tdef=type_statement -> verbatim(in={@empty_lines + $tdef.st.to_s})
         | fortran=fline      -> verbatim(in={@empty_lines + (@dont_indent ? "" : @current_indent) + $fortran.st.to_s})
         | ss=scope_statement -> verbatim(in={@empty_lines + $ss.st.to_s})
         )

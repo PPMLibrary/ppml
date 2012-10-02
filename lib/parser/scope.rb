@@ -58,7 +58,7 @@ module CG
     end
 
     def interface name, line
-      raise "You can only add interfaces to module scopes" unless @kind == :module
+      raise "Fatal Error: You can only add interfaces to module scopes" unless @kind == :module
       @interfaces[name] <<= line
     end
 
@@ -101,7 +101,7 @@ module CG
     def mangle body
       if conf.predictable_mangle_prefix.nil? or
         !conf.predictable_mangle_prefix
-        prefix = "gen"+rand(26**6).to_s(26)
+        prefix = "gen"+rand(26**3).to_s(26)
       else
         prefix = "mangled"
       end

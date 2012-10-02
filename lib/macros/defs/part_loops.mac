@@ -1,8 +1,11 @@
 foreach macro particles(pset)
-modifier positions(x)
+modifier positions(x,writex=:false)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
+modifier sca_props(*sca_props)
+modifier vec_props(*vec_props)
 modifier prec(precision=mk)
+modifier neighbors(nlist)
 % fields = []
 % sca_fields.each do |f|
 %   if f.is_a? Array
@@ -18,35 +21,138 @@ modifier prec(precision=mk)
 %     fields << ["#{f}_wp",f,:vec]
 %   end
 % end unless vec_fields.nil?
-% if precision.to_s == "prec_s"
-%   precision = "ppm_kind_single"
-% else
-%   precision = "ppm_kind_double"
+% props = []
+% sca_props.each do |p|
+%   if p.is_a? Array
+%     props << ["#{p[0]}_wp",p[1],:sca]
+%   else
+%     props << ["#{p}_wp",p,:sca]
+%   end
+% end unless sca_props.nil?
+% vec_props.each do |p|
+%   if p.is_a? Array
+%     props << ["#{p[0]}_wp",p[1],:vec]
+%   else
+%     props << ["#{p}_wp",p,:vec]
+%   end
+% end unless vec_props.nil?
+% prec = precision.to_s
+% if precision.to_s == "ppm_kind_single" or
+%    precision.to_s == "prec_s"
+%   prec_suffix = "_s"
+%   prec = "ppm_kind_single"
+% elsif precision.to_s == "ppm_kind_double" or
+%       precision.to_s == "prec_d"
+%   prec_suffix = "_d"
+%   prec = "ppm_kind_double"
 % end
 % scope.var iter.to_sym,  "integer"
 % unless x == :required
-%   scope.var "#{x}_#{iter}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
-call <%= pset %>%get_xp(<%= "#{x}_#{iter}" %>,info)
-$or_fail("\"getting positions #{pset}\"")
+%   scope.var "#{x}".to_sym,  "real(#{prec}), dimension(:,:), pointer", "=> null()"
+call <%= pset %>%get_xp(<%= "#{x}" %>,info)
+or_fail("getting positions <%= "#{pset}" %>")
 % end
 % fields.each do |f|
 %   if f[2] == :sca
-%     scope.var "#{f[0]}_#{iter}".to_sym,  "real(#{precision}), dimension(:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "real(#{prec}), dimension(:), pointer", "=> null()"
 %   else
-%     scope.var "#{f[0]}_#{iter}".to_sym, "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
-call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}_#{iter}" %>,info)
-$or_fail("\"getting field #{f[1]} for #{pset}\"")
+call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info)
+or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
+% end
+% props.each do |p|
+%   if p[2] == :sca
+%     scope.var "#{p[0]}".to_sym,  "real(#{prec}), dimension(:), pointer", "=> null()"
+%   else
+%     scope.var "#{p[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
+%   end
+call <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info)
+or_fail("getting field <%= "#{p[1]}" %> for <%= "#{pset}" %>")
+% end
+% unless nlist == :required
+%   scope.var :nlist, "class(ppm_t_neighlist_#{prec_suffix})"
+<%= nlist %> = <%= pset %>%get_neighlist()
 % end
 do <%= iter %>=1,<%= pset %>%Npart
 % fields.each do |f|
 %   if f[2] == :sca
-%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}_#{iter}(#{iter})"
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}(#{iter})"
 %   else
-%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}_#{iter}($1,#{iter})"
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}($1,#{iter})"
 %   end
 % end
-% body.transform! "#{x}_#{iter}", "#{x}_#{iter}($1,#{iter})"
+% props.each do |p|
+%   if p[2] == :sca
+%     body.transform! "#{p[0][0...-3]}_#{iter}", "#{p[0]}(#{iter})"
+%   else
+%     body.transform! "#{p[0][0...-3]}_#{iter}", "#{p[0]}($1,#{iter})"
+%   end
+% end
+% body.transform! "#{x}_#{iter}", "#{x}($1,#{iter})"
+<%= body.indent 2 -%>
+end do
+% if writex.to_s.to_sym == :true
+call <%= pset %>%set_xp(<%= "#{x}" %>,info)
+% end
+end macro
+
+foreach macro neighbors(p,nlist)
+modifier positions(x)
+modifier sca_fields(*sca_fields)
+modifier vec_fields(*vec_fields)
+modifier sca_props(*sca_props)
+modifier vec_props(*vec_props)
+% fields = []
+% sca_fields.each do |f|
+%   if f.is_a? Array
+%     fields << ["#{f[0]}_wp",f[1],:sca]
+%   else
+%     fields << ["#{f}_wp",f,:sca]
+%   end
+% end unless sca_fields.nil?
+% vec_fields.each do |f|
+%   if f.is_a? Array
+%     fields << ["#{f[0]}_wp",f[1],:vec]
+%   else
+%     fields << ["#{f}_wp",f,:vec]
+%   end
+% end unless vec_fields.nil?
+% props = []
+% sca_props.each do |p|
+%   if p.is_a? Array
+%     props << ["#{p[0]}_wp",p[1],:sca]
+%   else
+%     props << ["#{p}_wp",p,:sca]
+%   end
+% end unless sca_props.nil?
+% vec_props.each do |p|
+%   if p.is_a? Array
+%     props << ["#{p[0]}_wp",p[1],:vec]
+%   else
+%     props << ["#{p}_wp",p,:vec]
+%   end
+% end unless vec_props.nil?
+% scope.var iter.to_sym,  "integer"
+% nviter = "nv#{iter}"
+% scope.var nviter.to_sym,  "integer"
+do <%= nviter %>=1,<%= nlist %>%nvlist(<%= p %>)
+  <%= iter %> = <%= nlist %>%vlist(<%= nviter %>,<%= p %>)
+% fields.each do |f|
+%   if f[2] == :sca
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}(#{iter})"
+%   else
+%     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}($1,#{iter})"
+%   end
+% end
+% props.each do |p|
+%   if p[2] == :sca
+%     body.transform! "#{p[0][0...-3]}_#{iter}", "#{p[0]}(#{iter})"
+%   else
+%     body.transform! "#{p[0][0...-3]}_#{iter}", "#{p[0]}($1,#{iter})"
+%   end
+% end
+% body.transform! "#{x}_#{iter}", "#{x}($1,#{iter})"
 <%= body.indent 2 -%>
 end do
 end macro

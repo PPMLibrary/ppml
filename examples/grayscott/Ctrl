@@ -8,11 +8,21 @@
 #-------------------------------------------------------------------------------
 #  General Options
 #           k_rate: Reaction rate
-#                   0.0000000000000000 <= {value} 
-#                a: Reaction parameter 
-#                   0.0000000000000000 <= {value} 
-#                b: Reaction parameter 
-#                   0.0000000000000000 <= {value} 
+#                   0.000000000000000E+000 <= {value} 
+#                F: Reaction parameter 
+#                   0.000000000000000E+000 <= {value} 
+#              D_u: Diffusion constant of 
+#                   0.000000000000000E+000 <= {value} 
+#              D_v: Diffusion constant of 
+#                   0.000000000000000E+000 <= {value} 
+#-------------------------------------------------------------------------------
+  k_rate = 0.05100000000000
+ F_param = 0.01500000000000
+Du_param = 2E-5
+Dv_param = 1E-5
+
+#-------------------------------------------------------------------------------
+#  Domain Parameters
 #         min_phys: lower domain boundary
 #         max_phys: upper domain boundary
 #  domain_decompos: Domain decomposition, one of:
@@ -39,26 +49,31 @@
 #                    * 6 - user defined
 #                   1 <= {value} <= 6 
 #       ghost_size: Ghost layer width
-#                   0.0000000000000000 <= {value} 
+#                   0.000000000000000E+000 <= {value} 
 #            Npart: Global number of particles
-#        ODEscheme: ODE integrator
-#       start_time: Start time
-#                   0.0000000000000000 <= {value} 
-#        time_step: Time step
-#                   0.0000000000000000 <= {value} 
-#        stop_time: End time
-#                   0.0000000000000000 <= {value} 
 #-------------------------------------------------------------------------------
-              k_rate = 1.0000000000000000
-             a_param = 4.5000000000000000
-             b_param = 7.5000000000000000
-            min_phys =    0.0000000000000000,    0.0000000000000000 
-            max_phys =    1.0000000000000000,    1.0000000000000000 
+            min_phys =   0.000000000000000E+000,   0.000000000000000E+000 
+            max_phys =    1.00000000000000,    1.00000000000000 
 domain_decomposition = 7
 processor_assignment = 1
           ghost_size = 0.0500000000000000
                Npart = 10000
-           ODEscheme = 1
-          start_time = 0.0000000000000000
-           time_step = 0.0005000000000000
-           stop_time = 1.0000000000000000
+
+#-------------------------------------------------------------------------------
+#  ODE Parameters
+#        ODEscheme: ODE integrator
+#-------------------------------------------------------------------------------
+ODEscheme = 4
+
+#-------------------------------------------------------------------------------
+#  Time Parameters
+#       start_time: Start time
+#                   0.000000000000000E+000 <= {value} 
+#        time_step: Time step
+#                   0.000000000000000E+000 <= {value} 
+#        stop_time: End time
+#                   0.000000000000000E+000 <= {value} 
+#-------------------------------------------------------------------------------
+start_time = 0.0000000000000000
+time_step = 0.50000000000000000
+stop_time = 2000.00000000000000

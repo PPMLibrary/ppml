@@ -125,8 +125,9 @@ scope_statement
     ;
 
 template
-    : TEMPLATE_T s=STAR_T? LT_T v+=template_var (COMMA_T v+=template_var)* GT_T NEWLINE_T
-      -> ^(TEMPLATE $v+ $s?)
+    : TEMPLATE_T s=STAR_T? LT_T v+=template_var (COMMA_T v+=template_var)* GT_T
+      n=NOINTERFACE_T? (SUFFIXES_T f=value_list)? NEWLINE_T
+      -> ^(TEMPLATE $v+ $s? $n? $f?)
     ;
 
 template_var
@@ -146,7 +147,8 @@ scope_start
     |              kind=MODULE_T     name=ID_T           NEWLINE_T { @context << :module     }
     | ABSTRACT_T?  kind=INTERFACE_T  name=ID_T?          NEWLINE_T { @context << :interface  }
     | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T  arglist? NEWLINE_T { @context << :subroutine }
-    | ID_T?        kind=FUNCTION_T   name=ID_T  arglist?
+    | (ID_T (LEFT_PAREN_T (ID_T | NUMBER_T) RIGHT_PAREN_T)?)?
+                   kind=FUNCTION_T   name=ID_T  arglist?
             (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)?  NEWLINE_T { @context << :function }
     ) -> ^(SCOPE_START TEXT[$kind.text] $name? TEXT[$scope_start.start,$scope_start.text])
     ;
@@ -411,6 +413,8 @@ WITH_T          : 'WITH'          | 'with'          ;
 TEMPLATE_T      : 'TEMPLATE'      | 'template'      ;
 CLIENT_T        : 'CLIENT'        | 'client'        ;
 ENDCLIENT_T     : 'ENDCLIENT'     | 'endclient'     ;
+NOINTERFACE_T   : 'NOINTERFACE'   | 'nointerface'   ;
+SUFFIXES_T      : 'SUFFIXES'      | 'suffixes'      ;
 
 // Fortran Keywords
 

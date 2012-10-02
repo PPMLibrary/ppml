@@ -3,3 +3,8 @@ client <%= name %>
   
 
 end client
+
+
+rhs <%= name %>_rhs(f)
+  get_fields(df=>p)
+end rhs

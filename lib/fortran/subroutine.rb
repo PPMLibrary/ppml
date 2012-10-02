@@ -50,7 +50,7 @@ module CG
       end
       <<EOF
 subroutine #{@name}#{args}#{us}
-  implicit none#{vs}#{cs}#{"9999 continue" if @print_continue}
+  implicit none#{vs}#{cs}#{"9999 continue\n" if @print_continue}
 end subroutine #{@name}
 EOF
     end

@@ -1,9 +1,7 @@
 client pse
-  use ppm_module_io_vtk
-  use ppm_module_timestats
   integer, dimension(6) :: bcd = ppm_param_bcdef_periodic
   integer :: istage
-  real(ppm_kind_double), parameter     :: dt    = 0.00001_mk
+  real(ppm_kind_double), parameter     :: dt    = 0.0001_mk
   real(ppm_kind_double), parameter     :: mu    = 0.5_mk
   real(ppm_kind_double), parameter     :: sigma = 0.02_mk
   integer, dimension(2)                :: seed
@@ -59,10 +57,9 @@ client pse
       ode_step(o, t, dt, istage)
       call ppm_tstats_toc(timer,1,timing,info)
     end do
-    !write(*,*) "time: ", t
+    write(*,*) "time: ", t
 
     call ppm_tstats_collect('time.dat',info)
-
 
     print([f=>c], 10)
   end timeloop

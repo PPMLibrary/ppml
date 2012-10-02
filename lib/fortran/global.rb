@@ -13,6 +13,7 @@ module CG
       @da = FortranSubroutine.new "define_args"
       subroutine @da
       use :ppm_module_core
+      use :ppm_module_user_numerics
       if (!conf.ppm.prec.nil?  )
         var :mk, "integer, parameter :: mk = #{conf.ppm.prec}"
       else

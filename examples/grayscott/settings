@@ -1,7 +1,7 @@
 
 # basic settings
-conf.project_name = "pse"
-conf.binary = "pse"
+conf.project_name = "grayscott"
+conf.binary = "grayscott"
 conf.build.optflags = "-O3"
 conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm"
 conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"

@@ -1,63 +1,67 @@
-macro create_ode(fields,rhs,rhs_fields,scheme=ODEscheme)
-% scope.use :ppm_module_user_numerics
-
+macro create_ode(vars,rhs,rhs_vars,scheme=ODEscheme)
+%
 % scope.raw_var eulerf: "integer, parameter :: eulerf = ppm_param_ode_scheme_eulerf"
 % scope.raw_var tvdrk2: "integer, parameter :: tvdrk2 = ppm_param_ode_scheme_tvdrk2"
 % scope.raw_var midrk2: "integer, parameter :: midrk2 = ppm_param_ode_scheme_midrk2"
 % scope.raw_var rk4: "integer, parameter :: rk4 = ppm_param_ode_scheme_rk4"
 % scope.raw_var sts: "integer, parameter :: sts = ppm_param_ode_scheme_sts"
-
+%
 % scope.raw_var info: "integer :: info"
 % scope.global_use :ppm_module_user_numerics
 % scope.arg_group "ODE Parameters"
 % scope.arg name: :ODEscheme, type: "integer", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
-% scope.var :fields, "class(ppm_v_main_abstr), pointer"
-% scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc), pointer"
-allocate(fields,stat=info)
-$or_fail_alloc("\"Allocating fields vector\"")
-% scope.var :rhs_fields, "class(ppm_v_field_discr_pair), pointer"
-% scope.var :pair, "class(ppm_t_field_discr_pair), pointer"
-allocate(rhs_fields,stat=info)
-$or_fail_alloc("\"Allocating rhs_fields vector\"")
+% scope.var :vars, "class(ppm_v_main_abstr), pointer"
+% if conf.ppm.prec == "ppm_kind_single"
+%   scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc_s), pointer"
+% else
+%   scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc_d), pointer"
+% end
+allocate(vars,stat=info)
+or_fail_alloc("Allocating vars vector")
+% scope.var :rhs_vars, "class(ppm_v_var_discr_pair), pointer"
+% scope.var :pair, "class(ppm_t_var_discr_pair), pointer"
+% scope.var :fpair, "class(ppm_t_field_discr_pair), pointer"
+allocate(rhs_vars,stat=info)
+or_fail_alloc("Allocating rhs_vars vector")
 % scope.var :el, "class(ppm_t_main_abstr), pointer"
 
 % change_ftypes = []
 % rhs_ftypes = []
 
-% fields.each do |f|
+% vars.each do |f|
 %   if f.is_a? Array
-allocate(<%= :pair %>,stat=info)
-<%= :pair %>%field => <%= f[0] %>
-<%= :pair %>%discretization => <%= f[1] %>
-<%= :el %> => <%= :pair %>
-% change_ftypes << scope.type_of(f[1].to_s.to_sym)
+allocate(<%= :fpair %>,stat=info)
+<%= :fpair %>%field => <%= f[0] %>
+<%= :fpair %>%discr => <%= f[1] %>
+<%= :el %> => <%= :fpair %>
+% change_ftypes << [scope.type_of(f[0].to_s.to_sym),scope.type_of(f[1].to_s.to_sym)]
 %   else
 <%= :el %> => <%= f %>
-% change_ftypes << scope.type_of(f.to_s.to_sym)
+% change_ftypes << [scope.type_of(f.to_s.to_sym),nil]
 %   end
-call <%= :fields %>%push(<%= :el %>,info)
-$or_fail("\"Pushing element failed\"")
+call <%= :vars %>%push(<%= :el %>,info)
+or_fail("Pushing element failed")
 % end
 
-% rhs_fields.each do |f|
+% rhs_vars.each do |f|
 allocate(<%= :pair %>,stat=info)
 %   if f.is_a? Array
-<%= :pair %>%field => <%= f[0] %>
-<%= :pair %>%discretization => <%= f[1] %>
-% rhs_ftypes << scope.type_of(f[1].to_s.to_sym)
+<%= :pair %>%var => <%= f[0] %>
+<%= :pair %>%discr => <%= f[1] %>
+% rhs_ftypes << [scope.type_of(f[0].to_s.to_sym),scope.type_of(f[1].to_s.to_sym)]
 %   else
-<%= :pair %>%field => <%= f %>
-% rhs_ftypes << nil
+<%= :pair %>%var => <%= f %>
+% rhs_ftypes << [scope.type_of(f.to_s.to_sym),nil]
 %   end
-call <%= :rhs_fields %>%push(<%= :pair %>,info)
-$or_fail("\"Pushing pair failed\"")
+call <%= :rhs_vars %>%push(<%= :pair %>,info)
+or_fail("Pushing pair failed")
 % end
 
 % scope.rhs_call(rhs, rhs_ftypes, change_ftypes)
 <%= :rhs_ptr %> => <%= rhs %>
 
 % scope.raw_var result[0].to_sym =>  "type(ppm_t_ode) :: #{result[0]}"
-call <%= result[0] %>%create(<%= scheme %>,fields,<%= :rhs_ptr %>,rhs_fields,info)
+call <%= result[0] %>%create(<%= scheme %>,vars,<%= :rhs_ptr %>,rhs_vars,info)
 
 % scope.raw_var result[1].to_sym => "integer :: #{result[1]}"
 <%= result[1] %> = <%= result[0] %>%integrator%scheme_nstages

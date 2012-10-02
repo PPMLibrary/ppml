@@ -13,7 +13,7 @@ end macro
 
 macro fail(message, type=ppm_err_alloc,info=info,exit_point=9999)
 call ppm_error(<%= type %>, &
-  <%= message %>,&
+  "<%= message %>",&
   caller, 100000 , <%= info %>)
 goto <%= exit_point %>
 end macro

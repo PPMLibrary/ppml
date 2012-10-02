@@ -1,0 +1,11 @@
+macro create_neighlist(discretization)
+% scope.raw_var info: "integer :: info"
+call <%= discretization %>%comp_neighlist(info)
+end macro
+
+macro get_neighlist(discretization)
+% scope.raw_var info: "integer :: info"
+% scope.raw_var({result.to_sym => "type(ppm_t_particles_s), pointer :: #{result}"},
+%               :ppm_t_particles_s)
+call <%= discretization %>%get_neighlist(info)
+end macro
