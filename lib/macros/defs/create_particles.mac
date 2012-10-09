@@ -1,4 +1,4 @@
-macro create_particles(topology, np=Npart, prec=mk, distrib=ppm_param_part_init_cartesian)
+macro create_particles(topology, np=Npart, prec=mk, ghost_size=nil, distrib=ppm_param_part_init_cartesian)
 % if prec == "mk"
 %   prec = conf.ppm.prec
 % end
@@ -13,5 +13,5 @@ macro create_particles(topology, np=Npart, prec=mk, distrib=ppm_param_part_init_
 % scope.arg name: :Npart, type: "integer", default: "10000", ctrl_name: "'Npart'", help: "'Global number of particles'"
 allocate(<%= result %>,stat=info)
 or_fail_alloc("Could not allocate <%= result %>")
-call <%= result %>%initialize(<%= np %>, info, topoid=<%= topology %>, distrib=<%= distrib %>)
+call <%= result %>%initialize(<%= np %>, info, topoid=<%= topology %>, distrib=<%= distrib %><%= ", cutoff=#{ghost_size}" unless ghost_size.nil?%>)
 end macro

@@ -3,8 +3,8 @@
 conf.project_name = "grayscott"
 conf.binary = "grayscott"
 conf.build.optflags = "-O3"
-conf.ppm.base_path = "/home/omar/code/ppm/ppmcore/libppm"
-conf.ppm.numerics.base_path = "/home/omar/code/ppm/ppmnumerics/libppmnumerics"
+conf.ppm.base_path = "/Users/omar/code/ppm/ppmcore/libppm"
+conf.ppm.numerics.base_path = "/Users/omar/code/ppm/ppmnumerics/libppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"

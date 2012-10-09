@@ -72,7 +72,7 @@ Feature: Foreach Macros
     When I preprocess
     """
       ! leading comment
-      foreach p in particles(P) with neighbors(nlist) sca_fields(w=weight,dw=change)
+      foreach p in particles(P) with sca_fields(w=weight,dw=change)
         foreach q in neighbors(p,nlist) with sca_fields(w=weight,dw=change)
           ! updating w
           dw_p = w_p*w_q
@@ -99,10 +99,9 @@ Feature: Foreach Macros
           caller, 5 , info)
         GOTO 9999
       END IF
-      mangled_nlist = P%get_neighlist()
       do mangled_p=1,P%Npart
-        do mangled_nvq=1,mangled_nlist%nvlist(mangled_p)
-          mangled_q = mangled_nlist%vlist(mangled_nvq,mangled_p)
+        do mangled_nvq=1,nlist%nvlist(mangled_p)
+          mangled_q = nlist%vlist(mangled_nvq,mangled_p)
           ! updating w
           mangled_dw_wp(mangled_p) = mangled_w_wp(mangled_p)*mangled_w_wp(mangled_q)
         end do

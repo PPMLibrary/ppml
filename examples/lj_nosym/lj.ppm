@@ -2,9 +2,9 @@ client lj
   integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
   real(mk), dimension(3) :: r_pq
   real(mk)               :: r_s_pq
+  real(mk)               :: r_s_pq2
   real(mk), dimension(3) :: dF
   real(mk)               :: cutoff
-  real(mk)               :: minrpq = 100.0_mk
   real(mk)               :: E_prc
   real(mk)               :: Ev_tot, Ep_tot, E_tot
   real(mk)               :: Ev_tot_old, Ep_tot_old
@@ -62,15 +62,14 @@ client lj
     foreach p in particles(parts) with positions(x) sca_props(E) vec_props(F) prec(ppm_kind_double)
       foreach q in neighbors(p,nlist) with positions(x) prec(ppm_kind_double)
         r_pq(:) = x_p(:) - x_q(:)
-        r_s_pq = sqrt(r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2) 
-        if (r_s_pq.lt.minrpq) minrpq = r_s_pq
-        dF(:) = (24.0_mk*eps*r_pq(:))*(2.0_mk*(sigma**12/r_s_pq**14) - (sigma**6/r_s_pq**8))
+        !r_s_pq = sqrt(r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2) 
+        r_s_pq2 = r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2
+        dF(:) = (24.0_mk*eps*r_pq(:))*(2.0_mk*(sigma**12/r_s_pq2**7) - (sigma**6/r_s_pq2**4))
         F_p(:) = F_p(:) + dF(:)
-        E_p = E_p + 4.0_mk*eps*((sigma/r_s_pq)**12 - (sigma/r_s_pq)**6) &
+        E_p = E_p + 4.0_mk*eps*(sigma**12/r_s_pq2**6 - sigma**6/r_s_pq2**3) &
         &         - E_prc
       end foreach
     end foreach
-    !print *,'mindist:',minrpq
     foreach p in particles(parts) with positions(x) vec_props(F,a,v) prec(ppm_kind_double)
       v_p(:) = v_p(:) + 0.5_mk*(a_p(:) + (F_p(:)/m))*dt
     end foreach

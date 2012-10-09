@@ -2,7 +2,7 @@
 # basic settings
 conf.project_name = "lj"
 conf.binary = "lj"
-conf.build.optflags = "-O3"
+conf.build.optflags = "-g -O3"
 conf.ppm.base_path = "/Users/omar/code/ppm/ppmcore/libppm"
 conf.ppm.numerics.base_path = "/Users/omar/code/ppm/ppmnumerics/libppmnumerics"
 

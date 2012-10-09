@@ -136,7 +136,7 @@ macro stdout(*message)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
 % if message.is_a? Array
 % message.map! {|p| p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )}
-    WRITE(cbuf,*) <%=message.join(",&\n")%>
+    WRITE(cbuf,*) <%=message.join(",&\n&    ")%>
 % end
     CALL ppm_write(ppm_rank,caller,cbuf,info)
 end macro
