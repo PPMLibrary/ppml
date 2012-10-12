@@ -5,6 +5,7 @@ client lj
   real(mk)               :: r_s_pq2
   real(mk), dimension(3) :: dF
   real(mk)               :: cutoff
+  real(mk)               :: skin
   real(mk)               :: E_prc
   real(mk)               :: Ev_tot, Ep_tot, E_tot
   real(mk)               :: Ev_tot_old, Ep_tot_old
@@ -20,9 +21,12 @@ client lj
   add_arg(dt,<#real(mk)#>,1.0_mk,0.0_mk,'delta_t','time step')
 
   ppm_init()
+  
+  cutoff = sigma*(2.5_mk/1.1_mk)
+  skin = 0.1_mk*cutoff
 
-  topo = create_topology(bcdef)
-  parts = create_particles(topo)!,distrib=ppm_param_part_init_random)
+  topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
+  parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
   !allocate(displace(ppm_dim,parts%Npart))
   !call random_number(displace)
   !displace = (displace - 0.5_mk) * parts%h_avg * 1.0E-6_mk
@@ -40,10 +44,9 @@ client lj
 
   !print *,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
   !print *,'eq dist:',sigma*2.0_mk**(1.0_mk/6.0_mk)
-  cutoff = sigma*2.5_mk
-  nlist = create_neighlist(parts,cutoff=<#cutoff#>,sym=<#.false.#>)
+  nlist = create_neighlist(parts,cutoff=<#cutoff#>,skin=<#skin#>,sym=<#.false.#>)
   
-  E_prc =  4.0_mk*eps*((sigma/cutoff)**12 - (sigma/cutoff)**6)
+  E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
 
   t = timeloop(tstart=0.0_mk,deltat=dt,tend=stop_time)
     foreach p in particles(parts) with positions(x,writex=true) sca_props(E) vec_props(F,a,v) prec(ppm_kind_double)
@@ -88,7 +91,7 @@ client lj
     end foreach
     Ep_tot = Ep_tot*0.5_mk
     E_tot = Ev_tot + Ep_tot
-    print *,st,E_tot,Ev_tot, Ep_tot
+    write(*,'(I7,3E17.8)'),st,E_tot,Ev_tot, Ep_tot!,maxdisp
     !print *,Ev_tot, Ep_tot, E_tot
     !print *,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
     !print([E=>parts,v=>parts,F=>parts],100 )
