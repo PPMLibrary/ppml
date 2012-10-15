@@ -14,10 +14,12 @@ client lj
   class(ppm_t_neighlist_d_), pointer :: templist
   integer :: nia,n
   integer :: st = 0
-  real(mk)               :: disp,maxdisp
+  real(mk)               :: disp,maxdisp,allmaxdisp
   real(mk)               :: skin
   real(mk)               :: sigma6,sigma12
   class(ppm_t_part_prop_d_), pointer :: prop => null()
+  type(ppm_t_topo), pointer      :: topology
+  integer               :: k,isub
 
   add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
   add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
@@ -31,6 +33,10 @@ client lj
   !cutoff = sigma*(2.5_mk/1.1_mk)
   cutoff = sigma*2.5_mk
   skin = 0.1_mk*cutoff
+
+  if (ppm_rank.eq.0) then
+    print *,'ghostlayer:',cutoff+skin
+  endif
 
   topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
   parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
@@ -59,6 +65,7 @@ client lj
 
   t = timeloop(tstart=0.0_mk,deltat=dt,tend=stop_time)
     maxdisp = 0.0_mk
+    allmaxdisp = 0.0_mk
     foreach p in particles(parts) with positions(x,writex=true) sca_props(E) vec_props(F,a,v,dx) prec(ppm_kind_double)
       a_p(:) = F_p(:)/m
       x_p(:) = x_p(:) + v_p(:)*dt + 0.5_mk*a_p(:)*dt**2
@@ -69,16 +76,15 @@ client lj
       if (disp.gt.maxdisp) maxdisp = disp
     end foreach
     
-    if (4.0_mk*maxdisp.ge.skin**2) then
-      call parts%apply_bc(info) 
+    call MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,0,comm,info)
+    if (4.0_mk*allmaxdisp.ge.skin**2) then
       call parts%apply_bc(info) 
       partial_mapping(parts)
+      topology => ppm_topo(topo)%t
       foreach p in particles(parts) with vec_props(dx) prec(ppm_kind_double)
         dx_p(:) = 0.0_mk
       end foreach
-      print *,'before ghost mapping'
       ghost_mapping(parts)
-      print *,'after ghost mapping'
       ! this should recompute the neighlist
       comp_neighlist(parts)
     else
