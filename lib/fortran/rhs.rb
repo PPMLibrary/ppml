@@ -67,8 +67,6 @@ module CG
         time: "real(#{prec}) :: time",
         changes: "class(ppm_v_main_abstr), pointer :: changes"
       use GlobalModule.name.to_sym
-      #var :info, "integer :: info"
-      #var :caller, "character(LEN=ppm_char)            :: caller = '#{name}'"
       var :change, "class(ppm_t_main_abstr), pointer :: change => null()"
       var :vd_pair, "class(ppm_t_var_discr_pair), pointer :: vd_pair => null()"
       var :di, "class(ppm_t_discr_info_), pointer :: di => null()"

@@ -34,6 +34,7 @@ Feature: Right hand side definition
         class(ppm_v_var_discr_pair), pointer :: vars_discr
         real(ppm_kind_double) :: time
         class(ppm_v_main_abstr), pointer :: changes
+        integer :: info
         class(ppm_t_main_abstr), pointer :: change => null()
         class(ppm_t_var_discr_pair), pointer :: vd_pair => null()
         class(ppm_t_discr_info_), pointer :: di => null()

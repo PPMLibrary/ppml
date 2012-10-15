@@ -142,6 +142,15 @@ module CG
       end
 
 
+      # builds the argument dictonary
+      #
+      # This function builds a dictionary from the argument declaration of the
+      # macro. It supports, positional arguments, named arguments and *splat
+      # arguments. Named argumetns are assigned a default value which may be
+      # 'nil'. This value is converted into an actual ruby nil which can be
+      # checked in the macro when executing the ERB template.
+      #
+      # @param [String] args is the formal parameter string
       def parse_arglist args
         result = {}
         args.scan(REGMAGIC) do
@@ -180,7 +189,9 @@ module CG
           end
           if named
             named.each_pair do |name,value|
-              unless result[name].nil?
+              # do NOT check for nil, since the default value may be actually
+              # nil! 
+              if result.has_key?(name)
                 result[name] = value
               else
                 unless result[:splat]
@@ -195,10 +206,22 @@ module CG
           result.delete(:splat)
         end
         raise ArgumentError if result.values.include? :required
+        # get the <# code #> fragments and remove the tags 
         result.each_pair do |k,v|
-          if (v.to_s.start_with?("'") and v.to_s.end_with?("'")) or
-             (v.to_s.start_with?('"') and v.to_s.end_with?('"'))
-            result[k] = v.to_s[1...-1]
+          if v.kind_of? Array
+            cleaned_v = [] 
+            v.each do |ve|
+              if ve.to_s =~ /\A<#(.+)#>\z/
+                cleaned_v << $~[1]
+              else
+                cleaned_v << ve
+              end
+            end
+            result[k] = cleaned_v
+          else
+            if v.to_s =~ /\A<#(.+)#>\z/
+              result[k] = $~[1]
+            end
           end
         end
         result

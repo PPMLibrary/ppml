@@ -176,6 +176,11 @@ module CG
       @types[sym]
     end
 
+    # Add a type for a symbol (for now used for hacks)
+    def set_type sym, type
+      @types[sym] = type
+    end
+
     protected
     def set_child child
       @child = child

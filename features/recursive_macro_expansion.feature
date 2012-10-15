@@ -13,15 +13,15 @@ Feature: Recursive macro expansion
     Given a macro "fail" with argument list ("condition,msg") is defined as
     """
     if (<%= condition %>) then
-      call ppm_error(errno, "<%= msg %>")
+      call ppm_error(errno, <%= msg %>)
       goto 9999
     end if
     """
     And a macro "ppm_init" with argument list ("msg") is defined as
     """
-    % m = msg.to_s * 2
+    % m = msg.to_s[1...-1] * 2
     call ppm_init(many,args,info)
-    fail("info.ne.0", <%= m %>)
+    fail(<#info.ne.0#>, "<%= m %>")
     """
     When I preprocess
     """

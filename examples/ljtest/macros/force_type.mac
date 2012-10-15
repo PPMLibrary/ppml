@@ -1,0 +1,3 @@
+macro force_type(var,type)
+% scope.set_type var.to_s.to_sym, type.to_s.to_sym 
+end macro

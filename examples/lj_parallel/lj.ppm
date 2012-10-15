@@ -1,0 +1,151 @@
+client lj
+  integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
+  real(mk), dimension(3) :: r_pq
+  real(mk)               :: r_s_pq2
+  real(mk), dimension(3) :: dF
+  real(mk)               :: scaldF
+  real(mk)               :: cutoff
+  real(mk)               :: E_prc
+  real(mk)               :: Ev_tot, Ep_tot, E_tot
+  real(mk)               :: Ev_tot_old, Ep_tot_old
+  real(mk), dimension(3) :: energies,energies_reduced
+  real(mk), dimension(:,:), pointer :: displace
+  real(mk), dimension(:,:), pointer :: xp
+  class(ppm_t_neighlist_d_), pointer :: templist
+  integer :: nia,n
+  integer :: st = 0
+  real(mk)               :: disp,maxdisp,allmaxdisp
+  real(mk)               :: skin
+  real(mk)               :: sigma6,sigma12
+  class(ppm_t_part_prop_d_), pointer :: prop => null()
+  type(ppm_t_topo), pointer      :: topology
+  integer               :: k,isub
+
+  add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
+  add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
+  add_arg(sigma,<#real(mk)#>,1.0_mk,0.0_mk,'sigma','distance of potential well')
+  add_arg(dt,<#real(mk)#>,1.0_mk,0.0_mk,'delta_t','time step')
+
+  ppm_init()
+ 
+  sigma6 = sigma**6
+  sigma12 = sigma**12
+  !cutoff = sigma*(2.5_mk/1.1_mk)
+  cutoff = sigma*2.5_mk
+  skin = 0.1_mk*cutoff
+
+  if (ppm_rank.eq.0) then
+    print *,'ghostlayer:',cutoff+skin
+  endif
+
+  topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
+  parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
+  !allocate(displace(ppm_dim,parts%Npart))
+  !call random_number(displace)
+  !displace = (displace - 0.5_mk) * parts%h_avg * 1.0E-6_mk
+  !call parts%move(displace, info)
+  call parts%apply_bc(info)
+
+  global_mapping(parts, topo)
+
+  v = create_property(parts, ppm_dim, "velocity",zero=true)
+  a = create_property(parts, ppm_dim, "acceleration",zero=true)
+  F = create_property(parts, ppm_dim, "force",zero=true)
+  E = create_property(parts, 1, "energy",zero=true)
+  dx = create_property(parts, ppm_dim, "displace",zero=true)
+
+  ghost_mapping(parts)
+
+  !print *,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
+  !print *,'eq dist:',sigma*2.0_mk**(1.0_mk/6.0_mk)
+  nlist = create_neighlist(parts,cutoff=<#cutoff#>,skin=<#skin#>,sym=<#.false.#>)
+  
+  !E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
+  E_prc =  4.0_mk*eps*((sigma/cutoff)**12 - (sigma/cutoff)**6)
+
+  t = timeloop(tstart=0.0_mk,deltat=dt,tend=stop_time)
+    maxdisp = 0.0_mk
+    allmaxdisp = 0.0_mk
+    foreach p in particles(parts) with positions(x,writex=true) sca_props(E) vec_props(F,a,v,dx) prec(ppm_kind_double)
+      a_p(:) = F_p(:)/m
+      x_p(:) = x_p(:) + v_p(:)*dt + 0.5_mk*a_p(:)*dt**2
+      F_p(:) = 0.0_mk
+      E_p = 0.0_mk
+      dx_p(:) = dx_p(:) + v_p(:)*dt + 0.5_mk*a_p(:)*dt**2
+      disp = dx_p(1)**2 + dx_p(2)**2 + dx_p(3)**2
+      if (disp.gt.maxdisp) maxdisp = disp
+    end foreach
+    
+    call MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,0,comm,info)
+    if (4.0_mk*allmaxdisp.ge.skin**2) then
+      call parts%apply_bc(info) 
+      partial_mapping(parts)
+      topology => ppm_topo(topo)%t
+      foreach p in particles(parts) with vec_props(dx) prec(ppm_kind_double)
+        dx_p(:) = 0.0_mk
+      end foreach
+      ghost_mapping(parts)
+      ! this should recompute the neighlist
+      comp_neighlist(parts)
+    else
+      parts%flags(ppm_part_partial) = .true. ! hack
+      parts%flags(ppm_part_areinside) = .true.
+      parts%flags(ppm_part_ghosts) = .true.
+      prop => parts%props%begin()
+      do while (associated(prop))
+        prop%flags(ppm_ppt_partial) = .true.
+        prop => parts%props%next()
+      enddo
+      call parts%map_ghost_push_positions(info)
+      ghost_mapping(parts)
+      call parts%map_ghost_pop_positions(info)
+    end if
+    
+    
+    foreach p in particles(parts) with positions(x) sca_props(E) vec_props(F) prec(ppm_kind_double)
+      foreach q in neighbors(p,nlist) with positions(x) prec(ppm_kind_double)
+        r_pq(:) = x_p(:) - x_q(:)
+        r_s_pq2 = r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2
+        if (r_s_pq2.le.cutoff**2) then
+          scaldF = (24.0_mk*eps)*(2.0_mk*(sigma12/r_s_pq2**7) - (sigma6/r_s_pq2**4))
+          F_p(:) = F_p(:) + r_pq(:)*scaldF
+          E_p = E_p + 4.0_mk*eps*((sigma12/r_s_pq2**6) - (sigma6/r_s_pq2**3)) &
+          &         - E_prc
+        endif
+      end foreach
+    end foreach
+    foreach p in particles(parts) with positions(x) vec_props(F,a,v) prec(ppm_kind_double)
+      v_p(:) = v_p(:) + 0.5_mk*(a_p(:) + (F_p(:)/m))*dt
+    end foreach
+    t = t + dt
+    !ghost_mapping(parts)
+   
+    ! analysis
+    Ev_tot_old = Ev_tot
+    Ep_tot_old = Ep_tot
+    E_tot = 0.0_mk
+    Ev_tot = 0.0_mk
+    Ep_tot = 0.0_mk
+    foreach p in particles(parts) with sca_props(E) vec_props(v) prec(ppm_kind_double)
+      Ev_tot = Ev_tot + 0.5_mk*m*(v_p(1)**2+v_p(2)**2+v_p(3)**2)
+      Ep_tot = Ep_tot + E_p
+    end foreach
+    Ep_tot = Ep_tot*0.5_mk
+    E_tot = Ev_tot + Ep_tot
+    energies(1) = E_tot
+    energies(2) = Ev_tot
+    energies(3) = Ep_tot
+    call MPI_Allreduce(energies,energies_reduced,3,ppm_mpi_kind,MPI_SUM,0,comm,info)
+    
+    if (ppm_rank.eq.0) then
+      write(*,'(I7,3E17.8)'),st,energies_reduced(1),energies_reduced(2),energies_reduced(3)
+    endif
+    !write(*,'(I7,3E17.8)'),st,E_tot,Ev_tot, Ep_tot!,maxdisp
+    !print *,Ev_tot, Ep_tot, E_tot
+    !print *,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
+    !print([E=>parts,v=>parts,F=>parts],100 )
+    st = st + 1
+  end timeloop
+
+end client
+

@@ -4,10 +4,14 @@ macro print(fields, resolution)
 % parts = Hash.new []
 % meshs = Hash.new []
 % fields.each do |pair|
-%   if scope.type_of(pair[1].to_s.to_sym) == :ppm_t_particles_d
+%   if scope.type_of(pair[1].to_s.to_sym) == :ppm_t_particles_s
 %     parts[pair[1].to_s] = parts[pair[1].to_s] << pair[0].to_s
-%   else
+%   elsif scope.type_of(pair[1].to_s.to_sym) == :ppm_t_particles_d
+%     parts[pair[1].to_s] = parts[pair[1].to_s] << pair[0].to_s
+%   elsif scope.type_of(pair[1].to_s.to_sym) == :ppm_t_equi_mesh
 %     meshs[pair[1].to_s] = meshs[pair[1].to_s] << pair[0].to_s
+%   else
+%     STDERR.puts "Warning: I don't know the type of '#{pair[1]}', ignoring..."
 %   end
 % end
 % scope.var :fieldlist, "class(ppm_v_main_abstr), pointer", " => null()"

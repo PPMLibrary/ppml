@@ -1,11 +1,12 @@
 foreach macro particles(pset)
 modifier positions(x,writex=:false)
+modifier ghosts(ghosts=false)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
 modifier sca_props(*sca_props)
 modifier vec_props(*vec_props)
 modifier prec(precision=mk)
-modifier neighbors(nlist)
+% # ghosts = true does not imply the loop is iterating over up to Mp - change?
 % fields = []
 % sca_fields.each do |f|
 %   if f.is_a? Array
@@ -49,7 +50,11 @@ modifier neighbors(nlist)
 % scope.var iter.to_sym,  "integer"
 % unless x == :required
 %   scope.var "#{x}".to_sym,  "real(#{prec}), dimension(:,:), pointer", "=> null()"
+% if ghosts.to_s == "false"
 call <%= pset %>%get_xp(<%= "#{x}" %>,info)
+% elsif ghosts.to_s == "true"
+call <%= pset %>%get_xp(<%= "#{x}" %>,info,with_ghosts=.true.)
+% end
 or_fail("getting positions <%= "#{pset}" %>")
 % end
 % fields.each do |f|
@@ -58,7 +63,11 @@ or_fail("getting positions <%= "#{pset}" %>")
 %   else
 %     scope.var "#{f[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
+% if ghosts.to_s == "false"
 call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info)
+% elsif ghosts.to_s == "true"
+call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info,with_ghosts=.true.)
+% end
 or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 % end
 % props.each do |p|
@@ -67,13 +76,17 @@ or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 %   else
 %     scope.var "#{p[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
+% if ghosts.to_s == "false"
 call <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info)
+% elsif ghosts.to_s == "true"
+call <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info,with_ghosts=.true.)
+% end
 or_fail("getting field <%= "#{p[1]}" %> for <%= "#{pset}" %>")
 % end
-% unless nlist == :required
-%   scope.var :nlist, "class(ppm_t_neighlist_#{prec_suffix})"
-<%= nlist %> = <%= pset %>%get_neighlist()
-% end
+% # unless nlist == :required
+% #  scope.var :nlist, "class(ppm_t_neighlist#{prec_suffix}_), pointer"
+% # <%= nlist %> => <%= pset %>%get_neighlist()
+% # end
 do <%= iter %>=1,<%= pset %>%Npart
 % fields.each do |f|
 %   if f[2] == :sca

@@ -1,4 +1,4 @@
-macro create_topology(boundary_condition,decomp=nil,assign=nil)
+macro create_topology(boundary_condition,decomp=nil,assign=nil,ghost_size=nil)
 % scope.raw_var info: "integer :: info"
 % scope.raw_var({result.to_sym => "integer :: #{result} = 0"})
 % scope.var :cost, "real(mk), dimension(:), pointer", " => null()"
@@ -7,7 +7,8 @@ macro create_topology(boundary_condition,decomp=nil,assign=nil)
 % scope.arg name: :max_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "allocate(max_phys(#{conf.ppm.dim}))"
 % scope.arg name: :domain_decomposition, type: "integer", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"
 % scope.arg name: :processor_assignment, type: "integer", default: "ppm_param_assign_internal", min: 1, max: 6, ctrl_name: "'processor_assignment'", help: "'Processor assignment, one of:\\n * 1 - internal\\nmetis:\\n   * 2 - nodal cut\\n   * 3 - nodal comm\\n   * 4 - dual cut\\n   * 5 - dual comm\\n * 6 - user defined'"
-% scope.arg name: :ghost_size, type: "real(mk)", default: "0.0_mk", min: "0.0_mk", ctrl_name: "'ghost_size'", help: "'Ghost layer width'"
-
-call ppm_mktopo(<%= result %>,<%= decomp ? decomp : "domain_decomposition" %>,<%= assign ? assign : "processor_assignment" %>,min_phys,max_phys,<%= boundary_condition %>,ghost_size,cost,info)
+% if ghost_size.nil?
+%   scope.arg name: :ghost_size, type: "real(mk)", default: "0.021_mk", min: "0.0_mk", ctrl_name: "'ghost_size'", help: "'Ghost layer width'"
+% end
+call ppm_mktopo(<%= result %>,<%= decomp ? decomp : "domain_decomposition" %>,<%= assign ? assign : "processor_assignment" %>,min_phys,max_phys,<%= boundary_condition %>, <%= ghost_size ? ghost_size : "ghost_size" %>,cost,info)
 end macro

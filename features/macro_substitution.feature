@@ -63,13 +63,13 @@ Feature: macro substitution
     Given the standard macro path is "examples/testdata/macros"
     When I preprocess
     """
-    minclude friendly("Mitrovic")
+    minclude friendly("Duderino")
     fail("topoid not valid",ppm_err_argument,exit_point=8888)
 
     """
     Then it should expand into
     """
-    print *, "Hello, Mr. ","Mitrovic",". Can I be of any service?"
+    print *, "Hello, Mr. ","Duderino",". Can I be of any service?"
     call ppm_error(ppm_err_argument, &
       "topoid not valid",&
       caller, 100000 , info)
@@ -78,19 +78,36 @@ Feature: macro substitution
     """
 
   Scenario: String arguments
-    Given a macro "fail" with argument list ("msg") is defined as
+    Given a macro "test_fail" with argument list ("msg") is defined as
     """
-    ppm_error("<%= msg %>")
+    ppm_error(<%= msg %>)
 
     """
     When I preprocess
     """
-    fail("string, argument, list")
+    test_fail("string, argument, list")
 
     """
     Then it should expand into
     """
     ppm_error("string, argument, list")
+    
+    """
+  
+  Scenario: Code arguments
+    Given a macro "test_exec" with argument list ("e") is defined as
+    """
+    <%= e %>
+
+    """
+    When I preprocess
+    """
+    test_exec(<#print *, "hello world!"#>)
+
+    """
+    Then it should expand into
+    """
+    print *, "hello world!"
     
     """
 
@@ -120,13 +137,13 @@ Feature: macro substitution
     Given a macro "rectest" with argument list ("msg") is defined as
     """
     ! inside rectest
-    ppm_error("<%= msg %>")
+    ppm_error(<%= msg %>)
 
     """
     Given a macro "test" with argument list ("brg") is defined as
     """
     ! inside test
-    rectest("<%= brg %>")
+    rectest(<%= brg %>)
 
     """
     When I preprocess

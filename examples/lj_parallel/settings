@@ -1,16 +1,15 @@
 
 # basic settings
-conf.project_name = "grayscott"
-conf.binary = "grayscott"
-conf.build.optflags = "-O3"
+conf.project_name = "lj"
+conf.binary = "lj"
+conf.build.optflags = "-g -O3"
 conf.ppm.base_path = "/Users/omar/code/ppm/ppmcore/libppm"
 conf.ppm.numerics.base_path = "/Users/omar/code/ppm/ppmnumerics/libppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
 conf.ppm.tolexp = -14
-conf.ppm.dim = 2
-#conf.ppm.dim = 3
+conf.ppm.dim = 3
 
 # time stepping
 conf.step.type = :real # :integer
@@ -21,6 +20,7 @@ conf.out.basename = "output"
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
+conf.bench.ctrl = "Ctrl"
 conf.bench.nprocs = [1,2,4,8,16]
 conf.bench.nreps = 5
 conf.bench.runargs = {1 => '',2 => '',4 => '',8 => '',16 => ''}
