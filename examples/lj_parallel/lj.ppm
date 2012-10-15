@@ -11,15 +11,13 @@ client lj
   real(mk), dimension(3) :: energies,energies_reduced
   real(mk), dimension(:,:), pointer :: displace
   real(mk), dimension(:,:), pointer :: xp
-  class(ppm_t_neighlist_d_), pointer :: templist
-  integer :: nia,n
   integer :: st = 0
   real(mk)               :: disp,maxdisp,allmaxdisp
   real(mk)               :: skin
   real(mk)               :: sigma6,sigma12
   class(ppm_t_part_prop_d_), pointer :: prop => null()
-  type(ppm_t_topo), pointer      :: topology
-  integer               :: k,isub
+  integer                :: iter_time, map_time, fcalc_time
+  real(mk)               :: time_diff
 
   add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
   add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
@@ -62,8 +60,14 @@ client lj
   
   !E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
   E_prc =  4.0_mk*eps*((sigma/cutoff)**12 - (sigma/cutoff)**6)
+      
+  call ppm_tstats_setup(2,info)
+  call ppm_tstats_add('iteration',iter_time,info)
+  call ppm_tstats_add('mappings',map_time,info)
+  call ppm_tstats_add('force calc.',fcalc_time,info)
 
   t = timeloop(tstart=0.0_mk,deltat=dt,tend=stop_time)
+    call ppm_tstats_tic(iter_time,st+1,info) 
     maxdisp = 0.0_mk
     allmaxdisp = 0.0_mk
     foreach p in particles(parts) with positions(x,writex=true) sca_props(E) vec_props(F,a,v,dx) prec(ppm_kind_double)
@@ -77,10 +81,10 @@ client lj
     end foreach
     
     call MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,0,comm,info)
+    call ppm_tstats_tic(map_time,st+1,info) 
     if (4.0_mk*allmaxdisp.ge.skin**2) then
       call parts%apply_bc(info) 
       partial_mapping(parts)
-      topology => ppm_topo(topo)%t
       foreach p in particles(parts) with vec_props(dx) prec(ppm_kind_double)
         dx_p(:) = 0.0_mk
       end foreach
@@ -100,8 +104,10 @@ client lj
       ghost_mapping(parts)
       call parts%map_ghost_pop_positions(info)
     end if
+    call ppm_tstats_toc(map_time,st+1,time_diff,info) 
     
     
+    call ppm_tstats_tic(fcalc_time,st+1,info) 
     foreach p in particles(parts) with positions(x) sca_props(E) vec_props(F) prec(ppm_kind_double)
       foreach q in neighbors(p,nlist) with positions(x) prec(ppm_kind_double)
         r_pq(:) = x_p(:) - x_q(:)
@@ -114,6 +120,7 @@ client lj
         endif
       end foreach
     end foreach
+    call ppm_tstats_toc(fcalc_time,st+1,time_diff,info) 
     foreach p in particles(parts) with positions(x) vec_props(F,a,v) prec(ppm_kind_double)
       v_p(:) = v_p(:) + 0.5_mk*(a_p(:) + (F_p(:)/m))*dt
     end foreach
@@ -145,7 +152,9 @@ client lj
     !print *,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
     !print([E=>parts,v=>parts,F=>parts],100 )
     st = st + 1
+    call ppm_tstats_toc(iter_time,st,time_diff,info) 
   end timeloop
-
+  call ppm_tstats_collect('time.dat',info)
+  ppm_finalize()
 end client
 
