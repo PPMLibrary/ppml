@@ -83,8 +83,15 @@ class PPM < Thor
 
   desc 'bench', 'Run a benchmark'
   def bench(*args)
-    invoke BenchmarkGroup, args
+    if args[0] == 'analyze'
+      bg = BenchmarkGroup.new
+      read_configuration
+      bg.analyze
+    else
+      invoke BenchmarkGroup, args
+    end
   end
+  
 
 end
 
@@ -190,6 +197,8 @@ class BenchmarkGroup < Thor::Group
 
   def analyze
     @benchmark = CG::Benchmark.new
+    @nprocs = conf.bench.nprocs
+    @nreps = conf.bench.nreps
     @nprocs.each do |np|
       (1..@nreps).each do |nr|
         File.open "bench/proc_%06d/run%03d/time.dat" % [np,nr] do |csv_data|
@@ -197,7 +206,8 @@ class BenchmarkGroup < Thor::Group
         end
       end
     end
-    template "../lib/templates/efficiency_chart.tt", "bench/efficiency.html"
+    @benchmark.print
+    #template "../lib/templates/efficiency_chart.tt", "bench/efficiency.html"
   end
 end
 
