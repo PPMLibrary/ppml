@@ -104,7 +104,25 @@ module CG
       end
     end
 
-
+    def print
+      series = data_sets.keys
+      printf("nproc\t%s\n",series.join("\t"))
+      timings = {}
+      series.each do |k|
+        eff_of_k = data_sets[k].efficiency
+        eff_of_k[0].zip(eff_of_k[1]).each do |pair|
+          if (timings[pair[0]].nil?)
+            timings[pair[0]] = []
+          end
+          timings[pair[0]] << pair[1]
+        end
+      end
+      procs = timings.keys
+      procs.each do |p|
+        printf("%d\t",p)
+        printf("%s\n",timings[p].collect{|t| "%.3f"%t}.join("\t"))
+      end
+        
+    end
   end
-
 end
