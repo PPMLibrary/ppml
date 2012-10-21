@@ -534,7 +534,7 @@ STRING_T
     ;
 
 NUMBER_T
-    : DIGIT+
+    : ('-')? DIGIT+
         ((DECIMAL)=> DECIMAL ((KIND)=> KIND)?)?
     ;
 
