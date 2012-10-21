@@ -1,0 +1,130 @@
+client plankton
+  use ppm_module_topo_get
+  integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
+  integer, dimension(2) :: seed
+  real(mk), parameter   :: pi = acos(-1.0_mk) 
+  real(mk), dimension(:,:), pointer :: displace
+  integer               :: istage = 1
+  integer               :: interval
+  class(ppm_t_part_prop_d_), pointer :: prop => null()
+  ! mesh stuff 
+  real(mk), dimension(2), parameter :: offset = (/0.0_mk, 0.0_mk/)
+  integer, dimension(2)   :: gl = (/1,1/)
+  
+  global_parameter(a,<#real(mk)#>,1.0_mk)
+  global_parameter(b,<#real(mk)#>,2.5_mk)
+  global_parameter(gam,<#real(mk)#>,1.5_mk)
+  global_parameter(lambda1,<#real(mk)#>,4.0_mk)
+  global_parameter(lambda2,<#real(mk)#>,4.0_mk)
+  global_parameter(psi0,<#real(mk)#>,0.1_mk)
+  global_parameter(k,<#real(mk)#>,1.5_mk)
+  global_var(np_global,<#integer#>,0)
+  global_var(mesh,<#type(ppm_t_equi_mesh), pointer#>,<#null()#>)
+
+
+  add_arg(Dcp,<#real(mk)#>,1.0_mk,0.0_mk,'Dcp_param','Diffusion constant of P')
+  add_arg(Dcz,<#real(mk)#>,1.0_mk,0.0_mk,'Dcz_param','Diffusion constant of Z')
+  add_arg(nm,<#integer, dimension(2)#>,<#(/33,33,33/)#>,ctrl_name='nm',help_txt='Grid dimensions')
+
+  ppm_init()
+
+  P = create_field(1, "P")
+  Z = create_field(1, "Z")
+  
+  s = create_field(2, "stream")
+  
+  topo = create_topology(bcdef)
+
+  create_mesh(topo,offset,nm=nm,ghost_size=gl,mesh=mesh)
+  add_patch(mesh,[0.5_mk,0.5_mk,1.0_mk,1.0_mk])
+
+  np_global = product(nm(1:2)-1)
+  print *,np_global
+  ! create particles
+  parts = create_particles(topo,np_global)
+  allocate(displace(ppm_dim,parts%Npart))
+  call random_number(displace)
+  displace = (displace - 0.5_mk) * parts%h_avg * 0.15_mk
+  call parts%move(displace, info)
+  deallocate(displace)
+  call parts%apply_bc(info)
+  !call parts%set_cutoff(4._mk * parts%h_avg, info)
+
+  global_mapping(parts, topo)
+
+  discretize(P,parts)
+  discretize(Z,parts)
+
+
+  foreach p in particles(parts) with positions(x) sca_fields(P,Z)
+    P_p = 1.0_mk
+    Z_p = 0.0_mk 
+    if ((x_p(1).gt.(7.0_mk/10.0_mk)*pi).and.(x_p(1).lt.(13.0_mk/10.0_mk)*pi).and.&
+    &   (x_p(2).gt.(5.0_mk/6.0_mk)*pi).and.(x_p(2).lt.(7.0_mk/6.0_mk)*pi)) then
+      Z_p = 0.1_mk
+    end if
+  end foreach
+  ghost_mapping(parts)
+  
+  n = create_neighlist(parts,cutoff=<#2.5_mk * parts%h_avg#>)
+  
+  ! this problem is only defined in 2D
+  Lap = define_op(2, [2,0, 0,2], [1.0_mk, 1.0_mk], "Laplacian")
+  Jac = define_op(2, [0,1, 1,0], [-1.0_mk, 1.0_mk], "Jacobian")
+
+  L = discretize_op(Lap, parts, ppm_param_op_dcpse,[order=>2,c=>1.0_mk])
+  J = discretize_op(Jac, parts, ppm_param_op_dcpse,[order=>2,c=>1.0_mk])
+
+  o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,s], rk4)
+  !interval = int(stop_time/time_step)/1000
+  
+  !t = timeloop()
+  !  do istage=1,nstages
+  !    parts%flags(ppm_part_partial) = .true. ! hack
+  !    parts%flags(ppm_part_areinside) = .true.
+  !    parts%flags(ppm_part_ghosts) = .true.
+  !    prop => parts%props%begin()
+  !    do while (associated(prop))
+  !      prop%flags(ppm_ppt_partial) = .true.
+  !      prop => parts%props%next()
+  !    enddo
+  !    call parts%map_ghost_push_positions(info)
+  !    ghost_mapping(parts)
+  !    call parts%map_ghost_pop_positions(info)
+      
+  !    ode_step(o, t, time_step, istage)
+  !  end do
+  !  print([P=>parts, Z=>parts],10 )
+  !end timeloop
+
+  !print([U=>parts, V=>parts],1 )
+  ppm_finalize()
+end client
+
+rhs plankton_rhs(P=>parts,Z,s)
+  get_fields(dx,dP,dZ)
+
+  ! remesh
+  call parts%interp_to_mesh(mesh,P,ppm_param_rmsh_kernel_mp4,info)
+  call parts%interp_to_mesh(mesh,Z,ppm_param_rmsh_kernel_mp4,info)
+  call parts%interp_to_mesh(mesh,s,ppm_param_rmsh_kernel_mp4,info)
+  call parts%remesh(mesh,ppm_param_rmsh_kernel_mp4,info)
+  ! diffusion
+  dP = apply_op(L, P)
+  dZ = apply_op(L, Z)
+
+  ! reaction terms
+  foreach p in particles(parts) with sca_fields(P,Z,dP,dZ)
+    dP_p = Dcp*dP_p + P_p*(1 - P_p) - a*Z_p*(1 - exp(-lambda1*P_p))
+    dZ_p = Dcz*dZ_p - gam*Z_p + b*Z_p*(1 - exp(-lambda2*P_p))
+  end foreach
+  
+  foreach p in particles(parts) with positions(x) vec_fields(s)
+    s_p(1) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
+    s_p(2) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
+  end foreach
+  
+  ! advection
+  dx = apply_op(J,s)
+  
+end rhs
