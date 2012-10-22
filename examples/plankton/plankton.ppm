@@ -36,7 +36,7 @@ client plankton
   topo = create_topology(bcdef)
 
   create_mesh(topo,offset,nm=nm,ghost_size=gl,mesh=mesh)
-  add_patch(mesh,[0.5_mk,0.5_mk,1.0_mk,1.0_mk])
+  add_patch(mesh,[0.0_mk,0.0_mk,<#2.0_mk*pi#>,<#2.0_mk*pi#>])
 
   np_global = product(nm(1:2)-1)
   print *,np_global
@@ -49,11 +49,12 @@ client plankton
   deallocate(displace)
   call parts%apply_bc(info)
   !call parts%set_cutoff(4._mk * parts%h_avg, info)
-
+  print *,4.0_mk * parts%h_avg
   global_mapping(parts, topo)
 
   discretize(P,parts)
   discretize(Z,parts)
+  discretize(s,parts)
 
 
   foreach p in particles(parts) with positions(x) sca_fields(P,Z)
@@ -66,7 +67,7 @@ client plankton
   end foreach
   ghost_mapping(parts)
   
-  n = create_neighlist(parts,cutoff=<#2.5_mk * parts%h_avg#>)
+  n = create_neighlist(parts,cutoff=<#4.0_mk * parts%h_avg#>)
   
   ! this problem is only defined in 2D
   Lap = define_op(2, [2,0, 0,2], [1.0_mk, 1.0_mk], "Laplacian")
@@ -78,40 +79,69 @@ client plankton
   o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,s], rk4)
   !interval = int(stop_time/time_step)/1000
   
-  !t = timeloop()
-  !  do istage=1,nstages
-  !    parts%flags(ppm_part_partial) = .true. ! hack
-  !    parts%flags(ppm_part_areinside) = .true.
-  !    parts%flags(ppm_part_ghosts) = .true.
-  !    prop => parts%props%begin()
-  !    do while (associated(prop))
-  !      prop%flags(ppm_ppt_partial) = .true.
-  !      prop => parts%props%next()
-  !    enddo
-  !    call parts%map_ghost_push_positions(info)
-  !    ghost_mapping(parts)
-  !    call parts%map_ghost_pop_positions(info)
+  o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,s], rk4)
+  t = timeloop()
+    do istage=1,nstages
+      parts%flags(ppm_part_partial) = .true. ! hack
+      parts%flags(ppm_part_areinside) = .true.
+      parts%flags(ppm_part_ghosts) = .true.
+      prop => parts%props%begin()
+      do while (associated(prop))
+        prop%flags(ppm_ppt_partial) = .true.
+        prop => parts%props%next()
+      enddo
+      call parts%map_ghost_push_positions(info)
+      ghost_mapping(parts)
+      call parts%map_ghost_pop_positions(info)
       
-  !    ode_step(o, t, time_step, istage)
-  !  end do
+      ode_step(o, t, time_step, istage)
+    end do
   !  print([P=>parts, Z=>parts],10 )
-  !end timeloop
+  end timeloop
 
   !print([U=>parts, V=>parts],1 )
   ppm_finalize()
 end client
 
 rhs plankton_rhs(P=>parts,Z,s)
+  real(mk), dimension(:,:), pointer :: displace
   get_fields(dx,dP,dZ)
 
+  print *,'remesh'
   ! remesh
-  call parts%interp_to_mesh(mesh,P,ppm_param_rmsh_kernel_mp4,info)
-  call parts%interp_to_mesh(mesh,Z,ppm_param_rmsh_kernel_mp4,info)
-  call parts%interp_to_mesh(mesh,s,ppm_param_rmsh_kernel_mp4,info)
   call parts%remesh(mesh,ppm_param_rmsh_kernel_mp4,info)
+ 
+  ! a little hack until Sylvain's patch ships :)
+  allocate(displace(ppm_dim,parts%Npart))
+  call random_number(displace)
+  displace = (displace - 0.5_mk) * parts%h_avg * 1.0e-5_mk
+  call parts%move(displace, info)
+  deallocate(displace)
+  call parts%apply_bc(info)
+  partial_mapping(parts)
+ 
+  print *,'remesh done'
+  ! recreate ghosts and neighlists
+  ghost_mapping(parts)
+  comp_neighlist(parts)
+  ! recompute operator weights
+  select type(L)
+  class is (ppm_t_dcop_d)
+    call L%comp_weights(info)
+  end select
+  select type(J)
+  class is (ppm_t_dcop_d)
+    call J%comp_weights(info)
+  end select
+  
+  print *,'ghost map done'
+  print *,parts%npart
+  
+  print *,'diffusion'
   ! diffusion
   dP = apply_op(L, P)
   dZ = apply_op(L, Z)
+  print *,'reaction'
 
   ! reaction terms
   foreach p in particles(parts) with sca_fields(P,Z,dP,dZ)
@@ -119,12 +149,15 @@ rhs plankton_rhs(P=>parts,Z,s)
     dZ_p = Dcz*dZ_p - gam*Z_p + b*Z_p*(1 - exp(-lambda2*P_p))
   end foreach
   
+  print *,'comp streamline func'
   foreach p in particles(parts) with positions(x) vec_fields(s)
     s_p(1) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
     s_p(2) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
   end foreach
   
+  print *,'advection'
   ! advection
   dx = apply_op(J,s)
   
+  print *,'all done'
 end rhs
