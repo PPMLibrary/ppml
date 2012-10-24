@@ -1,6 +1,6 @@
 macro create_topology(boundary_condition,decomp=nil,assign=nil,ghost_size=nil)
 % scope.raw_var info: "integer :: info"
-% scope.raw_var({result.to_sym => "integer :: #{result} = 0"})
+% scope.global_var({result.to_sym => "integer :: #{result} = 0"})
 % scope.var :cost, "real(mk), dimension(:), pointer", " => null()"
 % scope.arg_group "Domain Parameters"
 % scope.arg name: :min_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", long_flag: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"

@@ -1,6 +1,7 @@
 foreach macro particles(pset)
 modifier positions(x,writex=:false)
 modifier ghosts(ghosts=false)
+modifier skip_checks(skip_checks=false)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
 modifier sca_props(*sca_props)
@@ -63,11 +64,7 @@ or_fail("getting positions <%= "#{pset}" %>")
 %   else
 %     scope.var "#{f[0]}".to_sym, "real(#{prec}), dimension(:,:), pointer", "=> null()"
 %   end
-% if ghosts.to_s == "false"
-call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info)
-% elsif ghosts.to_s == "true"
-call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info,with_ghosts=.true.)
-% end
+call <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info<%= ", with_ghosts=.true." if ghosts.to_s == "true" %><%= ", skip_checks=.true." if skip_checks.to_s == "true"%>)
 or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 % end
 % props.each do |p|
