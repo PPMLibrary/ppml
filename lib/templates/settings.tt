@@ -22,6 +22,7 @@ conf.out.basename = "output"
 conf.bench.target = "brutus"
 conf.bench.ctrl = "Ctrl"
 conf.bench.nprocs = [1,2,4,8,16]
+conf.bench.mpi_options = ""
 conf.bench.nreps = 5
 conf.bench.runargs = {1 => '',2 => '',4 => '',8 => '',16 => ''}
 conf.bench.brutus.exec = """

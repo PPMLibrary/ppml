@@ -168,6 +168,11 @@ class BenchmarkGroup < Thor::Group
     @ctrl = conf.bench.ctrl
     FileUtils.copy @ctrl, "bench/"
     @nprocs = conf.bench.nprocs
+    if conf.bench.mpi_options.nil?
+      @mpi_opts = ''
+    else
+      @mpi_opts = conf.bench.mpi_options
+    end
     if conf.bench.runargs.nil?
       @runargs = {}
       @nprocs.each { |p| @runargs[p] = '' }
