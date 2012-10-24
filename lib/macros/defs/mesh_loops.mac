@@ -68,12 +68,12 @@ do while (associated(sbpitr))
 %   ft.transform! bodies.south, bodies.north, bodies.bottom, bodies.top, bodies.valid_nodes
 % end
 %
-% unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil?
+% unless bodies.interior.nil? && bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil?
 !boundaries of the array on which the full symmetric stencil can be applied
     stnclint(1) = MAX(1,               1-sbpitr%ghostsize(1) + <%= st_i %>)
     stnclint(2) = MIN(sbpitr%nnodes(1),sbpitr%nnodes(1)+sbpitr%ghostsize(2) - <%= st_i %>)
     stnclint(3) = MAX(1,               1-sbpitr%ghostsize(3) + <%= st_j %>)
-    stnclint(4) = MIN(sbpitr%nnodes(2),sbpitr%nnodes(2)+sbpitr%ghostsize(5) - <%= st_j %>)
+    stnclint(4) = MIN(sbpitr%nnodes(2),sbpitr%nnodes(2)+sbpitr%ghostsize(4) - <%= st_j %>)
 %  unless st_k.nil?
     stnclint(5) = MAX(1,               1-sbpitr%ghostsize(5) + <%= st_k %>)
     stnclint(6) = MIN(sbpitr%nnodes(3),sbpitr%nnodes(3)+sbpitr%ghostsize(6) - <%= st_k %>)
