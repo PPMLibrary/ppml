@@ -24,12 +24,29 @@ module CG
     #
     # @param target [String] target string
     def do_transform target
-      target.gsub /#{@pattern}/ do
-        |match|
-        sub = ""
+      target.gsub /#{@pattern}/ do |match|
         if @splat or @max > 0
           args = Transform.arg_split $~[:args]
-          @replacement.each do
+        end
+        injects = Transform.injects_split $~[:injects].to_s
+        # create replacement string with injects inserted
+        repl = @replacement.map do |r|
+          if r.is_a? String
+            r.gsub /(#\d+)/ do |m|
+              idx = m[1..-1].to_i
+              if idx <= injects.length
+                injects[idx-1]
+              else
+                ""
+              end
+            end
+          else
+            r
+          end
+        end
+        sub = ""
+        if @splat or @max > 0
+          repl.each do
             |piece|
             if piece.is_a? Integer
               sub = sub + args[piece-1]
@@ -40,7 +57,7 @@ module CG
             end
           end
         else
-          sub = @replacement.join ''
+          sub = repl.join ''
         end
         sub
       end
@@ -102,6 +119,16 @@ module CG
       end
       args
     end
+   
+    # similar to the above but also allows empty elements in comma separated
+    # list
+    def self.injects_split str
+      injs = []
+      str.scan /".*?(?<!\\)"|[^,]*/ do |inj|
+        injs << inj
+      end
+      injs  
+    end
 
     # Creates a propper regexp from pattern by making sure to
     # avoid substrings and optinally to capture arg lists.
@@ -109,11 +136,13 @@ module CG
     # @param pattern [String] the search pattern
     def pattern_to_regexp pattern
       regexp = "(?<![a-zA-Z_0-9])" + pattern + "(?![a-zA-Z_0-9])"
+      regexp << "(\\[(?<injects>([-+]?\\d+)?(,([-+]?\\d+)?)*)\\])?"
       if @splat or @max > 0
         regexp << "\\((?<args>.*?)\\)"
       end
       regexp
     end
+
   end
 
   class MultiTransform

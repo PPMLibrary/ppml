@@ -44,10 +44,10 @@ do while (associated(sbpitr))
 % if k.nil?
 %   if f[2] == :sca
 %     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i,j)"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2)"
 %   else
 %     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i,j)"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2)"
 %   end
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
     or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
@@ -55,10 +55,10 @@ do while (associated(sbpitr))
 % else
 %   if f[2] == :sca
 %     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i,j,k)"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2,k #3)"
 %   else
 %     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:,:), pointer", "=> null()"
-%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i,j,k)"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2,k #3)"
 %   end
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
     or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)

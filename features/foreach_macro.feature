@@ -211,6 +211,50 @@ Feature: Foreach Macros
     end do
 
     """
+  Scenario: injecting offsets
+    Given a foreach macro named "mesh" with argument list (m)
+    And body
+    """
+    modifier indices(i=i,j=j,k=k)
+    modifier fields(*fs)
+    patch_iterator = <%= m %>%subpatch%begin()
+    do while (associated(patch_iterator))
+    % fs.each do |f|
+      call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
+    %   body.transform! "#{f}_#{iter}", "#{f}_data(#{i} #1,#{j} #2,$1)"
+    % end
+      do <%= i %> = 1, patch_iterator%nnodes(1)
+        do <%= j %> = 1, patch_iterator%nnodes(2)
+    <%= body.indent 6 -%>
+        end do
+      end do
+      patch_iterator => <%= m %>%subpatch%next()
+    end do
+
+    """
+    When I preprocess
+    """
+    foreach n in mesh(M) with fields(f1,f2,f3)
+      f1_n(1) = f2_n[+1,](1) + f2_n[,-1](1)
+    end foreach
+
+    """
+    Then it should expand into
+    """
+    patch_iterator = M%subpatch%begin()
+    do while (associated(patch_iterator))
+      call patch_iterator%get_field(f1_data, f1, info)
+      call patch_iterator%get_field(f2_data, f2, info)
+      call patch_iterator%get_field(f3_data, f3, info)
+      do i = 1, patch_iterator%nnodes(1)
+        do j = 1, patch_iterator%nnodes(2)
+          f1_data(i ,j ,1) = f2_data(i +1,j ,1) + f2_data(i ,j -1,1)
+        end do
+      end do
+      patch_iterator => M%subpatch%next()
+    end do
+
+    """
 
   Scenario: multiple bodies
     Given a foreach macro named "mesh" with argument list (m)
