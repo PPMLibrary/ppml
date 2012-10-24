@@ -133,6 +133,16 @@ ERRMSG
       # create items  of [[def_change, def_disc], result_type]
       defn.zip(call).each_with_index do |dc, i|
         res_disc, type = dc
+        # for the special case that the type is ppm_t_particles_s (or _d)
+        # we should actually replace it by ppm_t_part_prop_s (or _d).
+        # This is what the ODE module expects. We only need to check type[0],
+        # since type[1] does not contain particle types
+        # Maybe it would be better to do this elsewhere? It's quite ugly here!
+        if type[0] == :ppm_t_particles_s
+          type[0] = "ppm_t_part_prop_s"
+        elsif type[0] == :ppm_t_particles_d
+          type[0] = "ppm_t_part_prop_d"
+        end
         var res_disc[0].to_sym, "class(#{type[0]}), pointer :: #{res_disc[0]}"
         add "change => changes%at(#{i+1})"
         add "select type(change)"
