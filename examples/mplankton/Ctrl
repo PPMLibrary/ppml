@@ -1,0 +1,74 @@
+#-------------------------------------------------------------------------------
+#  Sample control file for ppm_client
+#
+#  Edit the settings below
+#
+#-------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+#  General Options
+#              Dcp: Diffusion constant of P
+#                   0.000000000000000E+000 <= {value} 
+#              Dcz: Diffusion constant of Z
+#                   0.000000000000000E+000 <= {value} 
+#-------------------------------------------------------------------------------
+Dcp_param = 1E-7
+Dcz_param = 1E-7
+
+#-------------------------------------------------------------------------------
+#  Domain Parameters
+#         min_phys: lower domain boundary
+#         max_phys: upper domain boundary
+#  domain_decompos: Domain decomposition, one of:
+#                    * 1 - tree
+#                    * 2 - pruned cell
+#                    * 3 - bisection
+#                    * 4 - x pencil
+#                    * 5 - y pencil
+#                    * 6 - z pencil
+#                    * 7 - cuboid
+#                    * 8 - user defined
+#                    * 10 - xy slab
+#                    * 11 - xz slab
+#                    * 12 - yz slab
+#                    * 13 - cartesian
+#                   1 <= {value} <= 13 
+#  processor_assig: Processor assignment, one of:
+#                    * 1 - internal
+#                   metis:
+#                      * 2 - nodal cut
+#                      * 3 - nodal comm
+#                      * 4 - dual cut
+#                      * 5 - dual comm
+#                    * 6 - user defined
+#                   1 <= {value} <= 6 
+#       ghost_size: Ghost layer width
+#                   0.000000000000000E+000 <= {value} 
+#            Npart: Global number of particles
+#-------------------------------------------------------------------------------
+            #min_phys =   0.000000000000000,      0.000000000000000 
+            min_phys =   -6.283185307179586,      -6.283185307179586 
+            #max_phys =   6.283185307179586,      6.283185307179586 
+            max_phys =   12.566370614359172,      12.566370614359172 
+domain_decomposition = 7
+processor_assignment = 1
+          ghost_size = 0.6000000000000
+                  nm = 33,33
+#-------------------------------------------------------------------------------
+#  ODE Parameters
+#        ODEscheme: ODE integrator
+#-------------------------------------------------------------------------------
+ODEscheme = 4
+
+#-------------------------------------------------------------------------------
+#  Time Parameters
+#       start_time: Start time
+#                   0.000000000000000E+000 <= {value} 
+#        time_step: Time step
+#                   0.000000000000000E+000 <= {value} 
+#        stop_time: End time
+#                   0.000000000000000E+000 <= {value} 
+#-------------------------------------------------------------------------------
+start_time = 0.000000000
+time_step = 0.00000020000
+stop_time = 0.00020000000
