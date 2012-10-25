@@ -1,4 +1,4 @@
-macro create_particles(topology, npart=nil, prec=mk, ghost_size=nil, distrib=ppm_param_part_init_cartesian)
+macro create_particles(topology=nil, npart=nil, prec=mk, ghost_size=nil, min=nil, max=nil, distrib=ppm_param_part_init_cartesian)
 % if prec == "mk"
 %   prec = conf.ppm.prec
 % end
@@ -9,6 +9,9 @@ macro create_particles(topology, npart=nil, prec=mk, ghost_size=nil, distrib=ppm
 %   scope.raw_var({result.to_sym => "type(ppm_t_particles_d), pointer :: #{result}"},
 %                 :ppm_t_particles_d)
 % end
+% if topology.nil? and (min.nil? or max.nil?)
+%   raise "Error, either a topology or the extents must be given"
+% end
 % np = npart
 % if npart.nil?
 %   scope.arg name: :Npart, type: "integer", default: "10000", ctrl_name: "'Npart'", long_flag: "'npart'", help: "'Global number of particles'"
@@ -17,5 +20,5 @@ macro create_particles(topology, npart=nil, prec=mk, ghost_size=nil, distrib=ppm
 % scope.raw_var({info: "integer :: info"})
 allocate(<%= result %>,stat=info)
 or_fail_alloc("Could not allocate <%= result %>")
-call <%= result %>%initialize(<%= "#{np}" %>, info, topoid=<%= topology %>, distrib=<%= distrib %><%= ", cutoff=#{ghost_size}" unless ghost_size.nil?%>)
+call <%= result %>%initialize(<%= "#{np}" %>, info<%= ", topoid=#{topology}" unless topology.nil? %>, distrib=<%= distrib %><%= ", cutoff=#{ghost_size}" unless ghost_size.nil?%><%= ", minphys=(/#{min.join(',')}/)" unless min.nil?%><%= ", maxphys=(/#{max.join(',')}/)" unless max.nil?%>)
 end macro
