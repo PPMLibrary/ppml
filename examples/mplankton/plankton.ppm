@@ -98,14 +98,14 @@ rhs plankton_rhs(P=>parts,Z,s,adv)
   ! interpolate to mesh
   call parts%interp_to_mesh_all(mesh,ppm_param_rmsh_kernel_mp4,info)
   
-  call mesh%map_ghost_get(info)
-  call P%map_ghost_push(mesh,info)
-  call Z%map_ghost_push(mesh,info)
-  call s%map_ghost_push(mesh,info)
-  call mesh%map_send(info)
-  call s%map_ghost_pop(mesh,info)
-  call Z%map_ghost_pop(mesh,info)
-  call P%map_ghost_pop(mesh,info)
+  !call mesh%map_ghost_get(info)
+  !call P%map_ghost_push(mesh,info)
+  !call Z%map_ghost_push(mesh,info)
+  !call s%map_ghost_push(mesh,info)
+  !call mesh%map_send(info)
+  !call s%map_ghost_pop(mesh,info)
+  !call Z%map_ghost_pop(mesh,info)
+  !call P%map_ghost_pop(mesh,info)
 
   ! calculate derivatives on mesh
   h2 = product(mesh%h) ! is that correct?

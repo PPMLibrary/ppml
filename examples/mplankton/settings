@@ -2,7 +2,7 @@
 # basic settings
 conf.project_name = "plankton"
 conf.binary = "plankton"
-conf.build.optflags = "-g -traceback -check all -O3"
+conf.build.optflags = "-O3"
 conf.ppm.base_path = "/cluster/home/infk/oawile/ppm/libppm"
 conf.ppm.numerics.base_path = "/cluster/home/infk/oawile/ppm/libppmnumerics"
 
