@@ -2,7 +2,6 @@ client plankton
   use ppm_module_topo_get
   integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
   integer, dimension(2) :: seed
-  real(mk), parameter   :: pi = acos(-1.0_mk) 
   real(mk), dimension(:,:), pointer :: displace
   integer               :: istage = 1
   integer               :: interval
@@ -10,8 +9,10 @@ client plankton
   ! mesh stuff 
   real(mk), dimension(2), parameter :: offset = (/0.0_mk, 0.0_mk/)
   integer, dimension(2)   :: gl = (/1,1/)
-  real(mk), dimension(2), parameter :: h = (/0.1_mk, 0.1_mk/)
+  real(mk), dimension(2), parameter :: h = (/0.01_mk, 0.01_mk/)
+  real(mk)               :: maxdx,mindx
   
+  global_parameter(pi,<#real(mk)#>,<#acos(-1.0_mk)#>)
   global_parameter(a,<#real(mk)#>,1.0_mk)
   global_parameter(b,<#real(mk)#>,2.5_mk)
   global_parameter(gam,<#real(mk)#>,1.5_mk)
@@ -20,6 +21,8 @@ client plankton
   global_parameter(psi0,<#real(mk)#>,0.1_mk)
   global_parameter(k,<#real(mk)#>,1.5_mk)
   global_var(np_global,<#integer#>,0)
+  global_var(p_vol,<#real(mk)#>,0.0_mk)
+  global_var(step,<#integer#>,0)
   global_var(mesh,<#type(ppm_t_equi_mesh), pointer#>,<#null()#>)
 
 
@@ -29,9 +32,10 @@ client plankton
   add_arg(nm,<#integer, dimension(2)#>,<#(/33,33/)#>,ctrl_name='nm',help_txt='Grid dimensions')
 
   ppm_init(0)
-
+  print *,Dcp,Dcz
   P = create_field(1, "P")
   Z = create_field(1, "Z")
+  vol = create_field(1, "volume")
   
   s = create_field(1, "stream")
   adv = create_field(2, "advection")
@@ -39,40 +43,47 @@ client plankton
   topo = create_topology(bcdef)
 
   create_mesh(topo,offset,h=h,ghost_size=gl,mesh=mesh)
-  add_patch(mesh,[<#-1.0_mk*pi#>,<#-1.0_mk*pi#>,<#3.0_mk*pi#>,<#3.0_mk*pi#>])
+  add_patch(mesh,[<#-1.0_mk#>,<#-1.0_mk#>,<#3.0_mk#>,<#3.0_mk#>])
 
-  np_global = ((2.0_mk*pi)/h(1))**2 !product(mesh%nm(1:2)-1)
-  print *,np_global
+  np_global = ((2.0_mk)/h(1))**2 !product(mesh%nm(1:2)-1)
+  p_vol = h(1)*h(2) !((max_phys(1)-min_phys(1))*(max_phys(2)-min_phys(2)))/np_global
+  print *,np_global,p_vol
   
   ! create particles
-  parts = create_particles(npart=np_global,min=[0.0_mk,0.0_mk],max=[<#2.0_mk*pi#>,<#2.0_mk*pi#>])
+  parts = create_particles(npart=np_global,min=[0.0_mk,0.0_mk],max=[<#2.0_mk#>,<#2.0_mk#>])
   
   global_mapping(parts, topo)
 
+  call parts%remesh(mesh,ppm_param_rmsh_kernel_mp4,info)
+
   discretize(P,parts)
   discretize(Z,parts)
+  discretize(vol,parts)
   discretize(s,parts)
   discretize(adv,parts)
 
 
-  foreach p in particles(parts) with positions(x) sca_fields(P,Z)
+  foreach p in particles(parts) with positions(x) sca_fields(P,Z,vol)
+    vol_p = p_vol 
     P_p = 1.0_mk
     Z_p = 0.0_mk 
-    if ((x_p(1).gt.(7.0_mk/10.0_mk)*pi).and.(x_p(1).lt.(13.0_mk/10.0_mk)*pi).and.&
-    &   (x_p(2).gt.(5.0_mk/6.0_mk)*pi).and.(x_p(2).lt.(7.0_mk/6.0_mk)*pi)) then
+    if ((x_p(1).gt.(7.0_mk/10.0_mk)).and.(x_p(1).lt.(13.0_mk/10.0_mk)).and.&
+    &   (x_p(2).gt.(5.0_mk/6.0_mk)).and.(x_p(2).lt.(7.0_mk/6.0_mk))) then
       Z_p = 0.1_mk
     end if
   end foreach
   ghost_mapping(parts)
   
 
-  o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,s,adv], rk4)
+  o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,vol,s,adv], eulerf)
   !interval = int(stop_time/time_step)/1000
-  
+  print([P=>parts, Z=>parts],1 )
+  step = step + 1 
   !print([P=>parts, Z=>parts],1 )
   t = timeloop()
     do istage=1,nstages
       ode_step(o, t, time_step, istage)
+      
       call parts%apply_bc(info) ! since we've moved the particles
       partial_mapping(parts) 
       !stop
@@ -84,15 +95,19 @@ client plankton
   ppm_finalize()
 end client
 
-rhs plankton_rhs(P=>parts,Z,s,adv)
+rhs plankton_rhs(P=>parts,Z,vol,s,adv)
   real(mk)               :: h2
+  real(mk)               :: maxdp,maxp,maxdz,maxz,maxv
   get_fields(dx,dP,dZ)
 
   set_type(parts,ppm_t_particles_d)
 
   ! calculate stream funciton based on current particle positions
-  foreach p in particles(parts) with positions(x) sca_fields(s)
-    s_p = psi0*sin(k*x_p(1))*sin(k*x_p(2))
+  foreach p in particles(parts) with positions(x) sca_fields(s,P,Z,vol)
+    vol_p = p_vol
+    s_p = psi0*sin(pi*k*x_p(1))*sin(pi*k*x_p(2))*vol_p
+    P_p = P_p*vol_p
+    Z_p = Z_p*vol_p
   end foreach
 
   ! interpolate to mesh
@@ -117,10 +132,10 @@ rhs plankton_rhs(P=>parts,Z,s,adv)
   end foreach
 
   ! caluclate advection displacement
-  foreach n in equi_mesh(mesh) with sca_fields(s) vec_fields(dx=adv) indices(i,j) stencil_width(1,1)
+  foreach n in equi_mesh(mesh) with sca_fields(s) vec_fields(adv) indices(i,j) stencil_width(1,1)
     for interior
-      dx_n(1) = (s_n[,+1] - s_n[,-1])/-mesh%h(2)
-      dx_n(2) = (s_n[+1,] - s_n[-1,])/-mesh%h(1)
+      adv_n(1) = (s_n[,+1] - s_n[,-1])/(-2.0_mk*mesh%h(2))
+      adv_n(2) = (s_n[+1,] - s_n[-1,])/(2.0_mk*mesh%h(1))
   end foreach
 
   ! recreate particles from mesh
@@ -128,16 +143,44 @@ rhs plankton_rhs(P=>parts,Z,s,adv)
   
   call parts%apply_bc(info)
   partial_mapping(parts)
+  foreach p in particles(parts) with sca_fields(P,dP,Z,dZ,vol) vec_fields(adv)
+    P_p = P_p/vol_p
+    dP_p = dP_p/vol_p
+    Z_p = Z_p/vol_p
+    dZ_p = dZ_p/vol_p
+    adv_p(:) = adv_p(:)/vol_p
+  end foreach
 
-  print([P=>parts, Z=>parts],40 )
-  print *,parts%npart
+  print([P=>parts, Z=>parts],1 )
+  print *,step
 
+  maxp = 0.0_mk
+  maxz = 0.0_mk
   ! reaction terms on particles
-  foreach p in particles(parts) with sca_fields(P,Z,dP,dZ) vec_fields(dx,adv)
+  foreach p in particles(parts) with positions(x) sca_fields(P,Z,dP,dZ) vec_fields(dx,adv)
+    !maxp = max(maxp,dP_p)
+    !maxz = max(maxz,dZ_p)
     dP_p = Dcp*dP_p + P_p*(1 - P_p) - a*Z_p*(1 - exp(-lambda1*P_p))
+    !print *,P_p,Z_p,exp(-lambda1*P_p),dP_p
+    !print *,x_p(:)
     dZ_p = Dcz*dZ_p - gam*Z_p + b*Z_p*(1 - exp(-lambda2*P_p))
     dx_p(:) = adv_p(:)
   end foreach
-  
+  !print *,maxp,maxz
+  !maxdp = 0.0_mk
+  !maxp = 0.0_mk
+  !maxdz = 0.0_mk
+  !maxz = 0.0_mk
+  !maxv = 0.0_mk
+  !foreach p in particles(parts) with sca_fields(P,Z,dP,dZ,vol) 
+  !  maxdp = min(maxdp,dP_p)
+  !  maxp = max(maxp,P_p)
+  !  maxdz = max(maxdz,dZ_p)
+  !  maxz = max(maxz,Z_p)
+  !  maxv = max(maxv,vol_p)
+  !end foreach
+  !print *,maxdp,maxp,maxdz,maxz,maxv
+
+  step = step + 1 
  
 end rhs
