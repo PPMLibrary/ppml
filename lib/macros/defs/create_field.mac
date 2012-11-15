@@ -18,6 +18,6 @@ macro create_property(pset,ndim,name,prec=mk,zero=false,type=nil)
 % end
 % scope.raw_var ({ :info => "integer :: info" })
 
-call <%= pset %>%create_prop(info <%= ", #{type} " if !type.nil?%>,name='<%= name %>',lda=<%= ndim %>,part_prop=<%= result %>,zero=.<%= zero %>.)
+call <%= pset %>%create_prop(info <%= ", dtype=#{type} " if !type.nil?%>,name='<%= name %>',lda=<%= ndim %>,part_prop=<%= result %>,zero=.<%= zero %>.)
 or_fail("Create property failed!")
 end macro
