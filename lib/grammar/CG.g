@@ -36,6 +36,7 @@ TIMELOOP;
 TEMPLATE;
 VLIST;
 VPAIR;
+BIND;
 }
 
 @header {
@@ -146,10 +147,10 @@ scope_start
     |              kind=CLIENT_T     name=ID_T           NEWLINE_T { @context << :client     }
     |              kind=MODULE_T     name=ID_T           NEWLINE_T { @context << :module     }
     | ABSTRACT_T?  kind=INTERFACE_T  name=ID_T?          NEWLINE_T { @context << :interface  }
-    | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T  arglist? NEWLINE_T { @context << :subroutine }
+    | RECURSIVE_T? kind=SUBROUTINE_T name=ID_T  arglist? bind? NEWLINE_T { @context << :subroutine }
     | (ID_T (LEFT_PAREN_T (ID_T | NUMBER_T) RIGHT_PAREN_T)?)?
                    kind=FUNCTION_T   name=ID_T  arglist?
-            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)?  NEWLINE_T { @context << :function }
+            (RESULT_T LEFT_PAREN_T ID_T RIGHT_PAREN_T)? bind?  NEWLINE_T { @context << :function }
     ) -> ^(SCOPE_START TEXT[$kind.text] $name? TEXT[$scope_start.start,$scope_start.text])
     ;
 
@@ -352,6 +353,11 @@ imacro
       -> ^(IMACRO $name $args)
     ;
 
+bind
+   : BIND_T LEFT_PAREN_T allowed* RIGHT_PAREN_T
+//      -> ^(BIND TEXT[$bind.start,$bind.text])
+    ;
+
 arglist
     : LEFT_PAREN_T
        ( (args+=value | args+=value_list | names+=ID_T EQUALS_T 
@@ -444,6 +450,7 @@ MINCLUDE_T      : 'MINCLUDE'      | 'minclude'      ;
 ABSTRACT_T      : 'ABSTRACT'      | 'abstract'      ;
 GENERIC_T       : 'GENERIC'       | 'generic'       ;
 IMPORT_T        : 'IMPORT'        | 'import'        ;
+BIND_T          : 'BIND'          | 'bind'          ;
 // DEFAULT_T       : 'DEFAULT'       | 'default'       ;
 
 DOT_T
