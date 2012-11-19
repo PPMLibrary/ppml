@@ -5,6 +5,7 @@ macro add_arg(name,type,default=nil,min=nil,ctrl_name=nil,help_txt=nil)
 % args[:default] = default unless default.nil?
 % args[:min] = min unless min.nil?
 % args[:ctrl_name] = "#{ctrl_name}" unless ctrl_name.nil?
+% args[:long_flag] = "#{ctrl_name}" unless ctrl_name.nil?
 % args[:help] = "#{help_txt}" unless help_txt.nil?
 % scope.arg args
 end macro

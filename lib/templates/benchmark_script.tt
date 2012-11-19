@@ -6,7 +6,7 @@ cd proc_<%= "%06d" % (p) %>
 <%   (1..@nreps).each do |r| %>
 mkdir run<%= "%03d" % (r) %>
 cd run<%= "%03d" % (r) %>
-mpirun -np <%= p %> ../../<%= @client %> ../../<%= @ctrl %> <%= @runargs[p] %>
+mpirun -np <%= p %> <%= @mpi_opts %> ../../<%= @client %> ../../<%= @ctrl %> <%= @runargs[p] %>
 cd ..
 <%   end %>
 cd ..

@@ -12,9 +12,9 @@ PPMNUMDIR = <%= conf.ppm.numerics.base_path %>
 
 # Flags and settings, when you compile
 FC      = <%= conf.build.compiler %>
-LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis -llapack -lblas
-OPT     = <%= conf.ppm.build.fcflags %> <%= conf.build.optflags %>
-INCL    = -I$(PPMDIR)/include/ppm -I$(PPMNUMDIR)/include/ppm
+LDFLAGS = <%= conf.ppm.build.ldflags %> -L$(PPMDIR)/lib -L$(PPMNUMDIR)/lib -lppmnumerics -lppm -lmetis $(MKLROOT)/lib/intel64/libmkl_blas95_lp64.a  $(MKLROOT)/lib/intel64/libmkl_lapack95_lp64.a  -Wl,--start-group  $(MKLROOT)/lib/intel64/libmkl_intel_lp64.a $(MKLROOT)/lib/intel64/libmkl_sequential.a $(MKLROOT)/lib/intel64/libmkl_core.a -Wl,--end-group -lpthread -lm
+OPT     = <%= conf.build.optflags %> -FR
+INCL    = -I$(PPMDIR)/include/ppm -I$(PPMNUMDIR)/include/ppm -I/cluster/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/include/intel64/lp64  -I/cluster/apps/intel/composer_xe_2011_sp1.8.273/composer_xe_2011_sp1.8.273/mkl/include
 
 ### Usually you should not change these variables below.
 

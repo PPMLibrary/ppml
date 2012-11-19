@@ -1,4 +1,7 @@
 client lj
+  
+  use ppm_module_util_hsort
+  
   integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
   real(mk), dimension(3) :: r_pq
   real(mk)               :: r_s_pq2
@@ -6,7 +9,9 @@ client lj
   real(mk)               :: scaldF
   real(mk)               :: cutoff
   real(mk)               :: E_prc
-  real(mk)               :: Ev_tot, Ep_tot, E_tot
+  real(mk)               :: Ev_tot = 0.0_mk
+  real(mk)               :: Ep_tot = 0.0_mk
+  real(mk)               :: E_tot = 0.0_mk
   real(mk)               :: Ev_tot_old, Ep_tot_old
   real(mk), dimension(3) :: energies,energies_reduced
   real(mk), dimension(:,:), pointer :: displace
@@ -16,15 +21,23 @@ client lj
   real(mk)               :: skin
   real(mk)               :: sigma6,sigma12
   class(ppm_t_part_prop_d_), pointer :: prop => null()
-  integer                :: iter_time, map_time, fcalc_time
+  integer                :: iter_time, map_time, fcalc_time,i
   real(mk)               :: time_diff
+  real(mk), dimension(:,:), pointer :: minsub => null()
+  real(mk), dimension(:,:), pointer :: maxsub => null()
+  integer, dimension(:), pointer    :: sub2proc => null() 
+  integer                           :: nsublist
+  type(ppm_t_particles_d), pointer :: parts
 
   add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
   add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
   add_arg(sigma,<#real(mk)#>,1.0_mk,0.0_mk,'sigma','distance of potential well')
   add_arg(dt,<#real(mk)#>,1.0_mk,0.0_mk,'delta_t','time step')
+  add_arg(npart_global,<#integer#>,1,1,ctrl_name='npart',help_txt='global number of particles')
+  add_arg(subs,<#integer,dimension(3)#>,<#(/1,1,1/)#>,ctrl_name='subs',help_txt='number of subdomains in each direction')
+  add_arg(pernode,<#integer,dimension(3)#>,<#(/1,1,1/)#>,ctrl_name='pernode',help_txt='number of subdomains in each direction')
 
-  ppm_init()
+  ppm_init(0)
  
   sigma6 = sigma**6
   sigma12 = sigma**12
@@ -35,9 +48,34 @@ client lj
   if (ppm_rank.eq.0) then
     print *,'ghostlayer:',cutoff+skin
   endif
+  ! creating a decomposition and assignment
+  ! specifically for the benchmarks
+  ! ---------------------------------------
 
-  topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
-  parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
+  if (nproc.ge.4) then
+  call mk_cart_topo(min_phys,max_phys,subs,pernode,minsub,maxsub,&
+  &                 nsublist,sub2proc,info)
+
+    topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>,decomp=ppm_param_decomp_user_defined,assign=ppm_param_assign_user_defined,minsl=minsub,maxsl=maxsub,nsl=nsublist,s2p=sub2proc)
+
+
+  else
+    ! the boring case
+    topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
+  endif
+
+ 
+  !parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
+
+  call init_parts(topo,npart_global,cutoff+skin,parts)
+
+  !print *,'---'
+  !do i=1,parts%npart
+  !  print *,parts%xp(:,i)
+  !enddo
+  !print *,'---'
+
+
   !allocate(displace(ppm_dim,parts%Npart))
   !call random_number(displace)
   !displace = (displace - 0.5_mk) * parts%h_avg * 1.0E-6_mk
@@ -45,6 +83,9 @@ client lj
   call parts%apply_bc(info)
 
   global_mapping(parts, topo)
+  
+  ! Sorting the particles according to a Hilbert curve
+  call ppm_hsort(parts,info)
 
   v = create_property(parts, ppm_dim, "velocity",zero=true)
   a = create_property(parts, ppm_dim, "acceleration",zero=true)
@@ -52,8 +93,9 @@ client lj
   E = create_property(parts, 1, "energy",zero=true)
   dx = create_property(parts, ppm_dim, "displace",zero=true)
 
-  ghost_mapping(parts)
+  map_ghost_get(parts)
 
+  !stop
   !print *,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
   !print *,'eq dist:',sigma*2.0_mk**(1.0_mk/6.0_mk)
   nlist = create_neighlist(parts,cutoff=<#cutoff#>,skin=<#skin#>,sym=<#.false.#>)
@@ -61,7 +103,7 @@ client lj
   !E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
   E_prc =  4.0_mk*eps*((sigma/cutoff)**12 - (sigma/cutoff)**6)
       
-  call ppm_tstats_setup(2,info)
+  call ppm_tstats_setup(3,info)
   call ppm_tstats_add('iteration',iter_time,info)
   call ppm_tstats_add('mappings',map_time,info)
   call ppm_tstats_add('force calc.',fcalc_time,info)
@@ -88,27 +130,27 @@ client lj
       foreach p in particles(parts) with vec_props(dx) prec(ppm_kind_double)
         dx_p(:) = 0.0_mk
       end foreach
-      ghost_mapping(parts)
+      map_ghost_get(parts)
       ! this should recompute the neighlist
       comp_neighlist(parts)
     else
-      parts%flags(ppm_part_partial) = .true. ! hack
-      parts%flags(ppm_part_areinside) = .true.
-      parts%flags(ppm_part_ghosts) = .true.
-      prop => parts%props%begin()
-      do while (associated(prop))
-        prop%flags(ppm_ppt_partial) = .true.
-        prop => parts%props%next()
-      enddo
-      call parts%map_ghost_push_positions(info)
-      ghost_mapping(parts)
-      call parts%map_ghost_pop_positions(info)
+      map_ghost_get(parts,psp=true)
+      !parts%flags(ppm_part_partial) = .true. ! hack
+      !parts%flags(ppm_part_areinside) = .true.
+      !parts%flags(ppm_part_ghosts) = .true.
+      !prop => parts%props%begin()
+      !do while (associated(prop))
+      !  prop%flags(ppm_ppt_partial) = .true.
+      !  prop => parts%props%next()
+      !enddo
+      !call parts%map_ghost_push_positions(info)
+      !ghost_mapping(parts)
+      !call parts%map_ghost_pop_positions(info)
     end if
     call ppm_tstats_toc(map_time,st+1,time_diff,info) 
     
-    
     call ppm_tstats_tic(fcalc_time,st+1,info) 
-    foreach p in particles(parts) with positions(x) sca_props(E) vec_props(F) prec(ppm_kind_double)
+    foreach p in particles(parts) with positions(x) ghosts(true) sca_props(E) vec_props(F) prec(ppm_kind_double)
       foreach q in neighbors(p,nlist) with positions(x) prec(ppm_kind_double)
         r_pq(:) = x_p(:) - x_q(:)
         r_s_pq2 = r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2
@@ -156,5 +198,241 @@ client lj
   end timeloop
   call ppm_tstats_collect('time.dat',info)
   ppm_finalize()
+  
+  contains
+
+  subroutine init_parts(tid,npart_global,cutoff,parts)
+
+  use ppm_module_core
+  implicit none
+  integer, intent(in) :: tid
+  integer, intent(in) :: npart_global
+  type(ppm_t_particles_d), pointer :: parts
+  real(mk), intent(in) :: cutoff
+
+  real(mk), dimension(:,:), pointer :: xp
+  type(ppm_t_topo), pointer :: topo
+  integer :: i,j,k,ip,ni,nj,nk
+  integer :: isub,sub_idx
+  real(mk), dimension(ppm_dim) :: len_phys,len_sub
+  real(mk) :: h
+  real(mk) :: x,y,z
+  integer              :: npart
+
+  topo => ppm_topo(tid)%t
+
+  len_phys = max_phys - min_phys
+
+  h = (PRODUCT(len_phys)/REAL(npart_global))**(1.0_mk/real(ppm_dim))
+
+  npart = 0
+  do isub = 1,topo%nsublist
+    sub_idx = topo%isublist(isub)
+    len_sub = topo%max_subd(:,sub_idx) - topo%min_subd(:,sub_idx)
+    ni = nint(len_sub(1)/h)
+    nj = nint(len_sub(2)/h)
+    nk = nint(len_sub(3)/h)
+    npart = npart + ni*nj*nk 
+  enddo
+  allocate(parts,stat=info)
+ 
+  call parts%create(npart,info)
+  parts%active_topoid = tid
+  call parts%get_xp(xp,info)
+  parts%ghostlayer = cutoff
+  parts%flags(ppm_part_cartesian) = .true.
+  parts%flags(ppm_part_areinside) = .true.
+  xp => parts%xp
+
+  ip = 0
+  do isub = 1,topo%nsublist
+    sub_idx = topo%isublist(isub)
+    len_sub = topo%max_subd(:,sub_idx) - topo%min_subd(:,sub_idx)
+    ni = nint(len_sub(1)/h)
+    nj = nint(len_sub(2)/h)
+    nk = nint(len_sub(3)/h)
+    do k=1,nk
+      h = len_sub(3)/REAL(nk,MK)
+      z = topo%min_subd(3,sub_idx) + h*(k-1)
+      do j=1,nj
+        h = len_sub(2)/REAL(nj,MK)
+        y = topo%min_subd(2,sub_idx) + h*(j-1)
+        do i=1,ni
+          h = len_sub(1)/REAL(ni,MK)
+          x = topo%min_subd(1,sub_idx) + h*(i-1)
+          ip = ip + 1
+          xp(1,ip) = x
+          xp(2,ip) = y
+          xp(3,ip) = z
+        enddo
+      enddo
+    enddo
+  enddo
+
+  if (ip.ne.npart) print *,rank,'ip != npart',ip,npart
+
+  parts%h_avg = (PRODUCT(len_phys)/REAL(npart_global))**(1./REAL(ppm_dim))
+  call parts%set_xp(xp,info)
+
+  end subroutine
+
+
+  subroutine mk_cart_topo(min_phys,max_phys,subs,pernode,minsub,maxsub,&
+                          nsublist,sub2proc,info)
+  implicit none 
+  include 'mpif.h'
+  integer, parameter :: mk = 8 ! precision
+ 
+  ! input arguments
+  integer, dimension(3), intent(in) :: pernode
+  integer, dimension(3) ,intent(in):: subs
+  real(mk), dimension(3),intent(in) :: min_phys,max_phys
+  
+  ! output arguments 
+  real(mk), dimension(:,:), pointer :: minsub => null()
+  real(mk), dimension(:,:), pointer :: maxsub => null()
+  integer, dimension(:), pointer    :: sub2proc => null() 
+  integer              ,intent(out) :: nsublist
+  integer              ,intent(out) :: info
+ 
+  ! variables
+  integer :: nproc,comm,rank
+  integer :: slen
+  integer :: i,j,k,l,idx,ii,jj,kk,m,n
+  integer :: nnodes
+  character*(MPI_MAX_PROCESSOR_NAME) :: host
+  character*(MPI_MAX_PROCESSOR_NAME), dimension(:), pointer :: allhosts => null()
+  integer, dimension(:,:), pointer :: hostonnode => null()
+  integer, dimension(:,:,:), pointer :: cart2sub => null()
+  real(mk) :: subx,suby,subz
+
+
+  ! subdomains must be all square and the domain decomposition should
+  ! produce a n x m cartesian decomposition
+  ! the user has to provide subsn and subsm --> subs(1),subs(2)
+  ! subsn*subsm should be equal to nproc and 
+  !   maxphysx-minphysx ~ subsn
+  !   maxphysy-minphysy ~ subsm
+  !   maxphysz-minphysz ~ subso
+  subx = (max_phys(1)-min_phys(1))/subs(1)
+  suby = (max_phys(2)-min_phys(2))/subs(2)
+  subz = (max_phys(3)-min_phys(3))/subs(3)
+  allocate(minsub(3,product(subs)),maxsub(3,product(subs)),&
+  &        cart2sub(subs(1),subs(2),subs(3)),stat=info)
+  nsublist = product(subs)
+  do k=1,subs(3) ! <-- z direction of domain
+    do j=1,subs(2) ! <-- y direction of domain
+      do i=1,subs(1) ! <-- x direction of domain
+        minsub(1,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = (i-1)*subx
+        minsub(2,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = (j-1)*suby
+        minsub(3,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = (k-1)*subz
+        maxsub(1,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = i*subx
+        maxsub(2,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = j*suby
+        maxsub(3,(k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i) = k*subz
+        cart2sub(i,j,k) = (k-1)*subs(1)*subs(2)+(j-1)*subs(1)+i
+      enddo
+    enddo
+  enddo
+
+  ! sub to proc assignment:
+  ! since each proc has exactly one sub and we are using a cartesian
+  ! decomp we should try to put subs that are geometrically close also
+  ! on procs that are close
+  
+  comm = MPI_COMM_WORLD
+  
+  call MPI_Comm_Size(comm, nproc, info)
+  call MPI_Comm_Rank(comm, rank, info)
+
+  nnodes = nproc / product(pernode)
+  
+  ! ask mpi about this ranks hostname
+  call MPI_Get_processor_name(host,slen,info)
+
+  print *,rank,host(1:slen)
+
+  allocate(allhosts(nproc),stat=info)
+  ! get the hostnames from all ranks
+  call MPI_Gather(host,MPI_MAX_PROCESSOR_NAME,MPI_CHARACTER,&
+  &               allhosts,MPI_MAX_PROCESSOR_NAME,MPI_CHARACTER,0,comm,info)
+ 
+  allocate(sub2proc(nsublist),stat=info) 
+  ! do the assignment on rank0
+  if (rank.eq.0) then 
+    !do i=1,nproc
+    !  print*,allhosts(i)(1:slen)
+    !enddo
+    allocate(hostonnode(product(pernode),nnodes))
+    call groupby(allhosts,nproc,product(pernode),hostonnode)
+    
+    print *,'------'
+    do i=1,nnodes
+      print *,i,'--',hostonnode(:,i)
+    enddo
+    do k = 1,subs(3)/pernode(3)
+      kk = (k-1)*pernode(3) + 1
+      do j = 1,subs(2)/pernode(2)
+        jj = (j-1)*pernode(2) + 1
+        do i = 1,subs(1)/pernode(1)
+          ii = (i-1)*pernode(1) + 1
+          do l = 0,pernode(3) - 1
+            do m = 0,pernode(2) - 1
+              do n = 0,pernode(1) - 1
+                idx = cart2sub(ii+n,jj+m,kk+l)
+                 sub2proc(idx) = hostonnode(&
+                 &               l*pernode(1)*pernode(2)+m*pernode(1)+(n+1), &
+                 &         (k-1)*((subs(1)/pernode(1))*(subs(2)/pernode(2)))+&
+                 &         (j-1)*(subs(1)/pernode(1))+i)
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+    enddo
+    print *,'------'
+    do i=1,nsublist
+      print *,i,sub2proc(i),minsub(:,i)
+    enddo
+  endif
+
+  ! now tell all ranks about the assignment
+  call MPI_Bcast(sub2proc, nsublist, MPI_INTEGER, 0, comm, info)
+  end subroutine
+
+  subroutine groupby(hosts,nhosts,npernode,grouped)
+  implicit none
+  include 'mpif.h'
+  character*(MPI_MAX_PROCESSOR_NAME), dimension(nhosts),intent(in) :: hosts
+  integer, intent(in) :: nhosts
+  integer, intent(in) :: npernode
+  integer, dimension(npernode,nhosts/npernode) :: grouped
+  integer :: i,hind,hi,ni
+  integer, dimension(nhosts) :: ranks
+
+  do i = 1,nhosts
+    ranks(i) = i - 1  
+  enddo
+  ni = 1
+  hind = 1
+  do while (hind <= nhosts)
+    if (ranks(hind) > -1) then
+      hi = 1
+      do i = hind, nhosts
+        if (hosts(i) == hosts(hind)) then
+          grouped(hi,ni) = ranks(i)
+          ranks(i) = -1
+          hi = hi + 1
+        endif
+      enddo
+      ni = ni + 1
+    endif
+    hind = hind + 1
+  enddo
+
+
+
+  end subroutine groupby
+  
+  
 end client
 

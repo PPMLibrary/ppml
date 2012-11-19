@@ -23,7 +23,7 @@ macro mapping_send(discretization)
 call <%= discretization %>%map_send(info)
 end macro
 
-macro mapping_push(discretization,rev_fields)
+macro mapping_pop(discretization,rev_fields)
 % scope.raw_var info: "integer :: info"
 % fields.each do |f|
 call <%= discretization %>%map_pop(info,<%= f %>)
@@ -31,7 +31,30 @@ call <%= discretization %>%map_pop(info,<%= f %>)
 call <%= discretization %>%map_pop_positions(info)
 end macro
 
-macro ghost_mapping(discretization)
+macro map_ghost_get(discretization,psp=nil)
+% # psp : push-send-pop
 % scope.raw_var info: "integer :: info"
+% if prec == "ppm_kind_single"
+%   scope.var :temp_prop,  "class(ppm_t_part_prop_s_), pointer", "=> null()"
+% else
+%   scope.var :temp_prop,  "class(ppm_t_part_prop_d_), pointer", "=> null()"
+% end
+% if psp.nil?
 call <%= discretization %>%map_ghosts(info)
+% else
+<%= discretization %>%flags(ppm_part_partial) = .true. ! hack
+<%= discretization %>%flags(ppm_part_areinside) = .true.
+<%= discretization %>%flags(ppm_part_ghosts) = .true.
+temp_prop => <%= discretization %>%props%begin()
+do while (associated(temp_prop))
+  temp_prop%flags(ppm_ppt_partial) = .true.
+  temp_prop => <%= discretization %>%props%next()
+enddo
+call <%= discretization %>%map_ghost_push_positions(info)
+call <%= discretization %>%map_ghosts(info)
+call <%= discretization %>%map_ghost_pop_positions(info)
+
+% end
 end macro
+
+

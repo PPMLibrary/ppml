@@ -3,8 +3,8 @@
 conf.project_name = "grayscott"
 conf.binary = "grayscott"
 conf.build.optflags = "-O3"
-conf.ppm.base_path = "/Users/omar/code/ppm/ppmcore/libppm"
-conf.ppm.numerics.base_path = "/Users/omar/code/ppm/ppmnumerics/libppmnumerics"
+conf.ppm.base_path = "/cluster/home/infk/oawile/ppm/libppm"
+conf.ppm.numerics.base_path = "/cluster/home/infk/oawile/ppm/libppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"
@@ -21,11 +21,14 @@ conf.out.basename = "output"
 
 # cluster execution and benchmarking
 conf.bench.target = "brutus"
-conf.bench.nprocs = [1,2,4,8,16]
-conf.bench.nreps = 5
-conf.bench.runargs = {1 => '',2 => '',4 => '',8 => '',16 => ''}
+conf.bench.ctrl = "Ctrl"
+conf.bench.mpi_options = '-npernode 8 -bind-to-socket'
+conf.bench.nprocs = [1,4,16,64,256]
+#conf.bench.nprocs = [4,16,64,256]
+conf.bench.nreps = 1
+conf.bench.runargs = {8 => 'max_phys 20,20 npart 8000000', 32 => 'max_phys 40,40 npart 32000000'}
 conf.bench.brutus.exec = """
-bsub -n <%= conf.bench.nprocs.max %> -W 01:00 -R \"select[model==Opteron8380]\" -R \"span[ptile=16]\" < job.sh
+bsub -n <%= conf.bench.nprocs.max*2 %> -W 01:00 -R \"select[model==Opteron8380]\" -R \"span[ptile=16]\" < job.sh
 """
 conf.bench.cbl1.exec = """
 qsub -n <%= conf.bench.nprocs.max %> job.pbs
