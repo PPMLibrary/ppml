@@ -61,7 +61,7 @@ client lj
   !E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
   E_prc =  4.0_mk*eps*((sigma/cutoff)**12 - (sigma/cutoff)**6)
       
-  call ppm_tstats_setup(2,info)
+  call ppm_tstats_setup(3,info)
   call ppm_tstats_add('iteration',iter_time,info)
   call ppm_tstats_add('mappings',map_time,info)
   call ppm_tstats_add('force calc.',fcalc_time,info)
