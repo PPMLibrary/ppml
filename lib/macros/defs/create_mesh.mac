@@ -1,6 +1,6 @@
 macro create_mesh(topology, offset, nm=nil, h=nil, ghost_size=nil, mesh=nil,  name=nil)
 % if mesh.nil?
-%   scope.raw_var({result.to_sym => "type(ppm_t_equi_mesh), pointer :: #{result}"},
+%   scope.raw_var({result.to_sym => "TYPE(ppm_t_equi_mesh), POINTER :: #{result}"},
 %                 :ppm_t_equi_mesh)
 % end
 % if (h.nil? and nm.nil?)
@@ -8,50 +8,50 @@ macro create_mesh(topology, offset, nm=nil, h=nil, ghost_size=nil, mesh=nil,  na
 % end
 or_fail_alloc("Could not allocate <%= result %>")
 % if mesh.nil?
-allocate(<%= result %>,stat=info)
-call <%= result %>%create(<%= topology %>,<%= offset %>,info<%= ", Nm=#{nm}" unless nm.nil?%><%= ", h=#{h}" unless h.nil?%><%= ", ghostsize=#{ghost_size}" unless ghost_size.nil?%><%+ ", name=#{name}" unless nmae.nil?%>)
+ALLOCATE(<%= result %>,STAT=info)
+CALL <%= result %>%create(<%= topology %>,<%= offset %>,info<%= ", Nm=#{nm}" unless nm.nil?%><%= ", h=#{h}" unless h.nil?%><%= ", ghostsize=#{ghost_size}" unless ghost_size.nil?%><%+ ", name=#{name}" unless nmae.nil?%>)
 % else
-allocate(<%= mesh %>,stat=info)
-call <%= mesh %>%create(<%= topology %>,<%= offset %>,info<%= ", Nm=#{nm}" unless nm.nil?%><%= ", h=#{h}" unless h.nil?%><%= ", ghostsize=#{ghost_size}" unless ghost_size.nil?%><%+ ", name=#{name}" unless nmae.nil?%>)
+ALLOCATE(<%= mesh %>,STAT=info)
+CALL <%= mesh %>%create(<%= topology %>,<%= offset %>,info<%= ", Nm=#{nm}" unless nm.nil?%><%= ", h=#{h}" unless h.nil?%><%= ", ghostsize=#{ghost_size}" unless ghost_size.nil?%><%+ ", name=#{name}" unless nmae.nil?%>)
 % end
 end macro
 
 macro add_patch(mesh,extent)
 % if conf.ppm.prec == "ppm_kind_single"
-%   scope.var :patch, "real(ppm_kind_single), dimension(2*#{conf.ppm.dim})"
+%   scope.var :patch, "REAL(ppm_kind_single), DIMENSION(2*#{conf.ppm.dim})"
 % else
-%   scope.var :patch, "real(ppm_kind_double), dimension(2*#{conf.ppm.dim})"
+%   scope.var :patch, "REAL(ppm_kind_double), DIMENSION(2*#{conf.ppm.dim})"
 % end
 patch(1:<%= conf.ppm.dim*2 %>) = (/<%= extent.join(',') %>/)
-call <%= mesh %>%def_patch(patch,info)
+CALL <%= mesh %>%def_patch(patch,info)
 end macro
 
 
 macro create_legacy_mesh(bcdef,pset=nil)
 % # this is a macro to create an old PPM mesh
 % # in the future this macro can be removed, but as long as the current
-% # mesh and particle implementations are still not completed we sue this
+% # mesh and particle implementations are still not completed we use this
 % # The macro creates the topology, gets the meshinfo and allocates the meshes
 % # This macro expects to return the topology and the meshid
-% scope.raw_var({result[0].to_sym => "integer :: #{result[0]} = 0"})
-% scope.raw_var({result[1].to_sym => "integer :: #{result[1]} = 0"})
-% scope.arg name: :ngrid, type: "integer, dimension(:), pointer", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ngrid'", help: "'grid size'", init: "allocate(ngrid(#{conf.ppm.dim}))"
-% scope.arg name: :ghost_size, type: "integer, dimension(:), pointer", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ghost_size'", help: "'ghost size'", init: "allocate(ghost_size(#{conf.ppm.dim}))"
-% scope.arg name: :min_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"
-% scope.arg name: :max_phys, type: "real(mk), dimension(:), pointer", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "allocate(max_phys(#{conf.ppm.dim}))"
-% scope.arg name: :domain_decomposition, type: "integer", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"
-% scope.arg name: :processor_assignment, type: "integer", default: "ppm_param_assign_internal", min: 1, max: 6, ctrl_name: "'processor_assignment'", help: "'Processor assignment, one of:\\n * 1 - internal\\nmetis:\\n   * 2 - nodal cut\\n   * 3 - nodal comm\\n   * 4 - dual cut\\n   * 5 - dual comm\\n * 6 - user defined'"
-% scope.var "xp".to_sym,  "real(#{conf.ppm.prec}), dimension(:,:), pointer", "=> null()"
-% scope.var "npart".to_sym,  "integer", "= 0"
-% scope.var "cost".to_sym,  "real(#{conf.ppm.prec}), dimension(:), pointer", "=> null()"
+% scope.raw_var({result[0].to_sym => "INTEGER :: #{result[0]} = 0"})
+% scope.raw_var({result[1].to_sym => "INTEGER :: #{result[1]} = 0"})
+% scope.arg name: :ngrid, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ngrid'", help: "'grid size'", init: "allocate(ngrid(#{conf.ppm.dim}))"
+% scope.arg name: :ghost_size, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ghost_size'", help: "'ghost size'", init: "allocate(ghost_size(#{conf.ppm.dim}))"
+% scope.arg name: :min_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"
+% scope.arg name: :max_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "allocate(max_phys(#{conf.ppm.dim}))"
+% scope.arg name: :domain_decomposition, type: "INTEGER", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"
+% scope.arg name: :processor_assignment, type: "INTEGER", default: "ppm_param_assign_internal", min: 1, max: 6, ctrl_name: "'processor_assignment'", help: "'Processor assignment, one of:\\n * 1 - internal\\nmetis:\\n   * 2 - nodal cut\\n   * 3 - nodal comm\\n   * 4 - dual cut\\n   * 5 - dual comm\\n * 6 - user defined'"
+% scope.var "xp".to_sym,  "REAL(#{conf.ppm.prec}), DIMENSION(:,:), POINTER", "=> NULL()"
+% scope.var "npart".to_sym,  "INTEGER", "= 0"
+% scope.var "cost".to_sym,  "REAL(#{conf.ppm.prec}), DIMENSION(:), POINTER", "=> NULL()"
 % if (!pset.nil?)
-call <%= pset %>%get_xp(xp,info)
+CALL <%= pset %>%get_xp(xp,info)
 or_fail("getting positions <%= "#{pset}" %>")
 npart = <%= pset %>%Npart
 % end
 %
-call ppm_mktopo(<%= result[0] %>, <%= result[1] %>,xp,npart,<%= decomp ? decomp : "domain_decomposition" %>,<%= assign ? assign : "processor_assignment" %>,min_phys,max_phys,<%= bcdef %>, ghost_size,cost,ngrid,info)
-call ppm_topo_get_meshinfo(<%= result[0] %>,<%= result[1] %>,nm,istart,ndata,&
+CALL ppm_mktopo(<%= result[0] %>, <%= result[1] %>,xp,npart,<%= decomp ? decomp : "domain_decomposition" %>,<%= assign ? assign : "processor_assignment" %>,min_phys,max_phys,<%= bcdef %>, ghost_size,cost,ngrid,info)
+CALL ppm_topo_get_meshinfo(<%= result[0] %>,<%= result[1] %>,nm,istart,ndata,&
 maxndata,isublist,nsublist,info)
 ! FIXME
 end macro

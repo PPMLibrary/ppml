@@ -1,36 +1,36 @@
 macro create_ode(vars,rhs,rhs_vars,scheme=ODEscheme)
 %
-% scope.raw_var eulerf: "integer, parameter :: eulerf = ppm_param_ode_scheme_eulerf"
-% scope.raw_var tvdrk2: "integer, parameter :: tvdrk2 = ppm_param_ode_scheme_tvdrk2"
-% scope.raw_var midrk2: "integer, parameter :: midrk2 = ppm_param_ode_scheme_midrk2"
-% scope.raw_var rk4: "integer, parameter :: rk4 = ppm_param_ode_scheme_rk4"
-% scope.raw_var sts: "integer, parameter :: sts = ppm_param_ode_scheme_sts"
+% scope.raw_var eulerf: "INTEGER, PARAMETER :: eulerf = ppm_param_ode_scheme_eulerf"
+% scope.raw_var tvdrk2: "INTEGER, PARAMETER :: tvdrk2 = ppm_param_ode_scheme_tvdrk2"
+% scope.raw_var midrk2: "INTEGER, PARAMETER :: midrk2 = ppm_param_ode_scheme_midrk2"
+% scope.raw_var rk4: "INTEGER, PARAMETER :: rk4 = ppm_param_ode_scheme_rk4"
+% scope.raw_var sts: "INTEGER, PARAMETER :: sts = ppm_param_ode_scheme_sts"
 %
-% scope.raw_var info: "integer :: info"
+% scope.raw_var info: "INTEGER :: info"
 % scope.global_use :ppm_module_user_numerics
 % scope.arg_group "ODE Parameters"
-% scope.arg name: :ODEscheme, type: "integer", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
-% scope.var :vars, "class(ppm_v_main_abstr), pointer"
+% scope.arg name: :ODEscheme, type: "INTEGER", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
+% scope.var :vars, "CLASS(ppm_v_main_abstr), POINTER"
 % if conf.ppm.prec == "ppm_kind_single"
-%   scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc_s), pointer"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_s), POINTER"
 % else
-%   scope.var :rhs_ptr, "procedure(ppm_p_rhsfunc_d), pointer"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_d), POINTER"
 % end
-allocate(vars,stat=info)
+ALLOCATE(vars,stat=info)
 or_fail_alloc("Allocating vars vector")
-% scope.var :rhs_vars, "class(ppm_v_var_discr_pair), pointer"
-% scope.var :pair, "class(ppm_t_var_discr_pair), pointer"
-% scope.var :fpair, "class(ppm_t_field_discr_pair), pointer"
-allocate(rhs_vars,stat=info)
+% scope.var :rhs_vars, "CLASS(ppm_v_var_discr_pair), POINTER"
+% scope.var :pair, "CLASS(ppm_t_var_discr_pair), POINTER"
+% scope.var :fpair, "CLASS(ppm_t_field_discr_pair), POINTER"
+ALLOCATE(rhs_vars,stat=info)
 or_fail_alloc("Allocating rhs_vars vector")
-% scope.var :el, "class(ppm_t_main_abstr), pointer"
+% scope.var :el, "CLASS(ppm_t_main_abstr), POINTER"
 
 % change_ftypes = []
 % rhs_ftypes = []
 
 % vars.each do |f|
 %   if f.is_a? Array
-allocate(<%= :fpair %>,stat=info)
+ALLOCATE(<%= :fpair %>,stat=info)
 <%= :fpair %>%field => <%= f[0] %>
 <%= :fpair %>%discr => <%= f[1] %>
 <%= :el %> => <%= :fpair %>
@@ -39,12 +39,12 @@ allocate(<%= :fpair %>,stat=info)
 <%= :el %> => <%= f %>
 % change_ftypes << [scope.type_of(f.to_s.to_sym),nil]
 %   end
-call <%= :vars %>%push(<%= :el %>,info)
+CALL <%= :vars %>%push(<%= :el %>,info)
 or_fail("Pushing element failed")
 % end
 
 % rhs_vars.each do |f|
-allocate(<%= :pair %>,stat=info)
+ALLOCATE(<%= :pair %>,stat=info)
 %   if f.is_a? Array
 <%= :pair %>%var => <%= f[0] %>
 <%= :pair %>%discr => <%= f[1] %>
@@ -53,16 +53,16 @@ allocate(<%= :pair %>,stat=info)
 <%= :pair %>%var => <%= f %>
 % rhs_ftypes << [scope.type_of(f.to_s.to_sym),nil]
 %   end
-call <%= :rhs_vars %>%push(<%= :pair %>,info)
+CALL <%= :rhs_vars %>%push(<%= :pair %>,info)
 or_fail("Pushing pair failed")
 % end
 
 % scope.rhs_call(rhs, rhs_ftypes, change_ftypes)
 <%= :rhs_ptr %> => <%= rhs %>
 
-% scope.raw_var result[0].to_sym =>  "type(ppm_t_ode) :: #{result[0]}"
-call <%= result[0] %>%create(<%= scheme %>,vars,<%= :rhs_ptr %>,rhs_vars,info)
+% scope.raw_var result[0].to_sym =>  "TYPE(ppm_t_ode) :: #{result[0]}"
+CALL <%= result[0] %>%create(<%= scheme %>,vars,<%= :rhs_ptr %>,rhs_vars,info)
 
-% scope.raw_var result[1].to_sym => "integer :: #{result[1]}"
+% scope.raw_var result[1].to_sym => "INTEGER :: #{result[1]}"
 <%= result[1] %> = <%= result[0] %>%integrator%scheme_nstages
 end macro

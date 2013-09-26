@@ -1,15 +1,15 @@
 macro create_neighlist(discretization,skin=nil,cutoff=nil,sym=nil)
 % # creates and computes a new neighborlist. this only calls
 % # comp_neighlist since it will call create_neighlist when needed.
-% scope.raw_var info: "integer :: info"
+% scope.raw_var info: "INTEGER :: info"
 % if prec == "ppm_kind_single"
-%   scope.raw_var({result.to_sym => "class(ppm_t_neighlist_s_), pointer :: #{result}"},
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_neighlist_s_), POINTER :: #{result}"},
 %               :ppm_t_neighlist_s_)
 % else
-%   scope.raw_var({result.to_sym => "class(ppm_t_neighlist_d_), pointer :: #{result}"},
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_neighlist_d_), POINTER :: #{result}"},
 %               :ppm_t_neighlist_d_)
 % end
-call <%= discretization %>%comp_neighlist(info<%=",skin="+skin.to_s unless skin.nil?%><%=",cutoff="+cutoff.to_s unless cutoff.nil? %><%=",symmetry="+sym.to_s unless sym.nil? %>)
+CALL <%= discretization %>%comp_neighlist(info<%=",skin="+skin.to_s unless skin.nil?%><%=",cutoff="+cutoff.to_s unless cutoff.nil? %><%=",symmetry="+sym.to_s unless sym.nil? %>)
 or_fail("Could not compute neighlist")
 <%= result %> => <%= discretization %>%get_neighlist()
 end macro
@@ -17,22 +17,22 @@ end macro
 macro comp_neighlist(discretization)
 % # recompute an existing neighborlist - should be only called after
 % # create_neighlist. The neighlist is retrieved using get_neighlist
-% scope.raw_var info: "integer :: info"
-call <%= discretization %>%comp_neighlist(info)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%comp_neighlist(info)
 end macro
 
 macro get_neighlist(discretization)
 % if prec == "ppm_kind_single"
-%   scope.raw_var({result.to_sym => "class(ppm_t_neighlist_s_), pointer :: #{result}"},
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_neighlist_s_), POINTER :: #{result}"},
 %               :ppm_t_neighlist_s_)
 % else
-%   scope.raw_var({result.to_sym => "class(ppm_t_neighlist_d_), pointer :: #{result}"},
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_neighlist_d_), POINTER :: #{result}"},
 %               :ppm_t_neighlist_d_)
 % end
-if (<%= discretization %>%has_neighlist()) then
+IF (<%= discretization %>%has_neighlist()) THEN
   <%= result %> => <%= discretization %>%get_neighlist()
-else
-  nullify(<%= result %>)
+ELSE
+  NULLIFY(<%= result %>)
   fail("Neighlist must be computed first")
-endif
+ENDIF
 end macro

@@ -30,7 +30,7 @@ modifier prec(precision=mk)
 % elsif precision.to_s == "ppm_kind_double"
 %   prec_suffix = "_d"
 % end
-% scope.var :i, "INTEGER" 
+% scope.var :i, "INTEGER"
 % scope.var :j, "INTEGER"
 % scope.var :k, "INTEGER" unless k.nil?
 % scope.var(:sbpitr, "CLASS(ppm_t_subpatch_),POINTER")
@@ -39,7 +39,7 @@ sbpitr => <%= m %>%subpatch%begin()
 %   scope.var(:stnclint, "INTEGER,DIMENSION(2*ppm_dim)")
 % end
 %
-do while (associated(sbpitr))
+DO WHILE (ASSOCIATED(sbpitr))
 % fields.each do |f|
 % if k.nil?
 %   if f[2] == :sca
@@ -82,129 +82,129 @@ do while (associated(sbpitr))
 %
 % unless bodies.all.nil?
 %   unless k.nil?
-    do <%= k %> = sbpitr%lo_a(3), sbpitr%hi_a(3)
+    DO <%= k %> = sbpitr%lo_a(3), sbpitr%hi_a(3)
 %   end
-    do <%= j %> = sbpitr%lo_a(2), sbpitr%hi_a(2)
-    do <%= i %> = sbpitr%lo_a(1), sbpitr%hi_a(1)
+    DO <%= j %> = sbpitr%lo_a(2), sbpitr%hi_a(2)
+    DO <%= i %> = sbpitr%lo_a(1), sbpitr%hi_a(1)
 <%= bodies.all.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
-% 
+%
 % unless bodies.valid_nodes.nil?
 %   if k.nil?
-% scope.var :incl_ghosts, "INTEGER,DIMENSION(4)"
+% scope.var :incl_ghosts, "INTEGER, DIMENSION(4)"
 %   else
-% scope.var :incl_ghosts, "INTEGER,DIMENSION(6)"
+% scope.var :incl_ghosts, "INTEGER, DIMENSION(6)"
 %   end
     WHERE (sbpitr%bc.LT.0 .OR. &
-                sbpitr%bc.NE.ppm_param_bcdef_freespace)
+    &      sbpitr%bc.NE.ppm_param_bcdef_freespace)
         incl_ghosts = 1
     ELSEWHERE
         incl_ghosts = 0
     END WHERE
 %   unless k.nil?
-    do <%= k %> = 1 -            incl_ghosts(5)*sbpitr%ghostsize(5), &
-              sbpitr%nnodes(3) + incl_ghosts(6)*sbpitr%ghostsize(6)
+    DO <%= k %> = 1 -            incl_ghosts(5)*sbpitr%ghostsize(5), &
+    &         sbpitr%nnodes(3) + incl_ghosts(6)*sbpitr%ghostsize(6)
 %   end
-    do <%= j %> = 1 -            incl_ghosts(3)*sbpitr%ghostsize(3), &
-              sbpitr%nnodes(2) + incl_ghosts(4)*sbpitr%ghostsize(4)
-    do <%= i %> = 1 -            incl_ghosts(1)*sbpitr%ghostsize(1), &
-              sbpitr%nnodes(1) + incl_ghosts(2)*sbpitr%ghostsize(2)
+    DO <%= j %> = 1 -            incl_ghosts(3)*sbpitr%ghostsize(3), &
+    &         sbpitr%nnodes(2) + incl_ghosts(4)*sbpitr%ghostsize(4)
+    DO <%= i %> = 1 -            incl_ghosts(1)*sbpitr%ghostsize(1), &
+    &         sbpitr%nnodes(1) + incl_ghosts(2)*sbpitr%ghostsize(2)
 <%= bodies.valid_nodes.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
-% 
+%
 % unless bodies.real.nil?
 %   unless k.nil?
-    do <%= k %> = 1, sbpitr%nnodes(3)
+    DO <%= k %> = 1, sbpitr%nnodes(3)
 %   end
-    do <%= j %> = 1, sbpitr%nnodes(2)
-    do <%= i %> = 1, sbpitr%nnodes(1)
+    DO <%= j %> = 1, sbpitr%nnodes(2)
+    DO <%= i %> = 1, sbpitr%nnodes(1)
 <%= bodies.real.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
-% 
+%
 % unless bodies.interior.nil?
 %   unless k.nil?
-    do <%= k %> = stnclint(5),stnclint(6)
+    DO <%= k %> = stnclint(5),stnclint(6)
 %   end
-    do <%= j %> = stnclint(3),stnclint(4)
-    do <%= i %> = stnclint(1),stnclint(2)
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.interior.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
-% 
+%
 % unless bodies.west.nil?
 %   unless k.nil?
-    do <%= k %> = stnclint(5),stnclint(6)
+    DO <%= k %> = stnclint(5),stnclint(6)
 %   end
-    do <%= j %> = stnclint(3),stnclint(4)
-    do <%= i %> = stnclint(1)-<%= st_i %>,stnclint(1)
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(1)-<%= st_i %>,stnclint(1)
 <%= bodies.west.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
-% 
+%
 % unless bodies.east.nil?
 %   unless k.nil?
-    do <%= k %> = stnclint(5),stnclint(6)
+    DO <%= k %> = stnclint(5),stnclint(6)
 %   end
-    do <%= j %> = stnclint(3),stnclint(4)
-    do <%= i %> = stnclint(2),stnclint(2)+<%= st_i %>
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(2),stnclint(2)+<%= st_i %>
 <%= bodies.east.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
 %
 % unless bodies.south.nil?
 %   unless k.nil?
-    do <%= k %> = stnclint(5),stnclint(6)
+    DO <%= k %> = stnclint(5),stnclint(6)
 %   end
-    do <%= j %> = stnclint(3)-<%= st_j %>,stnclint(3)
-    do <%= i %> = stnclint(1),stnclint(2)
+    DO <%= j %> = stnclint(3)-<%= st_j %>,stnclint(3)
+    DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.south.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
 %
 % unless bodies.north.nil?
 %   unless k.nil?
-    do <%= k %> = stnclint(5),stnclint(6)
+    DO <%= k %> = stnclint(5),stnclint(6)
 %   end
-    do <%= j %> = stnclint(4),stnclint(4)+<%= st_j %>
-    do <%= i %> = stnclint(1),stnclint(2)
+    DO <%= j %> = stnclint(4),stnclint(4)+<%= st_j %>
+    DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.north.indent 8 -%>
-    end do
-    end do
+    END DO
+    END DO
 %   unless k.nil?
-    end do
+    END DO
 %   end
 % end
     sbpitr => <%= m %>%subpatch%next()
-end do
+END DO
 end macro

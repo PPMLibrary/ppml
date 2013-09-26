@@ -2,16 +2,16 @@ macro define_op(ndim, degree, coeffs, name)
 % # this defines a operator as a linear combination of differentials
 % # with degrees degree and coefficients coeffs.
 % # E.g. laplace in 2D has ndim = 2, degree = [2,0, 0,2] and coeffs = [1.0, 1.0]
-% scope.raw_var info: "integer :: info"
-% scope.global_var result.to_sym => "type(ppm_t_operator), pointer :: #{result} => null()"
-allocate(<%= result %>)
-call <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name='<%= name %>')
+% scope.raw_var info: "INTEGER :: info"
+% scope.global_var result.to_sym => "TYPE(ppm_t_operator), POINTER :: #{result} => NULL()"
+ALLOCATE(<%= result %>)
+CALL <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name='<%= name %>')
 end macro
 
 macro discretize_op(operator, discretization, num_method, method_params)
-% scope.raw_var info: "integer :: info"
-% scope.global_var result.to_sym => "class(ppm_t_operator_discr), pointer :: #{result} => null()"
-% scope.var :opopts, "type(ppm_t_options_op)"
+% scope.raw_var info: "INTEGER :: info"
+% scope.global_var result.to_sym => "CLASS(ppm_t_operator_discr), POINTER :: #{result} => NULL()"
+% scope.var :opopts, "TYPE(ppm_t_options_op)"
 % mp = ''
 % method_params.each do |p|
 %   if p.is_a? Array
@@ -20,13 +20,13 @@ macro discretize_op(operator, discretization, num_method, method_params)
 %       raise "Operator method parameters should be given as name=value pairs"
 %   end
 % end
-call <%= :opopts %>%create(<%= num_method %>,info<%= mp %>)
+CALL <%= :opopts %>%create(<%= num_method %>,info<%= mp %>)
 or_fail("failed to initialize option object for operator")
-call <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, <%= :opopts %>, info)
+CALL <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, <%= :opopts %>, info)
 end macro
 
 macro apply_op(operator, input)
-% scope.raw_var info: "integer :: info"
-call <%= operator %>%compute(<%= input %>, <%= result %>, info)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= operator %>%compute(<%= input %>, <%= result %>, info)
 or_fail("Operator computation failed")
 end macro

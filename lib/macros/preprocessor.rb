@@ -73,7 +73,7 @@ module CG
       # STDERR.puts "Parsing String\n\n#{string}"
       # print_lexer_tokens string
       # print_tree_tokens string
-      
+
       saveState
 
       @lexer = Lexer.new string
@@ -88,7 +88,7 @@ module CG
       end
 
       restoreState
-      
+
       result
     rescue
       STDERR.puts "An exception occured, here is some relevant output:"
@@ -116,7 +116,7 @@ module CG
     end
 
     private
-    
+
     class PreprocessorState
 
       attr_accessor :lexer, :tokens, :parser, :tree_tokens, :tree_parser
@@ -142,7 +142,7 @@ module CG
       @tree_tokens = oldState.tree_tokens
       @tree_parser = oldState.tree_parser
     end
-    
+
     def initialize_macros_hash
       @macros = {}
       @macros.instance_variable_set :@preprocessor, self

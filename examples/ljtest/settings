@@ -3,8 +3,8 @@
 conf.project_name = "lj"
 conf.binary = "lj"
 conf.build.optflags = "-O3" #"-traceback -g -CB -check all"
-conf.ppm.base_path = "/Users/omar/code/ppm/ppmcore/libppm"
-conf.ppm.numerics.base_path = "/Users/omar/code/ppm/ppmnumerics/libppmnumerics"
+conf.ppm.base_path = "/data1/Files/docs/Max_Planck_Ins/Mosaic/code/PPMD/ppmcore"
+conf.ppm.numerics.base_path = "/data1/Files/docs/Max_Planck_Ins/Mosaic/code/PPMD/ppmnumerics"
 
 # numerics settings
 conf.ppm.prec = "ppm_kind_double" # "ppm_kind_single"

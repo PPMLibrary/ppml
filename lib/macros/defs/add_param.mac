@@ -1,9 +1,9 @@
 macro parameter(name,type,value)
-% scope.raw_var name.to_s.to_sym => "#{type.to_s}, parameter :: #{name.to_s} = #{value}"
+% scope.raw_var name.to_s.to_sym => "#{type.to_s}, PARAMETER :: #{name.to_s} = #{value}"
 end macro
 
 macro global_parameter(name,type,value)
-% scope.global_var name.to_s.to_sym => "#{type.to_s}, parameter :: #{name.to_s} = #{value}"
+% scope.global_var name.to_s.to_sym => "#{type.to_s}, PARAMETER :: #{name.to_s} = #{value}"
 end macro
 
 macro global_var(name,type,value=nil)

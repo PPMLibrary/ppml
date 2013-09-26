@@ -1,6 +1,6 @@
 macro print(fields, resolution)
 % # TODO make this work in the rhs too
-% scope.global_var :print_it => "integer :: print_it = 0"
+% scope.global_var :print_it => "INTEGER :: print_it = 0"
 % parts = Hash.new []
 % meshs = Hash.new []
 % fields.each do |pair|
@@ -14,22 +14,22 @@ macro print(fields, resolution)
 %     STDERR.puts "Warning: I don't know the type of '#{pair[1]}', ignoring..."
 %   end
 % end
-% scope.global_var :print_fieldlist => "class(ppm_v_main_abstr), pointer :: print_fieldlist => null()"
-% scope.var :temp_fix_assign, "class(ppm_t_main_abstr), pointer", " => null()"
+% scope.global_var :print_fieldlist => "CLASS(ppm_v_main_abstr), POINTER :: print_fieldlist => NULL()"
+% scope.var :temp_fix_assign, "CLASS(ppm_t_main_abstr), POINTER", " => NULL()"
 % parts.each do |p,fs|
-if (MOD(<%= :print_it %>,<%= resolution %>).eq.0) then ! print to vtk
-  allocate(print_fieldlist)
+IF (MOD(<%= :print_it %>,<%= resolution %>).EQ.0) THEN ! print to vtk
+  ALLOCATE(print_fieldlist)
 %   fs.each do |f|
   <%= :temp_fix_assign %> => <%= f %>
-  call <%= :print_fieldlist %>%push(<%= :temp_fix_assign %>, info)
+  CALL <%= :print_fieldlist %>%push(<%= :temp_fix_assign %>, info)
   or_fail("Failed to push fields to field list.")
 %   end
-% scope.global_var :vtk_filename => "character(len=64) :: vtk_filename"
-  write(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :print_it %> 
-  call ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :print_fieldlist %>)
+% scope.global_var :vtk_filename => "CHARACTER(LEN=64) :: vtk_filename"
+  WRITE(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :print_it %>
+  CALL ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :print_fieldlist %>)
   or_fail("Failed to print fields on particle set")
-  deallocate(print_fieldlist)
-end if ! end print to vtk
+  DEALLOCATE(print_fieldlist)
+END IF ! end print to vtk
 % end
 <%= :print_it %> = <%= :print_it %> + 1
 end macro

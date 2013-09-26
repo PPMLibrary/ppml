@@ -55,7 +55,7 @@ client grayscott
   L = discretize_op(Lap, c, ppm_param_op_dcpse,[order=>2,c=>1.0_mk])
 
   o, nstages = create_ode([U,V], grayscott_rhs, [U=>c,V], rk4)
-  interval = int(stop_time/time_step)/1000
+  interval = 10 !int(stop_time/time_step)/1000
   t = timeloop()
     do istage=1,nstages
       ghost_mapping(c)

@@ -15,7 +15,7 @@ CLOBBER.include("lib/parser/CG*")
 def antlr f
   puts "Generating #{f}"
   Dir.mkdir("lib/parser") if !File.directory?("lib/parser")
-  `antlr4ruby #{f}`
+  `antlr4ruby1.9 #{f}`
   path, name = f.match(/(lib\/grammar\/(?:tree\/)?(.*?)).g/)[1..2]
   `mv #{path}*.rb lib/parser/`
   `cp #{name}.tokens lib/parser/`

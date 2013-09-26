@@ -130,6 +130,6 @@ client lj
     !print([E=>parts,v=>parts,F=>parts],10 )
     st = st + 1
   end timeloop
-
+  ppm_finalize()
 end client
 

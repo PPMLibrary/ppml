@@ -1,4 +1,4 @@
 macro discretize(field,discretization)
-% scope.var :info, "integer"
-call <%= field %>%discretize_on(<%= discretization %>,info)
+% scope.var :info, "INTEGER"
+CALL <%= field %>%discretize_on(<%= discretization %>,info)
 end macro

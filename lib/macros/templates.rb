@@ -40,7 +40,7 @@ ENDTEMPLATE
 %   unless @implicit.nil?
 %     _erbout += @implicit.to_s
 %   else
-%     _erbout += "#{@indent}implicit none\n"
+%     _erbout += "#{@indent}IMPLICIT NONE\n"
 %   end
 % end
 % unless @context.includes.empty?

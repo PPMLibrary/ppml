@@ -17,13 +17,14 @@ client lj
   real(mk)               :: sigma6,sigma12
   class(ppm_t_part_prop_d_), pointer :: prop => null()
   integer                :: iter_time, map_time, fcalc_time
-  real(mk)               :: time_diff
+  real(mk)               :: time_diff,time3=0.0_MK,time1,time2
+  integer :: clock=0
 
   add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
   add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
   add_arg(sigma,<#real(mk)#>,1.0_mk,0.0_mk,'sigma','distance of potential well')
   add_arg(dt,<#real(mk)#>,1.0_mk,0.0_mk,'delta_t','time step')
-
+ 
   ppm_init()
  
   sigma6 = sigma**6
@@ -51,7 +52,7 @@ client lj
   F = create_property(parts, ppm_dim, "force",zero=true)
   E = create_property(parts, 1, "energy",zero=true)
   dx = create_property(parts, ppm_dim, "displace",zero=true)
-
+write(*,*)ppm_rank
   ghost_mapping(parts)
 
   !print *,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
@@ -82,7 +83,8 @@ client lj
     
     call MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,0,comm,info)
     call ppm_tstats_tic(map_time,st+1,info) 
-    if (4.0_mk*allmaxdisp.ge.skin**2) then
+    !if (4.0_mk*allmaxdisp.ge.skin**2) then
+    if (MOD(st,2)==0) then
       call parts%apply_bc(info) 
       partial_mapping(parts)
       foreach p in particles(parts) with vec_props(dx) prec(ppm_kind_double)
@@ -90,7 +92,11 @@ client lj
       end foreach
       ghost_mapping(parts)
       ! this should recompute the neighlist
+      time1=MPI_WTIME() 
       comp_neighlist(parts)
+      time2=MPI_WTIME()
+      time3=time3+time2-time1
+      clock=clock+1
     else
       parts%flags(ppm_part_partial) = .true. ! hack
       parts%flags(ppm_part_areinside) = .true.
@@ -145,16 +151,19 @@ client lj
     call MPI_Allreduce(energies,energies_reduced,3,ppm_mpi_kind,MPI_SUM,0,comm,info)
     
     if (ppm_rank.eq.0) then
-      write(*,'(I7,3E17.8)'),st,energies_reduced(1),energies_reduced(2),energies_reduced(3)
+      !write(*,'(I7,3E17.8)'),st,energies_reduced(1),energies_reduced(2),energies_reduced(3)
+      Write(*,*)st
     endif
     !write(*,'(I7,3E17.8)'),st,E_tot,Ev_tot, Ep_tot!,maxdisp
     !print *,Ev_tot, Ep_tot, E_tot
     !print *,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
     !print([E=>parts,v=>parts,F=>parts],100 )
+!    print([v=>parts],50)
     st = st + 1
     call ppm_tstats_toc(iter_time,st,time_diff,info) 
   end timeloop
-  call ppm_tstats_collect('time.dat',info)
+!  call ppm_tstats_collect('time.dat',info)
+  Write(*,*)ppm_rank,clock,time3,time3/real(clock,mk)
   ppm_finalize()
 end client
 
