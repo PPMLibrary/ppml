@@ -104,10 +104,10 @@ CALL substop(caller,ppm_internal_t0,info)
 end macro
 
 macro start_function(name="default_name")
-% scope.raw_var info: "INTEGER,  INTENT(  OUT) :: info"
-    CHARACTER(LEN=ppm_char) :: caller = "<%= name.to_s.chomp('"').reverse.chomp('"').reverse %>"
+% scope.raw_var info: "INTEGER                 :: info"
+CHARACTER(LEN=ppm_char) :: caller = "<%= name.to_s.chomp('"').reverse.chomp('"').reverse %>"
 
-    info = 0
+info = 0
 end macro
 
 macro end_function(exit_point=9999)
@@ -117,10 +117,10 @@ end macro
 macro destroy_collection_ptr(collection_pointer)
 % coll_ptr = collection_pointer
 IF (ASSOCIATED(<%= coll_ptr %>)) THEN
-    CALL <%= coll_ptr %>%destroy(info)
-    or_fail_dealloc("<%= "#{coll_ptr}" %> object")
-    DEALLOCATE(<%= coll_ptr %>,STAT=info)
-    or_fail_dealloc("<%= "#{coll_ptr}" %> pointer")
+   CALL <%= coll_ptr %>%destroy(info)
+   or_fail_dealloc("<%= "#{coll_ptr}" %> object")
+   DEALLOCATE(<%= coll_ptr %>,STAT=info)
+   or_fail_dealloc("<%= "#{coll_ptr}" %> pointer")
 ENDIF
 end macro
 
@@ -131,9 +131,9 @@ macro stdout(*message)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
 % if message.is_a? Array
 % message.map! {|p| p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )}
-    WRITE(cbuf,*) <%=message.join(",&\n&    ")%>
+WRITE(cbuf,*) <%=message.join(",&\n&    ")%>
 % end
-    CALL ppm_write(ppm_rank,caller,cbuf,info)
+CALL ppm_write(ppm_rank,caller,cbuf,info)
 end macro
 
 macro stdout_f(format,*message)
@@ -144,9 +144,9 @@ macro stdout_f(format,*message)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
 % if message.is_a? Array
 % message.map! {|p| p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )}
-    WRITE(cbuf,<%= format %>) <%=message.join(",&\n")%>
+WRITE(cbuf,<%= format %>) <%=message.join(",&\n")%>
 % end
-    CALL ppm_write(ppm_rank,caller,cbuf,info)
+CALL ppm_write(ppm_rank,caller,cbuf,info)
 end macro
 
 
@@ -177,36 +177,39 @@ end macro
 macro alloc_pointer(pointer,dim,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % d = dim.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
-    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
-    ALLOCATE(<%= p %>(<%= d %>),STAT=<%=info%>)
-    or_fail_alloc("<%= "#{p}" %>")
+check_false("ASSOCIATED(<%= p %>)","pointer already associated")
+ALLOCATE(<%= p %>(<%= d %>),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
 end macro
 
 macro alloc_pointer_with_bounds1(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
-    ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1)),STAT=<%=info%>)
-    or_fail_alloc("<%= "#{p}" %>")
+check_false("ASSOCIATED(<%= p %>)","pointer already associated")
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
 end macro
+
 macro alloc_pointer_with_bounds2(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
-    ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2)),STAT=<%=info%>)
-    or_fail_alloc("<%= "#{p}" %>")
+check_false("ASSOCIATED(<%= p %>)","pointer already associated")
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
 end macro
+
 macro alloc_pointer_with_bounds3(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
-    ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
-    &        <%=lo%>(3):<%=hi%>(3)),STAT=<%=info%>)
-    or_fail_alloc("<%= "#{p}" %>")
+check_false("ASSOCIATED(<%= p %>)","pointer already associated")
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
+&        <%=lo%>(3):<%=hi%>(3)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
 end macro
+
 macro alloc_pointer_with_bounds4(pointer,lo,hi,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
-    check_false("ASSOCIATED(<%= p %>)","pointer already associated")
-    ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
-    &        <%=lo%>(3):<%=hi%>(3),<%=lo%>(4):<%=hi%>(4)),STAT=<%=info%>)
-    or_fail_alloc("<%= "#{p}" %>")
+check_false("ASSOCIATED(<%= p %>)","pointer already associated")
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
+&        <%=lo%>(3):<%=hi%>(3),<%=lo%>(4):<%=hi%>(4)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
 end macro
 
 
