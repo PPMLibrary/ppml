@@ -48,7 +48,10 @@ class PPM < Thor
   def generate cli=true
     Dir.chdir(options[:destination]) unless options[:destination] == '.' or !cli
     self.destination_root = Dir.pwd
-    read_configuration   
+    if Dir["gen"] != nil
+      FileUtils.mkdir_p("gen/obj")
+    end
+    read_configuration
     remove_file "gen/compile.log"
     Dir["*.ppm"].each do |src|
       o = CG::Preprocessor.instance.process(File.new(src).read)
@@ -91,7 +94,7 @@ class PPM < Thor
       invoke BenchmarkGroup, args
     end
   end
-  
+
 
 end
 
@@ -109,7 +112,7 @@ class NewProjectGroup < Thor::Group
     self.destination_root = Dir.pwd
     # The project directory
     empty_directory "#{name}"
-    Dir.chdir(name) 
+    Dir.chdir(name)
     self.destination_root = Dir.pwd
     # where user defined macros are created
     empty_directory "macros"

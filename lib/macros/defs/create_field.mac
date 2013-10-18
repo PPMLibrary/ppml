@@ -1,11 +1,11 @@
-macro create_field(ndim,name)
+macro create_field(ndim,name,dtype=nil)
 % scope.raw_var({result.to_sym => "CLASS(ppm_t_field_), POINTER :: #{result}"},:ppm_t_field_)
-% scope.raw_var ({ :info => "integer :: info" })
+% scope.raw_var ({ :info => "INTEGER :: info" })
 
-ALLOCATE(ppm_t_field::<%= result %>,stat=info)
-or_fail_alloc("Allocating the <%= result %> field")
+ALLOCATE(ppm_t_field::<%= result %>,STAT=info)
+or_fail_alloc("Allocating the <%= result %> field failed!")
 
-CALL <%= result %>%create(<%= ndim %>, info, name=<%= name %>)
+CALL <%= result %>%create(<%= ndim %>, info <%= ", dtype=#{dtype} " if !dtype.nil?%>, name=<%= name %>)
 or_fail("Create field failed!")
 end macro
 

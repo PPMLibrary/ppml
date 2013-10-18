@@ -27,7 +27,6 @@ ELSE
 END IF
 
 CALL ppm_init(<%= conf.ppm.dim %>, <%= conf.ppm.prec %>, &
-&             <%= conf.ppm.tolexp %>, comm,              &
-&             <%= debug_level %>, info)
+&             <%= conf.ppm.tolexp %>, comm, <%= debug_level %>, info)
 or_fail("ppm_init failed.")
 end macro

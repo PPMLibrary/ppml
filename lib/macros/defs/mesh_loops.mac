@@ -3,7 +3,7 @@ modifier indices(i=i,j=j,k=nil)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
 modifier stencil_width(st_i=nil,st_j=nil,st_k=nil)
-modifier prec(precision=mk)
+modifier prec(precision=MK)
 % fields = []
 % if k.nil?
 %   dim = '2d'
@@ -33,20 +33,20 @@ modifier prec(precision=mk)
 % scope.var :i, "INTEGER"
 % scope.var :j, "INTEGER"
 % scope.var :k, "INTEGER" unless k.nil?
-% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_),POINTER")
+% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER")
 sbpitr => <%= m %>%subpatch%begin()
 % unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil? && bodies.interior.nil? && bodies.valid_nodes.nil?
-%   scope.var(:stnclint, "INTEGER,DIMENSION(2*ppm_dim)")
+%   scope.var(:stnclint, "INTEGER, DIMENSION(2*ppm_dim)")
 % end
 %
 DO WHILE (ASSOCIATED(sbpitr))
 % fields.each do |f|
 % if k.nil?
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:), POINTER", "=> NULL()"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER", "=> NULL()"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2)"
 %   end
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
@@ -54,10 +54,10 @@ DO WHILE (ASSOCIATED(sbpitr))
 %
 % else
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER", "=> NULL()"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2,k #3)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "real(#{precision}), dimension(:,:,:,:), pointer", "=> null()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:,:), POINTER", "=> NULL()"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2,k #3)"
 %   end
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)

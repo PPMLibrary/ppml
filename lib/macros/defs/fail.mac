@@ -12,25 +12,25 @@ end macro
 
 macro or_fail(message, type=ppm_err_sub_failed,info=info)
 IF (<%= info %>.NE.0) THEN
-  fail(<%= message %>,<%= type %>, <%= info %>)
+   fail(<%= message %>,<%= type %>, <%= info %>)
 END IF
 end macro
 
 macro or_fail_MPI(message, type=ppm_err_mpi_fail,info=info)
 IF (<%= info %>.NE.MPI_SUCCESS) THEN
-  fail(<%= message %>, <%= type %>, <%= info %>)
+   fail(<%= message %>, <%= type %>, <%= info %>)
 END IF
 end macro
 
 macro or_fail_alloc(message, type=ppm_err_alloc,info=info)
 IF (<%= info %>.NE.0) THEN
-  fail(<%= message %>, <%= type %>, <%= info %>)
+   fail(<%= message %>, <%= type %>, <%= info %>)
 END IF
 end macro
 
 macro or_fail_dealloc(message, type=ppm_err_dealloc,info=info)
 IF (<%= info %>.NE.0) THEN
-  fail(<%= message %>, <%= type %>, <%= info %>)
+   fail(<%= message %>, <%= type %>, <%= info %>)
 END IF
 end macro
 
@@ -39,10 +39,10 @@ macro check_associated(p,message="",type=ppm_err_argument,info=info,exit_point=9
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
 % p_s = p.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.ASSOCIATED(<%= p_s %>)) THEN
-    WRITE(cbuf,*) "check failed:", CHAR(10), &
-    & "    <%= p_s %> is not associated.", CHAR(10), &
-    & <%= message %>
-    fail(cbuf, <%= type %>, <%= info %>, <%= exit_point %>)
+   WRITE(cbuf,*) "check failed:", CHAR(10), &
+   & "    <%= p_s %> is not associated.", CHAR(10), &
+   & <%= message %>
+   fail(cbuf, <%= type %>, <%= info %>, <%= exit_point %>)
 ENDIF
 end macro
 
@@ -111,7 +111,7 @@ info = 0
 end macro
 
 macro end_function(exit_point=9999)
-    <%= exit_point %> CONTINUE
+<%= exit_point %> CONTINUE
 end macro
 
 macro destroy_collection_ptr(collection_pointer)

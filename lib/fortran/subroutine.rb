@@ -49,9 +49,9 @@ module CG
       unless @code.empty?
       end
       <<EOF
-subroutine #{@name}#{args}#{us}
-  implicit none#{vs}#{cs}#{"9999 continue\n" if @print_continue}
-end subroutine #{@name}
+SUBROUTINE #{@name}#{args}#{us}
+  IMPLICIT NONE#{vs}#{cs}#{"9999 continue\n" if @print_continue}
+END SUBROUTINE #{@name}
 EOF
     end
 

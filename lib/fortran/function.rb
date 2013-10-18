@@ -50,7 +50,7 @@ module CG
       end
       args = ""
       unless @args.empty?
-        args = "(" + @args.keys.map(&:to_s).join(", ") + ")" 
+        args = "(" + @args.keys.map(&:to_s).join(", ") + ")"
         vs = "\n  " + @args.values.join("\n  ") + vs
       end
       args = args + @result_arg
@@ -61,9 +61,9 @@ module CG
         cs.gsub! /\n/, "\n  "
       end
       <<EOF
-function #{@name}#{args}#{us}
-  implicit none#{vs}#{cs}#{"\n9999 continue" if @print_continue}
-end function #{@name}
+FUNCTION #{@name}#{args}#{us}
+  IMPLICIT NONE#{vs}#{cs}#{"\n9999 continue" if @print_continue}
+END FUNCTION #{@name}
 EOF
     end
 

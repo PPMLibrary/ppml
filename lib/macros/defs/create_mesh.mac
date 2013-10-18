@@ -1,4 +1,4 @@
-macro create_mesh(topology, offset, nm=nil, h=nil, ghost_size=nil, mesh=nil,  name=nil)
+macro create_mesh(topology, offset, nm=nil, h=nil, ghost_size=nil, mesh=nil, name=nil)
 % if mesh.nil?
 %   scope.raw_var({result.to_sym => "TYPE(ppm_t_equi_mesh), POINTER :: #{result}"},
 %                 :ppm_t_equi_mesh)

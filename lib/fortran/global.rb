@@ -15,16 +15,16 @@ module CG
       use :ppm_module_core
       use :ppm_module_user_numerics
       if (!conf.ppm.prec.nil?  )
-        var :mk, "integer, parameter :: mk = #{conf.ppm.prec}"
+        var :mk, "INTEGER, PARAMETER :: MK = #{conf.ppm.prec}"
       else
-        var :mk, "integer, parameter :: mk = ppm_kind_single"
+        var :mk, "INTEGER, PARAMETER :: MK = ppm_kind_single"
       end
     end
 
     def arg o
       var o[:name], "#{o[:type]} :: #{o[:name]}"
       @da.add o[:init] unless o[:init].nil?
-      txt = "call arg(#{o[:name]}, '#{o[:name]}'"
+      txt = "CALL arg(#{o[:name]}, '#{o[:name]}'"
       o.delete :name
       o.delete :type
       o.delete :init
@@ -36,7 +36,7 @@ module CG
     end
 
     def arg_group g
-      @da.add "call arg_group('#{g}')"
+      @da.add "CALL arg_group('#{g}')"
     end
   end
 end

@@ -1,6 +1,6 @@
 macro global_mapping(discretization,topology)
 % scope.raw_var info: "INTEGER :: info"
-CALL <%= discretization %>%map(info,global=.true.,topoid=<%= topology %>)
+CALL <%= discretization %>%map(info,global=.TRUE.,topoid=<%= topology %>)
 or_fail("Global mapping failed.")
 end macro
 

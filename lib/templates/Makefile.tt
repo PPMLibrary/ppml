@@ -66,6 +66,7 @@ LINKCMD = $(FC) $(OBJECTS) -o $@ $(LDFLAGS)
 $(PROGRAM): $(OBJECTS)
 	@printf " LINK  %-42s" $@; \
 	$(RUN) "$(LINKCMD)" $(LOG) "Linking Error" \
+	&& mkdir -p $(DESTDIR) \
 	&& mv $(PROGRAM) $(DESTDIR)
 
 ###### Cleaning up #######################################################
