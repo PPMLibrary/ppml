@@ -33,7 +33,7 @@ modifier prec(precision=MK)
 % scope.var :i, "INTEGER"
 % scope.var :j, "INTEGER"
 % scope.var :k, "INTEGER" unless k.nil?
-% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER")
+% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER", "=> NULL()")
 sbpitr => <%= m %>%subpatch%begin()
 % unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil? && bodies.interior.nil? && bodies.valid_nodes.nil?
 %   scope.var(:stnclint, "INTEGER, DIMENSION(2*ppm_dim)")

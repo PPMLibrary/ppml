@@ -1,6 +1,6 @@
 macro create_mesh(topology, offset, nm=nil, h=nil, ghost_size=nil, mesh=nil, name=nil)
 % if mesh.nil?
-%   scope.raw_var({result.to_sym => "TYPE(ppm_t_equi_mesh), POINTER :: #{result}"},
+%   scope.raw_var({result.to_sym => "TYPE(ppm_t_equi_mesh), POINTER :: #{result} => NULL()"},
 %                 :ppm_t_equi_mesh)
 % end
 % if (h.nil? and nm.nil?)
@@ -35,10 +35,10 @@ macro create_legacy_mesh(bcdef,pset=nil)
 % # This macro expects to return the topology and the meshid
 % scope.raw_var({result[0].to_sym => "INTEGER :: #{result[0]} = 0"})
 % scope.raw_var({result[1].to_sym => "INTEGER :: #{result[1]} = 0"})
-% scope.arg name: :ngrid, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ngrid'", help: "'grid size'", init: "allocate(ngrid(#{conf.ppm.dim}))"
-% scope.arg name: :ghost_size, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ghost_size'", help: "'ghost size'", init: "allocate(ghost_size(#{conf.ppm.dim}))"
-% scope.arg name: :min_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "allocate(min_phys(#{conf.ppm.dim}))"
-% scope.arg name: :max_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "allocate(max_phys(#{conf.ppm.dim}))"
+% scope.arg name: :ngrid, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ngrid'", help: "'grid size'", init: "ALLOCATE(ngrid(#{conf.ppm.dim}))"
+% scope.arg name: :ghost_size, type: "INTEGER, DIMENSION(:), POINTER", default: "(/#{(["1"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'ghost_size'", help: "'ghost size'", init: "ALLOCATE(ghost_size(#{conf.ppm.dim}))"
+% scope.arg name: :min_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["0.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'min_phys'", help: "'lower domain boundary'", init: "ALLOCATE(min_phys(#{conf.ppm.dim}))"
+% scope.arg name: :max_phys, type: "REAL(MK), DIMENSION(:), POINTER", default: "(/#{(["1.0_mk"]*conf.ppm.dim).join ", "}/)", ctrl_name: "'max_phys'", help: "'upper domain boundary'", init: "ALLOCATE(max_phys(#{conf.ppm.dim}))"
 % scope.arg name: :domain_decomposition, type: "INTEGER", default: "ppm_param_decomp_cuboid", min: 1, max: 13, ctrl_name: "'domain_decomposition'", help: "'Domain decomposition, one of:\\n * 1 - tree\\n * 2 - pruned cell\\n * 3 - bisection\\n * 4 - x pencil\\n * 5 - y pencil\\n * 6 - z pencil\\n * 7 - cuboid\\n * 8 - user defined\\n * 10 - xy slab\\n * 11 - xz slab\\n * 12 - yz slab\\n * 13 - cartesian'"
 % scope.arg name: :processor_assignment, type: "INTEGER", default: "ppm_param_assign_internal", min: 1, max: 6, ctrl_name: "'processor_assignment'", help: "'Processor assignment, one of:\\n * 1 - internal\\nmetis:\\n   * 2 - nodal cut\\n   * 3 - nodal comm\\n   * 4 - dual cut\\n   * 5 - dual comm\\n * 6 - user defined'"
 % scope.var "xp".to_sym,  "REAL(#{conf.ppm.prec}), DIMENSION(:,:), POINTER", "=> NULL()"
