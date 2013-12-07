@@ -119,8 +119,11 @@ macro destroy_collection_ptr(collection_pointer)
 IF (ASSOCIATED(<%= coll_ptr %>)) THEN
    CALL <%= coll_ptr %>%destroy(info)
    or_fail_dealloc("<%= "#{coll_ptr}" %> object")
+
    DEALLOCATE(<%= coll_ptr %>,STAT=info)
    or_fail_dealloc("<%= "#{coll_ptr}" %> pointer")
+
+   NULLIFY(<%= coll_ptr %>)
 ENDIF
 end macro
 
@@ -128,7 +131,7 @@ macro stdout(*message)
 % #writes to standard output using ppm_write
 % #double-quoted arguments are printed as strings
 % #single-quoted ones are first evaluated in Fortran, then printed
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % if message.is_a? Array
 % message.map! {|p| p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )}
 WRITE(cbuf,*) <%=message.join(",&\n&    ")%>
@@ -141,7 +144,7 @@ macro stdout_f(format,*message)
 % #for Fortran formatted output.
 % #double-quoted arguments are printed as strings
 % #single-quoted ones are first evaluated in Fortran, then printed
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % if message.is_a? Array
 % message.map! {|p| p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )}
 WRITE(cbuf,<%= format %>) <%=message.join(",&\n")%>
@@ -153,15 +156,21 @@ end macro
 macro dealloc_pointer(pointer,info=info)
 % p = pointer.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % p = p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
-IF (ASSOCIATED(<%= p %>)) DEALLOCATE(<%= p %>,stat=<%= info %>)
-or_fail_dealloc("<%= "#{p}" %>")
+IF (ASSOCIATED(<%= p %>)) THEN
+   DEALLOCATE(<%= p %>,STAT=<%= info %>)
+   or_fail_dealloc("<%= "#{p}" %>")
+
+   NULLIFY(<%= p %>)
+ENDIF
 end macro
 
 macro dealloc_allocatable(allocatable,info=info)
 % p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % p = p.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
-IF (ALLOCATED(<%= p %>)) DEALLOCATE(<%= p %>,stat=<%= info %>)
-or_fail_dealloc("\"#{p}\"")
+IF (ALLOCATED(<%= p %>)) THEN
+   DEALLOCATE(<%= p %>,STAT=<%= info %>)
+   or_fail_dealloc("\"#{p}\"")
+ENDIF
 end macro
 
 macro dealloc_pointers(*list)
