@@ -1,5 +1,5 @@
 macro create_field(ndim,name,dtype=nil)
-% scope.raw_var({result.to_sym => "CLASS(ppm_t_field_), POINTER :: #{result}"},:ppm_t_field_)
+% scope.raw_var({result.to_sym => "CLASS(ppm_t_field_), POINTER :: #{result} => NULL()"},:ppm_t_field_)
 % scope.raw_var ({ :info => "INTEGER :: info" })
 
 ALLOCATE(ppm_t_field::<%= result %>,STAT=info)

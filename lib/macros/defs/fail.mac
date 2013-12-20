@@ -123,7 +123,7 @@ IF (ASSOCIATED(<%= coll_ptr %>)) THEN
    DEALLOCATE(<%= coll_ptr %>,STAT=info)
    or_fail_dealloc("<%= "#{coll_ptr}" %> pointer")
 
-   NULLIFY(<%= coll_ptr %>)
+   <%= coll_ptr %> => NULL()
 ENDIF
 end macro
 
@@ -160,7 +160,7 @@ IF (ASSOCIATED(<%= p %>)) THEN
    DEALLOCATE(<%= p %>,STAT=<%= info %>)
    or_fail_dealloc("<%= "#{p}" %>")
 
-   NULLIFY(<%= p %>)
+   <%= p %> => NULL()
 ENDIF
 end macro
 

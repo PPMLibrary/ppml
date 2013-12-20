@@ -10,20 +10,20 @@ macro create_ode(vars,rhs,rhs_vars,scheme=ODEscheme)
 % scope.global_use :ppm_module_user_numerics
 % scope.arg_group "ODE Parameters"
 % scope.arg name: :ODEscheme, type: "INTEGER", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
-% scope.var :vars, "CLASS(ppm_v_main_abstr), POINTER"
+% scope.var :vars, "CLASS(ppm_v_main_abstr), POINTER", " => NULL()"
 % if conf.ppm.prec == "ppm_kind_single"
-%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_s), POINTER"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_s), POINTER", " => NULL()"
 % else
-%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_d), POINTER"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_d), POINTER", " => NULL()"
 % end
 ALLOCATE(vars,stat=info)
 or_fail_alloc("Allocating vars vector")
-% scope.var :rhs_vars, "CLASS(ppm_v_var_discr_pair), POINTER"
-% scope.var :pair, "CLASS(ppm_t_var_discr_pair), POINTER"
-% scope.var :fpair, "CLASS(ppm_t_field_discr_pair), POINTER"
+% scope.var :rhs_vars, "CLASS(ppm_v_var_discr_pair), POINTER", " => NULL()"
+% scope.var :pair, "CLASS(ppm_t_var_discr_pair), POINTER", " => NULL()"
+% scope.var :fpair, "CLASS(ppm_t_field_discr_pair), POINTER", " => NULL()"
 ALLOCATE(rhs_vars,stat=info)
 or_fail_alloc("Allocating rhs_vars vector")
-% scope.var :el, "CLASS(ppm_t_main_abstr), POINTER"
+% scope.var :el, "CLASS(ppm_t_main_abstr), POINTER", " => NULL()"
 
 % change_ftypes = []
 % rhs_ftypes = []
