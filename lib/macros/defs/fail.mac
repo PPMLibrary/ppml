@@ -1,7 +1,10 @@
 macro ppm_fail(message,type=ppm_err_argument,info=info,exit_point=9999,caller=caller)
 CALL ppm_error(<%= type %>, <%= caller %>, &
 &    <%= message %>, <%= scope.line %>, <%= info %>)
+% if exit_point.to_s == "no"
+% else
 GOTO <%= exit_point %>
+% end
 end macro
 
 macro fail(message,type=ppm_err_argument,info=info,exit_point=9999,caller=caller,ppm_error=ppm_error_error)
@@ -36,7 +39,7 @@ end macro
 
 
 macro check_associated(p,message="",type=ppm_err_argument,info=info,exit_point=9999,caller=caller)
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % p_s = p.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.ASSOCIATED(<%= p_s %>)) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
@@ -54,7 +57,7 @@ ENDIF
 end macro
 
 macro check_equal(a,b,message="",type=ppm_err_argument,info=info,exit_point=9999)
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % b_s = b.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (<%= a_s %> .NE. <%= b_s%>) THEN
@@ -67,7 +70,7 @@ ENDIF
 end macro
 
 macro check_true(a,message="",type=ppm_err_argument,info=info,exit_point=9999)
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.<%= a_s %>) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
@@ -78,7 +81,7 @@ ENDIF
 end macro
 
 macro check_false(a,message="",type=ppm_err_argument,info=info,exit_point=9999)
-% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char)   :: cbuf"
+% scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (<%= a_s %>) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
@@ -89,7 +92,8 @@ ENDIF
 end macro
 
 macro start_subroutine(name=default_name)
-REAL(kind(1.D0))        :: ppm_internal_t0
+REAL(kind(1.D0)) :: ppm_internal_t0
+
 CHARACTER(LEN=ppm_char) :: caller = "<%= name.to_s.chomp('"').reverse.chomp('"').reverse %>"
 
 !-------------------------------------------------------------------------
@@ -104,7 +108,7 @@ CALL substop(caller,ppm_internal_t0,info)
 end macro
 
 macro start_function(name="default_name")
-% scope.raw_var info: "INTEGER                 :: info"
+% scope.raw_var info: "INTEGER :: info"
 CHARACTER(LEN=ppm_char) :: caller = "<%= name.to_s.chomp('"').reverse.chomp('"').reverse %>"
 
 info = 0
@@ -221,4 +225,46 @@ ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
 or_fail_alloc("<%= "#{p}" %>")
 end macro
 
+macro alloc_allocatable(allocatable,dim,info=info)
+% p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
+% d = dim.to_s.gsub( /\A'/m, "" ).gsub( /'\Z/m, "" )
+check_false("ALLOCATED(<%= p %>)","allocatable is already been allocated.")
+
+ALLOCATE(<%= p %>(<%= d %>),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
+end macro
+
+macro alloc_allocatable_with_bounds1(allocatable,lo,hi,info=info)
+% p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
+check_false("ALLOCATED(<%= p %>)","allocatable is already been allocated.")
+
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
+end macro
+
+macro alloc_allocatable_with_bounds2(allocatable,lo,hi,info=info)
+% p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
+check_false("ALLOCATED(<%= p %>)","allocatable is already been allocated.")
+
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
+end macro
+
+macro alloc_allocatable_with_bounds3(allocatable,lo,hi,info=info)
+% p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
+check_false("ALLOCATED(<%= p %>)","allocatable is already been allocated.")
+
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
+&        <%=lo%>(3):<%=hi%>(3)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
+end macro
+
+macro alloc_allocatable_with_bounds4(allocatable,lo,hi,info=info)
+% p = allocatable.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
+check_false("ALLOCATED(<%= p %>)","allocatable is already been allocated.")
+
+ALLOCATE(<%= p %>(<%=lo%>(1):<%=hi%>(1),<%=lo%>(2):<%=hi%>(2), &
+&        <%=lo%>(3):<%=hi%>(3),<%=lo%>(4):<%=hi%>(4)),STAT=<%=info%>)
+or_fail_alloc("<%= "#{p}" %>")
+end macro
 
