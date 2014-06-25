@@ -3,10 +3,10 @@ macro create_particles(topology=nil, npart=nil, prec=mk, ghost_size=nil, min=nil
 %   prec = conf.ppm.prec
 % end
 % if prec == "ppm_kind_single"
-%   scope.raw_var({result.to_sym => "TYPE(ppm_t_particles_s), POINTER :: #{result} => NULL()"},
+%   scope.raw_var({result.to_sym => "TYPE(ppm_t_particles_s), POINTER :: #{result}"},
 %                 :ppm_t_particles_s)
 % else
-%   scope.raw_var({result.to_sym => "TYPE(ppm_t_particles_d), POINTER :: #{result} => NULL()"},
+%   scope.raw_var({result.to_sym => "TYPE(ppm_t_particles_d), POINTER :: #{result}"},
 %                 :ppm_t_particles_d)
 % end
 % if topology.nil? and (min.nil? or max.nil?)
@@ -22,4 +22,5 @@ ALLOCATE(<%= result %>,STAT=info)
 or_fail_alloc("Could not allocate <%= result %>")
 
 CALL <%= result %>%initialize(<%= "#{np}" %>, info<%= ", topoid=#{topology}" unless topology.nil? %>, distrib=<%= distrib %><%= ", cutoff=#{ghost_size}" unless ghost_size.nil?%><%= ", minphys=(/#{min.join(',')}/)" unless min.nil?%><%= ", maxphys=(/#{max.join(',')}/)" unless max.nil?%>)
+or_fail("Could not initialize <%= result %>")
 end macro

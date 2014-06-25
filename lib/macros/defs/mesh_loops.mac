@@ -33,7 +33,7 @@ modifier prec(precision=MK)
 % scope.var :i, "INTEGER"
 % scope.var :j, "INTEGER"
 % scope.var :k, "INTEGER" unless k.nil?
-% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER", "=> NULL()")
+% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER")
 sbpitr => <%= m %>%subpatch%begin()
 % unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil? && bodies.interior.nil? && bodies.valid_nodes.nil?
 %   scope.var(:stnclint, "INTEGER, DIMENSION(2*ppm_dim)")
@@ -43,25 +43,27 @@ DO WHILE (ASSOCIATED(sbpitr))
 % fields.each do |f|
 % if k.nil?
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:), POINTER"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2)"
 %   end
+    NULLIFY(<%= "#{f[0]}" %>)
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
-    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
+    or_fail("<%= "#{f[0]}" %>")
 %
 % else
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2,k #3)"
 %   else
-%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:,:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:,:), POINTER"
 %     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2,k #3)"
 %   end
+    NULLIFY(<%= "#{f[0]}" %>)
     CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
-    or_fail("<%= "#{f[0]}" %>",ppm_err_sub_failed)
+    or_fail("<%= "#{f[0]}" %>")
 % end
 %
 %   ft.transform! bodies.all, bodies.real, bodies.interior, bodies.west, bodies.east
@@ -87,10 +89,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = sbpitr%lo_a(2), sbpitr%hi_a(2)
     DO <%= i %> = sbpitr%lo_a(1), sbpitr%hi_a(1)
 <%= bodies.all.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -100,8 +102,7 @@ DO WHILE (ASSOCIATED(sbpitr))
 %   else
 % scope.var :incl_ghosts, "INTEGER, DIMENSION(6)"
 %   end
-    WHERE (sbpitr%bc.LT.0 .OR. &
-    &      sbpitr%bc.NE.ppm_param_bcdef_freespace)
+    WHERE (sbpitr%bc.LT.0.OR.sbpitr%bc.NE.ppm_param_bcdef_freespace)
         incl_ghosts = 1
     ELSEWHERE
         incl_ghosts = 0
@@ -115,10 +116,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= i %> = 1 -            incl_ghosts(1)*sbpitr%ghostsize(1), &
     &         sbpitr%nnodes(1) + incl_ghosts(2)*sbpitr%ghostsize(2)
 <%= bodies.valid_nodes.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -129,10 +130,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = 1, sbpitr%nnodes(2)
     DO <%= i %> = 1, sbpitr%nnodes(1)
 <%= bodies.real.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -143,10 +144,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = stnclint(3),stnclint(4)
     DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.interior.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -157,10 +158,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = stnclint(3),stnclint(4)
     DO <%= i %> = stnclint(1)-<%= st_i %>,stnclint(1)
 <%= bodies.west.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -171,10 +172,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = stnclint(3),stnclint(4)
     DO <%= i %> = stnclint(2),stnclint(2)+<%= st_i %>
 <%= bodies.east.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -185,10 +186,10 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = stnclint(3)-<%= st_j %>,stnclint(3)
     DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.south.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
 %
@@ -199,12 +200,12 @@ DO WHILE (ASSOCIATED(sbpitr))
     DO <%= j %> = stnclint(4),stnclint(4)+<%= st_j %>
     DO <%= i %> = stnclint(1),stnclint(2)
 <%= bodies.north.indent 8 -%>
-    END DO
-    END DO
+    ENDDO
+    ENDDO
 %   unless k.nil?
-    END DO
+    ENDDO
 %   end
 % end
     sbpitr => <%= m %>%subpatch%next()
-END DO
+ENDDO
 end macro

@@ -1,5 +1,5 @@
 macro create_field(ndim,name,dtype=nil)
-% scope.raw_var({result.to_sym => "CLASS(ppm_t_field_), POINTER :: #{result} => NULL()"},:ppm_t_field_)
+% scope.raw_var({result.to_sym => "CLASS(ppm_t_field_), POINTER :: #{result}"},:ppm_t_field_)
 % scope.raw_var ({ :info => "INTEGER :: info" })
 
 ALLOCATE(ppm_t_field::<%= result %>,STAT=info)
@@ -12,12 +12,12 @@ end macro
 macro create_property(pset,ndim,name,prec=mk,zero=false,dtype=nil)
 % scope.use :ppm_module_core
 % if prec == "ppm_kind_single"
-%   scope.raw_var({result.to_sym => "CLASS(ppm_t_part_prop_s_), POINTER :: #{result} => NULL()"},:ppm_t_part_prop_s)
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_part_prop_s_), POINTER :: #{result}"},:ppm_t_part_prop_s)
 % else
-%   scope.raw_var({result.to_sym => "CLASS(ppm_t_part_prop_d_), POINTER :: #{result} => NULL()"},:ppm_t_part_prop_d)
+%   scope.raw_var({result.to_sym => "CLASS(ppm_t_part_prop_d_), POINTER :: #{result}"},:ppm_t_part_prop_d)
 % end
 % scope.raw_var ({ :info => "INTEGER :: info" })
-
+NULLIFY(<%= result %>)
 CALL <%= pset %>%create_prop(info <%= ", dtype=#{dtype} " if !dtype.nil?%>,name='<%= name %>',lda=<%= ndim %>,part_prop=<%= result %>,zero=.<%= zero %>.)
 or_fail("Create property failed!")
 end macro

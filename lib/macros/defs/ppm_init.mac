@@ -7,26 +7,27 @@ macro ppm_init(debug_level=0)
 
 % if conf.mpi
 CALL MPI_Init(info)
-or_fail("MPI_Init failed.")
+or_fail_MPI("MPI_Init failed.")
 
-comm = MPI_COMM_WORLD
+CALL MPI_Comm_dup(MPI_COMM_WORLD,comm,info)
+or_fail_MPI("MPI_Comm_dup failed.")
 
-CALL MPI_Comm_Size(comm, nproc, info)
-or_fail("MPI_Comm_Size failed.")
+CALL MPI_Comm_Size(comm,nproc,info)
+or_fail_MPI("MPI_Comm_Size failed.")
 
-CALL MPI_Comm_Rank(comm, rank, info)
-or_fail("MPI_Comm_Rank failed.")
+CALL MPI_Comm_Rank(comm,rank,info)
+or_fail_MPI("MPI_Comm_Rank failed.")
 % end
 
 CALL define_args
 CALL parse_args(info)
-IF (info .EQ. exit_gracefully) THEN
-  goto 9999
+IF (info.EQ.exit_gracefully) THEN
+   GOTO 9999
 ELSE
   or_fail("Parse args failed.")
-END IF
+ENDIF
 
-CALL ppm_init(<%= conf.ppm.dim %>, <%= conf.ppm.prec %>, &
-&             <%= conf.ppm.tolexp %>, comm, <%= debug_level %>, info)
+CALL ppm_init(<%= conf.ppm.dim %>,<%= conf.ppm.prec %>, &
+&             <%= conf.ppm.tolexp %>,comm,<%= debug_level %>,info)
 or_fail("ppm_init failed.")
 end macro

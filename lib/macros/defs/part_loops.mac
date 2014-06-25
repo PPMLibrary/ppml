@@ -50,34 +50,38 @@ modifier prec(precision=mk)
 % end
 % scope.var iter.to_sym,  "INTEGER"
 % unless x == :required
-%   scope.var "#{x}".to_sym,  "REAL(#{prec}), DIMENSION(:,:), POINTER", "=> NULL()"
+%   scope.var "#{x}".to_sym,  "REAL(#{prec}), DIMENSION(:,:), POINTER"
 % if ghosts.to_s == "false"
+NULLIFY(<%= "#{x}" %>)
 CALL <%= pset %>%get_xp(<%= "#{x}" %>,info)
 % elsif ghosts.to_s == "true"
-CALL <%= pset %>%get_xp(<%= "#{x}" %>,info,with_ghosts=.true.)
+NULLIFY(<%= "#{x}" %>)
+CALL <%= pset %>%get_xp(<%= "#{x}" %>,info,with_ghosts=.TRUE.)
 % end
 or_fail("getting positions <%= "#{pset}" %>")
 % end
 % fields.each do |f|
 %   if f[2] == :sca
-%     scope.var "#{f[0]}".to_sym,  "REAL(#{prec}), DIMENSION(:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{prec}), DIMENSION(:), POINTER"
 %   else
-%     scope.var "#{f[0]}".to_sym, "REAL(#{prec}), DIMENSION(:,:), POINTER", "=> NULL()"
+%     scope.var "#{f[0]}".to_sym, "REAL(#{prec}), DIMENSION(:,:), POINTER"
 %   end
-CALL <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info<%= ", with_ghosts=.true." if ghosts.to_s == "true" %><%= ", skip_checks=.true." if skip_checks.to_s == "true"%>)
+NULLIFY(<%= "#{f[0]}" %>)
+CALL <%= pset %>%get(<%= f[1] %>,<%= "#{f[0]}" %>,info<%= ", with_ghosts=.TRUE." if ghosts.to_s == "true" %><%= ", skip_checks=.TRUE." if skip_checks.to_s == "true"%>)
 or_fail("getting field <%= "#{f[1]}" %> for <%= "#{pset}" %>")
 % end
 % props.each do |p|
 %   if p[2] == :sca
-%     scope.var "#{p[0]}".to_sym,  "REAL(#{prec}), DIMENSION(:), POINTER", "=> NULL()"
+%     scope.var "#{p[0]}".to_sym,  "REAL(#{prec}), DIMENSION(:), POINTER"
 %   else
-%     scope.var "#{p[0]}".to_sym, "REAL(#{prec}), DIMENSION(:,:), POINTER", "=> NULL()"
+%     scope.var "#{p[0]}".to_sym, "REAL(#{prec}), DIMENSION(:,:), POINTER"
 %   end
-CALL <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info<%= ", with_ghosts=.true." if ghosts.to_s == "true" %><%= ", skip_checks=.true." if skip_checks.to_s == "true"%>)
+NULLIFY(<%= "#{p[0]}" %>)
+CALL <%= pset %>%get(<%= p[1] %>,<%= "#{p[0]}" %>,info<%= ", with_ghosts=.TRUE." if ghosts.to_s == "true" %><%= ", skip_checks=.TRUE." if skip_checks.to_s == "true"%>)
 or_fail("getting field <%= "#{p[1]}" %> for <%= "#{pset}" %>")
 % end
 % # unless nlist == :required
-% #  scope.var :nlist, "CLASS(ppm_t_neighlist#{prec_suffix}_), POINTER", "=> NULL()"
+% #  scope.var :nlist, "CLASS(ppm_t_neighlist#{prec_suffix}_), POINTER"
 % # <%= nlist %> => <%= pset %>%get_neighlist()
 % # end
 DO <%= iter %>=1,<%= pset %>%Npart
@@ -97,9 +101,10 @@ DO <%= iter %>=1,<%= pset %>%Npart
 % end
 % body.transform! "#{x}_#{iter}", "#{x}($1,#{iter})"
 <%= body.indent 2 -%>
-END DO
+ENDDO
 % if writex.to_s.to_sym == :true
 CALL <%= pset %>%set_xp(<%= "#{x}" %>,info)
+or_fail("setting positions <%= "#{pset}" %>")
 % end
 end macro
 
@@ -160,5 +165,5 @@ DO <%= nviter %>=1,<%= nlist %>%nvlist(<%= p %>)
 % end
 % body.transform! "#{x}_#{iter}", "#{x}($1,#{iter})"
    <%= body.indent 2 -%>
-END DO
+ENDDO
 end macro

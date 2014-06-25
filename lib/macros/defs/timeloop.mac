@@ -19,5 +19,5 @@ timeloop macro(tstart=start_time,deltat=time_step,tend=stop_time)
 <%= time %> = <%= tstart %>
 DO WHILE (<%= time %> .LE. <%= tend %>)
 <%= body.indent 2 -%>
-END DO
+ENDDO
 end macro

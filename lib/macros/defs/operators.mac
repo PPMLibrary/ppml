@@ -4,8 +4,11 @@ macro define_op(ndim, degree, coeffs, name)
 % # E.g. laplace in 2D has ndim = 2, degree = [2,0, 0,2] and coeffs = [1.0, 1.0]
 % scope.raw_var info: "INTEGER :: info"
 % scope.global_var result.to_sym => "TYPE(ppm_t_operator), POINTER :: #{result} => NULL()"
-ALLOCATE(<%= result %>)
+ALLOCATE(<%= result %>,STAT=info)
+or_fail_alloc("<%= result %>")
+
 CALL <%= result %>%create(<%= ndim %>, (/<%= coeffs.join(',') %>/), (/<%= degree.join(',') %>/), info, name='<%= name %>')
+or_fail("Failed to create <%= result %>")
 end macro
 
 macro discretize_op(operator, discretization, num_method, method_params)
@@ -22,7 +25,9 @@ macro discretize_op(operator, discretization, num_method, method_params)
 % end
 CALL <%= :opopts %>%create(<%= num_method %>,info<%= mp %>)
 or_fail("failed to initialize option object for operator")
+
 CALL <%= operator %>%discretize_on(<%= discretization %>, <%= result %>, <%= :opopts %>, info)
+or_fail("failed to discretize <%= result %> on <%= discretization %>")
 end macro
 
 macro apply_op(operator, input)

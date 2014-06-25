@@ -10,27 +10,28 @@ macro create_ode(vars,rhs,rhs_vars,scheme=ODEscheme)
 % scope.global_use :ppm_module_user_numerics
 % scope.arg_group "ODE Parameters"
 % scope.arg name: :ODEscheme, type: "INTEGER", default: "ppm_param_ode_scheme_eulerf", ctrl_name: "'ODEscheme'", help: "'ODE integrator'"
-% scope.var :vars, "CLASS(ppm_v_main_abstr), POINTER", " => NULL()"
+% scope.var :vars, "CLASS(ppm_v_main_abstr), POINTER"
 % if conf.ppm.prec == "ppm_kind_single"
-%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_s), POINTER", " => NULL()"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_s), POINTER"
 % else
-%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_d), POINTER", " => NULL()"
+%   scope.var :rhs_ptr, "PROCEDURE(ppm_p_rhsfunc_d), POINTER"
 % end
-ALLOCATE(vars,stat=info)
-or_fail_alloc("Allocating vars vector")
-% scope.var :rhs_vars, "CLASS(ppm_v_var_discr_pair), POINTER", " => NULL()"
-% scope.var :pair, "CLASS(ppm_t_var_discr_pair), POINTER", " => NULL()"
-% scope.var :fpair, "CLASS(ppm_t_field_discr_pair), POINTER", " => NULL()"
-ALLOCATE(rhs_vars,stat=info)
+ALLOCATE(vars,STAT=info)
+or_fail_alloc("Failed to allocate vars vector")
+% scope.var :rhs_vars, "CLASS(ppm_v_var_discr_pair), POINTER"
+% scope.var :pair, "CLASS(ppm_t_var_discr_pair), POINTER"
+% scope.var :fpair, "CLASS(ppm_t_field_discr_pair), POINTER"
+ALLOCATE(rhs_vars,STAT=info)
 or_fail_alloc("Allocating rhs_vars vector")
-% scope.var :el, "CLASS(ppm_t_main_abstr), POINTER", " => NULL()"
+% scope.var :el, "CLASS(ppm_t_main_abstr), POINTER"
 
 % change_ftypes = []
 % rhs_ftypes = []
 
 % vars.each do |f|
 %   if f.is_a? Array
-ALLOCATE(<%= :fpair %>,stat=info)
+ALLOCATE(<%= :fpair %>,STAT=info)
+or_fail_alloc("Failed to allocate <%= :fpair %>")
 <%= :fpair %>%field => <%= f[0] %>
 <%= :fpair %>%discr => <%= f[1] %>
 <%= :el %> => <%= :fpair %>
@@ -44,7 +45,8 @@ or_fail("Pushing element failed")
 % end
 
 % rhs_vars.each do |f|
-ALLOCATE(<%= :pair %>,stat=info)
+ALLOCATE(<%= :pair %>,STAT=info)
+or_fail_alloc("Failed to allocate <%= :pair %>")
 %   if f.is_a? Array
 <%= :pair %>%var => <%= f[0] %>
 <%= :pair %>%discr => <%= f[1] %>
@@ -62,6 +64,7 @@ or_fail("Pushing pair failed")
 
 % scope.raw_var result[0].to_sym =>  "TYPE(ppm_t_ode) :: #{result[0]}"
 CALL <%= result[0] %>%create(<%= scheme %>,vars,<%= :rhs_ptr %>,rhs_vars,info)
+or_fail("Failed to create <%= result[0] %>")
 
 % scope.raw_var result[1].to_sym => "INTEGER :: #{result[1]}"
 <%= result[1] %> = <%= result[0] %>%integrator%scheme_nstages

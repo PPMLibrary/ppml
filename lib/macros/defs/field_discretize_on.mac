@@ -1,4 +1,5 @@
 macro discretize(field,discretization)
-% scope.var :info, "INTEGER"
+% scope.raw_var info: "INTEGER :: info"
 CALL <%= field %>%discretize_on(<%= discretization %>,info)
+or_fail("<%= field %> failed to discretize on <%= discretization %>")
 end macro

@@ -1,4 +1,5 @@
 macro ode_step(ode, t, dt, istage)
 % scope.raw_var info: "INTEGER :: info"
 CALL <%= ode %>%step(<%= t %>,<%= dt %>,<%= istage %>,info)
+or_fail("<%= ode %>%step")
 end macro
