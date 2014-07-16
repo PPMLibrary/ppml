@@ -99,12 +99,12 @@ module CG
     #
     # @param [String] body of an expanded macro
     def mangle body
-      if conf.predictable_mangle_prefix.nil? or
-        !conf.predictable_mangle_prefix
+      #if conf.predictable_mangle_prefix.nil? or
+      #  !conf.predictable_mangle_prefix
         prefix = "gen"+rand(26**3).to_s(26)
-      else
-        prefix = "mangled"
-      end
+      #else
+      #  prefix = "mangled"
+      #end
 
       @unmangled.each_pair do |k,v|
         unmangled = k.to_s
