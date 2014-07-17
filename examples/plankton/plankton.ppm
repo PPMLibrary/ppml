@@ -39,7 +39,7 @@ client plankton
   add_patch(mesh,[0.0_mk,0.0_mk,<#2.0_mk*pi#>,<#2.0_mk*pi#>])
 
   np_global = product(nm(1:2)-1)
-  print *,np_global
+  stdout(np_global)
   ! create particles
   parts = create_particles(topo,np_global)
   allocate(displace(ppm_dim,parts%Npart))
@@ -49,7 +49,7 @@ client plankton
   deallocate(displace)
   call parts%apply_bc(info)
   !call parts%set_cutoff(4._mk * parts%h_avg, info)
-  print *,4.0_mk * parts%h_avg
+  stdout('4.0_mk * parts%h_avg')
   global_mapping(parts, topo)
 
   discretize(P,parts)
@@ -82,21 +82,21 @@ client plankton
   o, nstages = create_ode([parts,P,Z], plankton_rhs, [P=>parts,Z,s], rk4)
   t = timeloop()
     do istage=1,nstages
-      parts%flags(ppm_part_partial) = .true. ! hack
-      parts%flags(ppm_part_areinside) = .true.
-      parts%flags(ppm_part_ghosts) = .true.
-      prop => parts%props%begin()
-      do while (associated(prop))
-        prop%flags(ppm_ppt_partial) = .true.
-        prop => parts%props%next()
-      enddo
-      call parts%map_ghost_push_positions(info)
-      ghost_mapping(parts)
-      call parts%map_ghost_pop_positions(info)
+       parts%flags(ppm_part_partial) = .true. ! hack
+       parts%flags(ppm_part_areinside) = .true.
+       parts%flags(ppm_part_ghosts) = .true.
+       prop => parts%props%begin()
+       do while (associated(prop))
+          prop%flags(ppm_ppt_partial) = .true.
+          prop => parts%props%next()
+       enddo
+       call parts%map_ghost_push_positions(info)
+       ghost_mapping(parts)
+       call parts%map_ghost_pop_positions(info)
       
-      ode_step(o, t, time_step, istage)
+       ode_step(o, t, time_step, istage)
     end do
-  !  print([P=>parts, Z=>parts],10 )
+    print([P=>parts, Z=>parts],10 )
   end timeloop
 
   !print([U=>parts, V=>parts],1 )
@@ -107,7 +107,7 @@ rhs plankton_rhs(P=>parts,Z,s)
   real(mk), dimension(:,:), pointer :: displace
   get_fields(dx,dP,dZ)
 
-  print *,'remesh'
+  stdout("remesh")
   ! remesh
   call parts%remesh(mesh,ppm_param_rmsh_kernel_mp4,info)
  
@@ -120,44 +120,49 @@ rhs plankton_rhs(P=>parts,Z,s)
   call parts%apply_bc(info)
   partial_mapping(parts)
  
-  print *,'remesh done'
+  stdout("remesh done")
+
   ! recreate ghosts and neighlists
   ghost_mapping(parts)
+
   comp_neighlist(parts)
+
   ! recompute operator weights
   select type(L)
   class is (ppm_t_dcop_d)
     call L%comp_weights(info)
   end select
+
   select type(J)
   class is (ppm_t_dcop_d)
     call J%comp_weights(info)
   end select
   
-  print *,'ghost map done'
-  print *,parts%npart
+  stdout("ghost map done")
+  stdout('parts%npart')
   
-  print *,'diffusion'
+  stdout("diffusion")
   ! diffusion
   dP = apply_op(L, P)
   dZ = apply_op(L, Z)
-  print *,'reaction'
 
+  stdout("reaction")
   ! reaction terms
   foreach p in particles(parts) with sca_fields(P,Z,dP,dZ)
     dP_p = Dcp*dP_p + P_p*(1 - P_p) - a*Z_p*(1 - exp(-lambda1*P_p))
     dZ_p = Dcz*dZ_p - gam*Z_p + b*Z_p*(1 - exp(-lambda2*P_p))
   end foreach
   
-  print *,'comp streamline func'
+  
+  stdout("advection")
+  ! advection
+  dx = apply_op(J,s)
+  
+  stdout("comp streamline func")
   foreach p in particles(parts) with positions(x) vec_fields(s)
     s_p(1) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
     s_p(2) = psi0*sin(k*x_p(1))*sin(k*x_p(2))
   end foreach
   
-  print *,'advection'
-  ! advection
-  dx = apply_op(J,s)
-  
-  print *,'all done'
+  stdout("all done")
 end rhs
