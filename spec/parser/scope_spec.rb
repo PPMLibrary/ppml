@@ -5,7 +5,7 @@ module CG
 
     describe "creating scopes" do
       it "creates nested scopes" do
-        prog = Scope.new :program, "program"
+        prog = Scope.new :program, "PROGRAM"
         s1 = Scope.new(:subroutine, "subroutine1",prog)
         s2 = Scope.new(:subroutine, "subsub",s1)
         s2.parent.should == s1
@@ -22,7 +22,6 @@ module CG
       end
     end
 
-
     describe "scope modification" do
       before :each do
         @s = Scope.new :subroutine, "name"
@@ -35,14 +34,14 @@ module CG
       end
 
       it "adds variables with #raw_var" do
-        @s.raw_var(aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable")
+        @s.raw_var(aVariable: "TYPE(SomeType), DIMENSION(:) :: aVariable")
         @s.raw_var(i: "INTEGER :: i")
-        @s.variables.should == {aVariable: "TYPE(SomeType), DIMENSION(:)  :: aVariable", i: "INTEGER :: i"}
+        @s.variables.should == {aVariable: "TYPE(SomeType), DIMENSION(:) :: aVariable", i: "INTEGER :: i"}
       end
 
       it "allows the type of a symbol to be set as second argument to #var" do
-        @s.raw_var({:c => "type(something) :: c"}, :particles)
-        @s.variables.should == {:c => "type(something) :: c"}
+        @s.raw_var({:c => "TYPE(something) :: c"}, :particles)
+        @s.variables.should == {:c => "TYPE(something) :: c"}
         @s.type_of(:c).should == :particles
       end
     end

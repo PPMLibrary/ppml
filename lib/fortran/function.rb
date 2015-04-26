@@ -6,7 +6,7 @@ module CG
       @name = name
       @result_type = result_type
       @result_name = result_name.nil? ? @name : result_name
-      @result_arg = result_name.nil? ? "" : " result(#{@result_name})"
+      @result_arg = result_name.nil? ? "" : " RESULT(#{@result_name})"
       @use = {}
       @vars = {}
       @args = {}
@@ -16,7 +16,7 @@ module CG
     end
 
     def use sym, str=nil
-      @use[sym] = str || "use #{sym.to_s}"
+      @use[sym] = str || "USE #{sym.to_s}"
     end
 
     def var sym, str
@@ -62,7 +62,7 @@ module CG
       end
       <<EOF
 FUNCTION #{@name}#{args}#{us}
-  IMPLICIT NONE#{vs}#{cs}#{"\n9999 continue" if @print_continue}
+  IMPLICIT NONE#{vs}#{cs}#{"\n9999 CONTINUE" if @print_continue}
 END FUNCTION #{@name}
 EOF
     end

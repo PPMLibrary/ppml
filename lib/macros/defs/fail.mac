@@ -92,12 +92,12 @@ ENDIF
 end macro
 
 macro start_subroutine(name=default_name)
-REAL(kind(1.D0)) :: ppm_internal_t0
+REAL(ppm_kind_double) :: ppm_internal_t0
 
 CHARACTER(LEN=ppm_char) :: caller = "<%= name.to_s.chomp('"').reverse.chomp('"').reverse %>"
 
 !-------------------------------------------------------------------------
-!  Initialise
+!  Initialize
 !-------------------------------------------------------------------------
 CALL substart(caller,ppm_internal_t0,info)
 end macro

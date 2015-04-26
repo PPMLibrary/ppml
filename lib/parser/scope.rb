@@ -35,7 +35,7 @@ module CG
 
     def include_statements indent
       unless @includes.empty?
-        indent + "include '" + @includes.uniq.join("'\ninclude '#{indent}") + "'\n"
+        indent + "INCLUDE '" + @includes.uniq.join("'\nINCLUDE '#{indent}") + "'\n"
       else
         ""
       end
@@ -54,7 +54,7 @@ module CG
     # @param [Symbol] sym of the module to be used
     # @param str containing the fortran use statement if the default "use module" is not desired
     def use sym, str=nil
-      @uses[sym] = str || "use #{sym.to_s}"
+      @uses[sym] = str || "USE #{sym.to_s}"
     end
 
     def interface name, line
@@ -65,9 +65,9 @@ module CG
     def interfaces indent
       result = ""
       @interfaces.each do |name, lines|
-        result += "\n#{indent}  interface #{name}\n"
+        result += "\n#{indent}  INTERFACE #{name}\n"
         result += "#{indent}    " + lines.join("\n#{indent}    ") + "\n"
-        result += "#{indent}  end interface #{name}\n"
+        result += "#{indent}  END INTERFACE #{name}\n"
       end
       result
     end

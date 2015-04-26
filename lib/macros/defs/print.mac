@@ -14,7 +14,7 @@ macro print(fields, resolution)
 %     STDERR.puts "Warning: I don't know the type of '#{pair[1]}', ignoring..."
 %   end
 % end
-% scope.global_var :print_fieldlist => "CLASS(ppm_v_main_abstr), POINTER :: print_fieldlist => NULL()"
+% scope.global_var :print_fieldlist => "CLASS(ppm_v_main_abstr), POINTER :: print_fieldlist"
 % scope.var :temp_fix_assign, "CLASS(ppm_t_main_abstr), POINTER"
 % parts.each do |p,fs|
 IF (MOD(<%= :print_it %>,<%= resolution %>).EQ.0) THEN ! print to vtk
@@ -22,15 +22,18 @@ IF (MOD(<%= :print_it %>,<%= resolution %>).EQ.0) THEN ! print to vtk
   or_fail_alloc("Failed to allocate print_fieldlist!")
 %   fs.each do |f|
   <%= :temp_fix_assign %> => <%= f %>
-
   CALL <%= :print_fieldlist %>%push(<%= :temp_fix_assign %>, info)
   or_fail("Failed to push fields to field list.")
 %   end
+
 % scope.global_var :vtk_filename => "CHARACTER(LEN=64) :: vtk_filename"
   WRITE(<%= :vtk_filename %>, '(A,I0)') "<%= conf.out.basename %>_", <%= :print_it %>
 
   CALL ppm_vtk_particles(<%= :vtk_filename %>, <%= p %>, info, Fields=<%= :print_fieldlist %>)
-  or_fail("Failed to print fields on particle set")
+  or_fail("Failed to print fields on particle set!")
+
+  CALL <%= :print_fieldlist %>%destroy(info)
+  or_fail("Failed to detrsoy print_fieldlist elements!")
 
   DEALLOCATE(print_fieldlist,STAT=info)
   or_fail_dealloc("Failed to deallocate print_fieldlist!")

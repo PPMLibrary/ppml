@@ -31,7 +31,7 @@ Feature: macro substitution
        | alloc  | a,n  | allocate(<%= a %>(<%= n %>),info) | alloc(xp,10)\n  | allocate(xp(10),info)\n   |
        | fun    | v    | sin(<%= v %>)*cos(<%= v %>)       | fun(4.0)\n      | sin(4.0)*cos(4.0)\n       |
        | fun    | v    | sin(<%= v %>)*cos(<%= v %>)       | fun(4.0_mk)\n   | sin(4.0_mk)*cos(4.0_mk)\n |
-    
+
     Examples: replacement with list arguments
        | name  | args | body                                   | input            | result                 |
        | alloc | a    | allocate(<%= a[0] %>,<%= a[1] %>,info) | alloc([b1,b2])\n | allocate(b1,b2,info)\n |
@@ -91,9 +91,9 @@ Feature: macro substitution
     Then it should expand into
     """
     ppm_error("string, argument, list")
-    
+
     """
-  
+
   Scenario: Code arguments
     Given a macro "test_exec" with argument list ("e") is defined as
     """
@@ -108,7 +108,7 @@ Feature: macro substitution
     Then it should expand into
     """
     print *, "hello world!"
-    
+
     """
 
   Scenario: Multiple return arguments
@@ -126,7 +126,7 @@ Feature: macro substitution
       implicit none
       real :: a
       real :: b
-      
+
       a = min(x, y)
       b = max(x, y)
     end program
@@ -163,9 +163,9 @@ Feature: macro substitution
       ! inside rectest
       ppm_error("some message")
     end subroutine t
-    
+
     """
-  
+
   Scenario: Macro with recursive foreach calls
     Given a foreach macro named "particles" with argument list (particle_set)
     And body
@@ -201,5 +201,5 @@ Feature: macro substitution
         f_p = 0.0_mk
       end do
     end subroutine t
-    
+
     """

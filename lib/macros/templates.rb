@@ -57,9 +57,9 @@ ENDTEMPLATE
 % end
 % _erbout += @body.join("")                unless @body.empty?
 % unless @context.kind == :interface or (!@context.parent.nil? and @context.parent.kind == :interface)
-%   _erbout += "9999 continue\n"           if @context.output_continue
+%   _erbout += "9999 CONTINUE\n"           if @context.output_continue
 %   _erbout += @contains.to_s              unless @contains.nil?
-%   _erbout += "#{@indent}! subroutines\n" if conf.comment_mode
+%   _erbout += "#{@indent}! SUBROUTINES\n" if conf.comment_mode
 %   _erbout += _temp_subs                  unless @subroutines.empty?
 % end
 ENDTEMPLATE
@@ -71,14 +71,14 @@ ENDTEMPLATE
 % _erbout += @indent + @context.variables.values.join("\n#{@indent}") + "\n" unless @context.variables.empty?
 % _erbout += @body.join("")              unless @body.empty?
 % _erbout += @contains.to_s              unless @contains.nil?
-% #_erbout += "#{@indent}! procedures\n" if conf.comment_mode
+% #_erbout += "#{@indent}! PROCEDURES\n" if conf.comment_mode
 % _erbout += @procedures.join("")       unless @procedures.empty?
         ENDTEMPLATE
 
         define_template( :verbatim,    "<%= @in %>")
 
         define_template( :client, <<-'ENDTEMPLATE')
-<%= @in.gsub(/client/i, "program") %>
+<%= @in.gsub(/client/i, "PROGRAM") %>
 ENDTEMPLATE
 
         define_template( :fcall_macro, <<-'ENDTEMPLATE')

@@ -29,7 +29,7 @@ module CG
       vs = ""
       vs = "\n  " + @vars.values.join("\n  ") unless @vars.empty?
       ss = ""
-      ss = "\ncontains\n" + @subs.map(&:to_s).join("\n") unless @subs.empty?
+      ss = "\nCONTAINS\n" + @subs.map(&:to_s).join("\n") unless @subs.empty?
       ss.gsub! /\n/, "\n  "
       <<EOF
 MODULE #{@name}#{us}

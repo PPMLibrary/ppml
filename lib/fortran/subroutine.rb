@@ -12,7 +12,7 @@ module CG
     end
 
     def use sym, str=nil
-      @use[sym] = str || "use #{sym.to_s}"
+      @use[sym] = str || "USE #{sym.to_s}"
     end
 
     def var sym, str
@@ -50,7 +50,7 @@ module CG
       end
       <<EOF
 SUBROUTINE #{@name}#{args}#{us}
-  IMPLICIT NONE#{vs}#{cs}#{"9999 continue\n" if @print_continue}
+  IMPLICIT NONE#{vs}#{cs}#{"9999 CONTINUE\n" if @print_continue}
 END SUBROUTINE #{@name}
 EOF
     end

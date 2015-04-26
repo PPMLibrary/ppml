@@ -65,7 +65,7 @@ module CG
 
     def update_scope scope
       @combinations.each do |comb|
-        scope.interface @name, "module procedure #{@name}_#{name_suffix(comb)}"
+        scope.interface @name, "MODULE PROCEDURE #{@name}_#{name_suffix(comb)}"
       end
     end
 
