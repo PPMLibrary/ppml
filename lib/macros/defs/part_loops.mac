@@ -1,6 +1,6 @@
 foreach macro particles(pset)
 modifier positions(x,writex=:false)
-modifier ghosts(ghosts=false)
+modifier ghosts(ghosts=false,ghosts_loop=false)
 modifier skip_checks(skip_checks=false)
 modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
@@ -41,12 +41,12 @@ modifier prec(precision=mk)
 % prec = precision.to_s
 % if precision.to_s == "ppm_kind_single" or
 %    precision.to_s == "prec_s"
-%   prec_suffix = "_s"
-%   prec = "ppm_kind_single"
+%    prec_suffix = "_s"
+%    prec = "ppm_kind_single"
 % elsif precision.to_s == "ppm_kind_double" or
-%       precision.to_s == "prec_d"
-%   prec_suffix = "_d"
-%   prec = "ppm_kind_double"
+%    precision.to_s == "prec_d"
+%    prec_suffix = "_d"
+%    prec = "ppm_kind_double"
 % end
 % scope.var iter.to_sym,  "INTEGER"
 % unless x == :required
@@ -84,7 +84,15 @@ or_fail("getting field <%= "#{p[1]}" %> for <%= "#{pset}" %>")
 % #  scope.var :nlist, "CLASS(ppm_t_neighlist#{prec_suffix}_), POINTER"
 % # <%= nlist %> => <%= pset %>%get_neighlist()
 % # end
+% if ghosts.to_s == "false"
 DO <%= iter %>=1,<%= pset %>%Npart
+% elsif ghosts.to_s == "true"
+% if ghosts_loop.to_s == "false"
+DO <%= iter %>=1,<%= pset %>%Npart
+% elsif ghosts_loop.to_s == "true"
+DO <%= iter %>=1,<%= pset %>%Mpart
+% end
+% end
 % fields.each do |f|
 %   if f[2] == :sca
 %     body.transform! "#{f[0][0...-3]}_#{iter}", "#{f[0]}(#{iter})"
