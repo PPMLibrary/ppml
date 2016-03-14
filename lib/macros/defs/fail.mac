@@ -38,25 +38,25 @@ ENDIF
 end macro
 
 
-macro check_associated(p,message="",type=ppm_err_argument,info=info,exit_point=9999,caller=caller)
+macro check_associated(p,message="",type=ppm_err_argument,info=info,exit_point=9999,caller=caller,ppm_error=ppm_error_error)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % p_s = p.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.ASSOCIATED(<%= p_s %>)) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
    & "    <%= p_s %> is not associated.", CHAR(10), &
    & <%= message %>
-   fail(cbuf, <%= type %>, <%= info %>, <%= exit_point %>)
+   fail(cbuf, <%= type %>, <%= info %>, <%= exit_point %>, <%= caller %>, <%= ppm_error %>)
 ENDIF
 end macro
 
-macro check_associated_noscope(p,message="default",type=ppm_err_argument,info=info,exit_point=9999,caller=caller)
+macro check_associated_noscope(p,message="default",type=ppm_err_argument,info=info,exit_point=9999,caller=caller,ppm_error=ppm_error_error)
 % p_s = p.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.ASSOCIATED(<%= p_s %>)) THEN
-   fail("<%= "#{p_s}" %> is not associated. ", <%= type %>, <%= info %>, <%= exit_point %>)
+   fail("<%= "#{p_s}" %> is not associated. ", <%= type %>, <%= info %>, <%= exit_point %>, <%= caller %>, <%= ppm_error %>)
 ENDIF
 end macro
 
-macro check_equal(a,b,message="",type=ppm_err_argument,info=info,exit_point=9999)
+macro check_equal(a,b,message="",type=ppm_err_argument,info=info,exit_point=9999,ppm_error=ppm_error_error)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 % b_s = b.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
@@ -65,29 +65,29 @@ IF (<%= a_s %> .NE. <%= b_s%>) THEN
    & "    <%= a_s %> = ",<%= a_s %>, CHAR(10), &
    & "    <%= b_s %> = ",<%= b_s %>, CHAR(10), &
    & <%= message %>
-   fail(cbuf,<%= type %>, <%= info %>, <%= exit_point%>)
+   fail(cbuf,<%= type %>, <%= info %>, <%= exit_point%>, ppm_error=<%= ppm_error %>)
 ENDIF
 end macro
 
-macro check_true(a,message="",type=ppm_err_argument,info=info,exit_point=9999)
+macro check_true(a,message="",type=ppm_err_argument,info=info,exit_point=9999,ppm_error=ppm_error_error)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (.NOT.<%= a_s %>) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
    & "    <%= a_s %> is not true. ", CHAR(10), &
    & <%= message %>
-   fail(cbuf,<%= type %>,<%= info %>, <%= exit_point %>)
+   fail(cbuf,<%= type %>, <%= info %>, <%= exit_point %>, ppm_error=<%= ppm_error %>)
 ENDIF
 end macro
 
-macro check_false(a,message="",type=ppm_err_argument,info=info,exit_point=9999)
+macro check_false(a,message="",type=ppm_err_argument,info=info,exit_point=9999,ppm_error=ppm_error_error)
 % scope.raw_var cbuf: "CHARACTER(LEN=ppm_char) :: cbuf"
 % a_s = a.to_s.gsub( /\A"/m, "" ).gsub( /"\Z/m, "" )
 IF (<%= a_s %>) THEN
    WRITE(cbuf,*) "check failed:", CHAR(10), &
    & "    <%= a_s %> is not false", CHAR(10), &
    & <%= message %>
-   fail(cbuf,<%= type %>,<%= info %>, <%= exit_point %>)
+   fail(cbuf,<%= type %>, <%= info %>, <%= exit_point %>, ppm_error=<%= ppm_error %>)
 ENDIF
 end macro
 
