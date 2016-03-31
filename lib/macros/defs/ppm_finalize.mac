@@ -1,0 +1,11 @@
+macro ppm_finalize()
+% scope.var :info, "INTEGER"
+
+CALL ppm_finalize(info)
+or_fail("ppm_finalize failed.")
+
+% if configatron.mpi
+CALL MPI_Finalize(info)
+or_fail_MPI("MPI_Finalize failed.")
+% end
+end macro

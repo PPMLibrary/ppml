@@ -1,0 +1,4 @@
+rhs pse_rhs(f)
+  get_fields(df=>p)
+  df = apply_op(L, f)
+end rhs

@@ -1,0 +1,19 @@
+macro parameter(name,type,value)
+% scope.raw_var name.to_s.to_sym => "#{type.to_s}, PARAMETER :: #{name.to_s} = #{value}"
+end macro
+
+macro global_parameter(name,type,value)
+% scope.global_var name.to_s.to_sym => "#{type.to_s}, PARAMETER :: #{name.to_s} = #{value}"
+end macro
+
+macro global_var(name,type,value=nil)
+% if value.nil?
+%   scope.global_var name.to_s.to_sym => "#{type.to_s} :: #{name.to_s}"
+% else
+%   if type.to_s =~ /.*pointer.*/i
+%     scope.global_var name.to_s.to_sym => "#{type.to_s} :: #{name.to_s} => #{value}"
+%   else
+%     scope.global_var name.to_s.to_sym => "#{type.to_s} :: #{name.to_s} = #{value}"
+%   end
+% end
+end macro

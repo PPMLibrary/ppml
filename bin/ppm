@@ -1,0 +1,222 @@
+#!/usr/bin/env ruby
+
+require 'erb'
+require 'thor'
+require 'thor/group'
+require_relative '../lib/settings'
+require_relative '../lib/cg'
+require_relative '../lib/macros'
+require_relative '../lib/fortran'
+
+class PPM < Thor
+  include Thor::Actions
+
+  desc 'pp FILE?', 'Preprocess a fortran FILE and perform macro substitution. If FILE not provided read from STDIN'
+  method_option :outfile, :aliases => '-o', :type => :string, :desc => 'Put results in OUTFILE'
+  method_option :macrodir, :aliases => '-M', :type => :string, :desc => 'Get macros from MACRODIR1[:MCRODIR2...:MACRODIRN]'
+  def pp file=nil
+    input = file ? File.new(file) : STDIN
+
+    read_configuration
+
+    if options[:macrodir]
+      CG::Preprocessor.user_macro_paths=options[:macrodir].split(':')
+    end
+
+    o = CG::Preprocessor.instance.process(input.read)
+
+    if options[:outfile]
+      File.open(options[:outfile], 'w+') do |f|
+        f.puts o
+      end
+    else
+      puts o
+    end
+  end
+
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  desc 'newproject NAME [-d | --defaults] [-D | destination]', 'Create a new project in NAME'
+  def newproject(*args)
+    invoke NewProjectGroup, args
+  end
+
+  desc 'generate', 'Generate fortran code from ppm sources'
+  method_option :destination, :type => :string, :aliases => "-D", :default => '.'
+  def generate cli=true
+    Dir.chdir(options[:destination]) unless options[:destination] == '.' or !cli
+    self.destination_root = Dir.pwd
+    if Dir["gen"] != nil
+      FileUtils.mkdir_p("gen/obj")
+    end
+    read_configuration
+    remove_file "gen/compile.log"
+    Dir["*.ppm"].each do |src|
+      o = CG::Preprocessor.instance.process(File.new(src).read)
+      src[-3..-1] = "f"
+      File.open "gen/#{src}", 'w+' do |f|
+        f.puts o
+      end
+    end
+    File.open "gen/#{conf.name_prefix}global.f", 'w+' do |f|
+      f.puts CG::Preprocessor.instance.process(CG::GlobalModule.instance.to_s)
+    end
+    File.open "gen/#{conf.name_prefix}rhs.f", 'w+' do |f|
+      f.puts CG::Preprocessor.instance.process(CG::RHSModule.instance.to_s)
+    end
+  end
+
+  desc 'build', 'Build the simulation binary'
+  method_option :destination, :type => :string, :aliases => "-D", :default => '.'
+  def build
+    Dir.chdir(options[:destination]) unless options[:destination] == '.'
+    self.destination_root = Dir.pwd
+    generate cli=false
+    template "../lib/templates/Makefile.tt", "gen/Makefile", force: true
+    inside 'gen' do
+      run 'make'
+    end
+  end
+
+  desc 'simulate', 'Run the simulation'
+  def simulate
+  end
+
+  desc 'bench', 'Run a benchmark'
+  def bench(*args)
+    if args[0] == 'analyze'
+      bg = BenchmarkGroup.new
+      read_configuration
+      bg.analyze
+    else
+      invoke BenchmarkGroup, args
+    end
+  end
+
+
+end
+
+class NewProjectGroup < Thor::Group
+  include Thor::Actions
+  argument :name
+  class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+  class_option :destination, :type => :string, :aliases => "-D", :default => '.'
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  def create_dirs
+    Dir.chdir(options[:destination]) unless options[:destination] == '.'
+    self.destination_root = Dir.pwd
+    # The project directory
+    empty_directory "#{name}"
+    Dir.chdir(name)
+    self.destination_root = Dir.pwd
+    # where user defined macros are created
+    empty_directory "macros"
+    # where the generated fortran code is placed
+    empty_directory "gen"
+    # where the object files are placed
+    empty_directory "gen/obj"
+    # where the executable is placed
+    empty_directory "bin"
+    # where the run is executed
+    empty_directory "run"
+  end
+
+  def create_client_skel
+    template "../lib/templates/client.tt", "#{name}.ppm"
+  end
+
+  def create_client_config
+    # defaults
+    @ppm_base_path = '/usr/local'
+    @mpi_state = "true"
+    @compiler = "mpif90"
+    @ppmnumerics_base_path = "/usr/local"
+    @metis_base_path = "/usr/local"
+
+    if !options[:defaults]
+      @ppm_base_path = ask("Please point me to the PPM core base path:")
+      @ppmnumerics_base_path = ask("Please point me to the PPM numerics base path:")
+    end
+
+    template "../lib/templates/settings.tt", "#{configuration_file_name}"
+  end
+end
+
+class BenchmarkGroup < Thor::Group
+
+  include Thor::Actions
+  class_option :defaults, :type => :boolean, :aliases => "-d", :default => false
+
+  def self.source_root
+    File.dirname(__FILE__)
+  end
+
+  def get_configuration
+    read_configuration
+    @client = conf.project_name
+  end
+
+  def create_dirs
+    # The benchmark directory
+    empty_directory "bench"
+  end
+
+  def copy_files
+    FileUtils.copy "bin/#{@client}", "bench/"
+    @ctrl = conf.bench.ctrl
+    FileUtils.copy @ctrl, "bench/"
+    @nprocs = conf.bench.nprocs
+    if conf.bench.mpi_options.nil?
+      @mpi_opts = ''
+    else
+      @mpi_opts = conf.bench.mpi_options
+    end
+    if conf.bench.runargs.nil?
+      @runargs = {}
+      @nprocs.each { |p| @runargs[p] = '' }
+    else
+      @runargs = conf.bench.runargs
+    end
+    @nreps = conf.bench.nreps
+    @job_preamble = conf.bench.to_hash[conf.bench.target.to_sym][:preamble]
+    template "../lib/templates/benchmark_script.tt", "bench/job.sh"
+    chmod 'bench/job.sh', 0755
+  end
+
+  def bench_it
+    inside 'bench/' do
+      @target = conf.bench.target
+      command_template = conf.bench.to_hash[@target.to_sym][:exec]
+      erb = ERB.new command_template
+      command = erb.result
+      answer = run command
+
+      until File.exists? 'DONE'
+        sleep 10
+      end
+    end
+
+  end
+
+  def analyze
+    @benchmark = CG::Benchmark.new
+    @nprocs = conf.bench.nprocs
+    @nreps = conf.bench.nreps
+    @nprocs.each do |np|
+      (1..@nreps).each do |nr|
+        File.open "bench/proc_%06d/run%03d/time.dat" % [np,nr] do |csv_data|
+          @benchmark.append csv_data,np
+        end
+      end
+    end
+    @benchmark.print
+    #template "../lib/templates/efficiency_chart.tt", "bench/efficiency.html"
+  end
+end
+
+PPM.start

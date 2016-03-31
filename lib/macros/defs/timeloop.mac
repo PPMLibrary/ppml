@@ -1,0 +1,23 @@
+timeloop macro(tstart=start_time,deltat=time_step,tend=stop_time)
+% if conf.step.type == :real
+%   scope.raw_var time.to_sym => "REAL(MK) :: #{time}"
+% elsif conf.step.type == :integer
+%   scope.raw_var time.to_sym => "INTEGER :: #{time}"
+% end
+%
+% scope.arg_group "Time Parameters"
+% if conf.step.type == :real
+%   scope.arg name: :start_time, type: "REAL(MK)", default: "0.0_MK", min: "0.0_MK", ctrl_name: "'start_time'", help: "'Start time'"
+%   scope.arg name: :time_step, type: "REAL(MK)", default: "0.1_MK", min: "0.0_MK", ctrl_name: "'time_step'", help: "'Time step'"
+%   scope.arg name: :stop_time, type: "REAL(MK)", default: "1.0_MK", min: "0.0_MK", ctrl_name: "'stop_time'", help: "'End time'"
+% elsif conf.step.type == :integer
+%   scope.arg name: :start_time, type: "INTEGER", default: "0", min: "0", ctrl_name: "'start_step'", help: "'Start step'"
+%   scope.arg name: :time_step, type: "REAL(MK)", default: "1", min: "1", ctrl_name: "'time_step'", help: "'Time step'"
+%   scope.arg name: :stop_time, type: "INTEGER", default: "100", min: "0", ctrl_name: "'stop_step'", help: "'End step'"
+% end
+%
+<%= time %> = <%= tstart %>
+DO WHILE (<%= time %> .LE. <%= tend %>)
+<%= body.indent 2 -%>
+ENDDO
+end macro

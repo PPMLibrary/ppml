@@ -1,0 +1,33 @@
+macro ppm_init(debug_level=0)
+% scope.raw_var comm:  "INTEGER :: comm"
+% scope.raw_var rank:  "INTEGER :: rank"
+% scope.raw_var nproc: "INTEGER :: nproc"
+% scope.raw_var info:  "INTEGER :: info"
+% scope.include "mpif.h"
+
+% if conf.mpi
+CALL MPI_Init(info)
+or_fail_MPI("MPI_Init failed.")
+
+CALL MPI_Comm_dup(MPI_COMM_WORLD,comm,info)
+or_fail_MPI("MPI_Comm_dup failed.")
+
+CALL MPI_Comm_Size(comm,nproc,info)
+or_fail_MPI("MPI_Comm_Size failed.")
+
+CALL MPI_Comm_Rank(comm,rank,info)
+or_fail_MPI("MPI_Comm_Rank failed.")
+% end
+
+CALL define_args
+CALL parse_args(info)
+IF (info.EQ.exit_gracefully) THEN
+   GOTO 9999
+ELSE
+  or_fail("Parse args failed.")
+ENDIF
+
+CALL ppm_init(<%= conf.ppm.dim %>,<%= conf.ppm.prec %>, &
+&             <%= conf.ppm.tolexp %>,comm,<%= debug_level %>,info)
+or_fail("ppm_init failed.")
+end macro

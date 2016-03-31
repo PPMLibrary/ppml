@@ -1,0 +1,211 @@
+foreach macro equi_mesh(m)
+modifier indices(i=i,j=j,k=nil)
+modifier sca_fields(*sca_fields)
+modifier vec_fields(*vec_fields)
+modifier stencil_width(st_i=nil,st_j=nil,st_k=nil)
+modifier prec(precision=MK)
+% fields = []
+% if k.nil?
+%   dim = '2d'
+% else
+%   dim = '3d'
+% end
+%
+% sca_fields.each do |f|
+%   if f.is_a? Array
+%     fields << ["#{f[0]}_wp_#{dim}",f[1],:sca]
+%   else
+%     fields << ["#{f}_wp_#{dim}",f,:sca]
+%   end
+% end unless sca_fields.nil?
+% vec_fields.each do |f|
+%   if f.is_a? Array
+%     fields << ["#{f[0]}_wp_#{dim}",f[1],:vec]
+%   else
+%     fields << ["#{f}_wp_#{dim}",f,:vec]
+%   end
+% end unless vec_fields.nil?
+% if precision.to_s == "ppm_kind_single"
+%   prec_suffix = "_s"
+% elsif precision.to_s == "ppm_kind_double"
+%   prec_suffix = "_d"
+% end
+% scope.var :i, "INTEGER"
+% scope.var :j, "INTEGER"
+% scope.var :k, "INTEGER" unless k.nil?
+% scope.var(:sbpitr, "CLASS(ppm_t_subpatch_), POINTER")
+sbpitr => <%= m %>%subpatch%begin()
+% unless bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil? && bodies.interior.nil? && bodies.valid_nodes.nil?
+%   scope.var(:stnclint, "INTEGER, DIMENSION(2*ppm_dim)")
+% end
+%
+DO WHILE (ASSOCIATED(sbpitr))
+% fields.each do |f|
+% if k.nil?
+%   if f[2] == :sca
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:), POINTER"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2)"
+%   else
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2)"
+%   end
+    NULLIFY(<%= "#{f[0]}" %>)
+    CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
+    or_fail("<%= "#{f[0]}" %>")
+%
+% else
+%   if f[2] == :sca
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:), POINTER"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}(i #1,j #2,k #3)"
+%   else
+%     scope.var "#{f[0]}".to_sym,  "REAL(#{precision}), DIMENSION(:,:,:,:), POINTER"
+%     ft = CG::Transform.new "#{f[0][0...-6]}_#{iter}", "#{f[0]}($1,i #1,j #2,k #3)"
+%   end
+    NULLIFY(<%= "#{f[0]}" %>)
+    CALL sbpitr%get_field(<%= f[1] %>, <%= "#{f[0]}" %>, info)
+    or_fail("<%= "#{f[0]}" %>")
+% end
+%
+%   ft.transform! bodies.all, bodies.real, bodies.interior, bodies.west, bodies.east
+%   ft.transform! bodies.south, bodies.north, bodies.bottom, bodies.top, bodies.valid_nodes
+% end
+%
+% unless bodies.interior.nil? && bodies.west.nil? && bodies.east.nil? && bodies.south.nil? && bodies.north.nil? && bodies.bottom.nil? && bodies.top.nil?
+!boundaries of the array on which the full symmetric stencil can be applied
+    stnclint(1) = MAX(1,               1-sbpitr%ghostsize(1) + <%= st_i %>)
+    stnclint(2) = MIN(sbpitr%nnodes(1),sbpitr%nnodes(1)+sbpitr%ghostsize(2) - <%= st_i %>)
+    stnclint(3) = MAX(1,               1-sbpitr%ghostsize(3) + <%= st_j %>)
+    stnclint(4) = MIN(sbpitr%nnodes(2),sbpitr%nnodes(2)+sbpitr%ghostsize(4) - <%= st_j %>)
+%  unless st_k.nil?
+    stnclint(5) = MAX(1,               1-sbpitr%ghostsize(5) + <%= st_k %>)
+    stnclint(6) = MIN(sbpitr%nnodes(3),sbpitr%nnodes(3)+sbpitr%ghostsize(6) - <%= st_k %>)
+%  end
+% end
+%
+% unless bodies.all.nil?
+%   unless k.nil?
+    DO <%= k %> = sbpitr%lo_a(3), sbpitr%hi_a(3)
+%   end
+    DO <%= j %> = sbpitr%lo_a(2), sbpitr%hi_a(2)
+    DO <%= i %> = sbpitr%lo_a(1), sbpitr%hi_a(1)
+<%= bodies.all.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.valid_nodes.nil?
+%   if k.nil?
+% scope.var :incl_ghosts, "INTEGER, DIMENSION(4)"
+%   else
+% scope.var :incl_ghosts, "INTEGER, DIMENSION(6)"
+%   end
+    WHERE (sbpitr%bc.LT.0.OR.sbpitr%bc.NE.ppm_param_bcdef_freespace)
+        incl_ghosts = 1
+    ELSEWHERE
+        incl_ghosts = 0
+    END WHERE
+%   unless k.nil?
+    DO <%= k %> = 1 -            incl_ghosts(5)*sbpitr%ghostsize(5), &
+    &         sbpitr%nnodes(3) + incl_ghosts(6)*sbpitr%ghostsize(6)
+%   end
+    DO <%= j %> = 1 -            incl_ghosts(3)*sbpitr%ghostsize(3), &
+    &         sbpitr%nnodes(2) + incl_ghosts(4)*sbpitr%ghostsize(4)
+    DO <%= i %> = 1 -            incl_ghosts(1)*sbpitr%ghostsize(1), &
+    &         sbpitr%nnodes(1) + incl_ghosts(2)*sbpitr%ghostsize(2)
+<%= bodies.valid_nodes.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.real.nil?
+%   unless k.nil?
+    DO <%= k %> = 1, sbpitr%nnodes(3)
+%   end
+    DO <%= j %> = 1, sbpitr%nnodes(2)
+    DO <%= i %> = 1, sbpitr%nnodes(1)
+<%= bodies.real.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.interior.nil?
+%   unless k.nil?
+    DO <%= k %> = stnclint(5),stnclint(6)
+%   end
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(1),stnclint(2)
+<%= bodies.interior.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.west.nil?
+%   unless k.nil?
+    DO <%= k %> = stnclint(5),stnclint(6)
+%   end
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(1)-<%= st_i %>,stnclint(1)
+<%= bodies.west.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.east.nil?
+%   unless k.nil?
+    DO <%= k %> = stnclint(5),stnclint(6)
+%   end
+    DO <%= j %> = stnclint(3),stnclint(4)
+    DO <%= i %> = stnclint(2),stnclint(2)+<%= st_i %>
+<%= bodies.east.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.south.nil?
+%   unless k.nil?
+    DO <%= k %> = stnclint(5),stnclint(6)
+%   end
+    DO <%= j %> = stnclint(3)-<%= st_j %>,stnclint(3)
+    DO <%= i %> = stnclint(1),stnclint(2)
+<%= bodies.south.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+%
+% unless bodies.north.nil?
+%   unless k.nil?
+    DO <%= k %> = stnclint(5),stnclint(6)
+%   end
+    DO <%= j %> = stnclint(4),stnclint(4)+<%= st_j %>
+    DO <%= i %> = stnclint(1),stnclint(2)
+<%= bodies.north.indent 8 -%>
+    ENDDO
+    ENDDO
+%   unless k.nil?
+    ENDDO
+%   end
+% end
+    sbpitr => <%= m %>%subpatch%next()
+ENDDO
+end macro

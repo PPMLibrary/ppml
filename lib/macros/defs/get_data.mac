@@ -1,0 +1,4 @@
+macro get_data(field)
+% scope.var result.to_sym,  "REAL(MK), DIMENSION(:), POINTER"
+<%= result %> = b%get_wp(<%= field %>)
+end macro

@@ -1,0 +1,6 @@
+default: -p cli -p html
+html: --format html --out doc/feature_report.html
+cli: --color --format progress
+autotest: -p cli
+autotest-all: -p cli -p html
+# progress stepdefs usage

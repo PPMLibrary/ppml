@@ -1,0 +1,7 @@
+require 'rspec'
+require 'antlr3'
+require_relative '../lib/macros'
+require_relative '../lib/parser'
+require_relative '../lib/cg'
+require_relative '../lib/fortran'
+require_relative '../lib/settings'

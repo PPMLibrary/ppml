@@ -1,0 +1,43 @@
+macro global_mapping(discretization,topology)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%map(info,global=.TRUE.,topoid=<%= topology %>)
+or_fail("Global mapping failed.")
+end macro
+
+macro partial_mapping(discretization)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%map(info)
+or_fail("Partial mapping failed.")
+end macro
+
+macro mapping_push(discretization,fields)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%map_positions(info)
+or_fail("mapping positions failed for <%= discretization %>")
+% fields.each do |f|
+CALL <%= discretization %>%map_push(info,<%= f %>)
+or_fail("map_push failed for <%= discretization %>")
+% end
+end macro
+
+macro mapping_send(discretization)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%map_send(info)
+or_fail("map_send failed for <%= discretization %>")
+end macro
+
+macro mapping_push(discretization,fields)
+% scope.raw_var info: "INTEGER :: info"
+% fields.each do |f|
+CALL <%= discretization %>%map_pop(info,<%= f %>)
+or_fail("map_pop failed for <%= discretization %>")
+% end
+CALL <%= discretization %>%map_pop_positions(info)
+or_fail("map_pop_positions failed for <%= discretization %>")
+end macro
+
+macro ghost_mapping(discretization)
+% scope.raw_var info: "INTEGER :: info"
+CALL <%= discretization %>%map_ghosts(info)
+or_fail("Ghost mapping failed for <%= discretization %>")
+end macro

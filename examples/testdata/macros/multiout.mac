@@ -1,0 +1,8 @@
+macro minmax(a,b)
+% scope.raw_var ({ result[0].to_sym => "real :: #{result[0]}" })
+% scope.raw_var ({ result[1].to_sym => "real :: #{result[1]}" })
+
+<%= result[0] %> = min(<%= a %>, <%= b %>)
+<%= result[1] %> = max(<%= a %>, <%= b %>)
+
+end macro
