@@ -5604,7 +5604,7 @@ SUBROUTINE part_initialize_s(Pc,Npart_global,info,&
     CHARACTER(LEN=*),           OPTIONAL,INTENT(IN   )     :: name
     !!! name for this set of particles
 
-    IF (ppm_dim .eq. 2) THEN
+    IF (ppm_dim.EQ.2) THEN
         CALL  particles_initialize2d_s(Pc,Npart_global,info,&
             distrib,topoid,minphys,maxphys,cutoff,name=name)
     ELSE
@@ -6584,7 +6584,7 @@ SUBROUTINE part_mapping_ghosts_s(Pc,info,ghostsize,debug)
             ENDIF
         ENDIF !.NOT.skip_send
 
-    ELSE ! if cutoff .le. 0
+    ELSE ! if cutoff.LE.0
 
         IF(dbg) THEN
             write(*,*) 'cutoff = 0, nothing to do'
@@ -14127,7 +14127,7 @@ SUBROUTINE part_initialize_d(Pc,Npart_global,info,&
     CHARACTER(LEN=*),           OPTIONAL,INTENT(IN   )     :: name
     !!! name for this set of particles
 
-    IF (ppm_dim .eq. 2) THEN
+    IF (ppm_dim.EQ.2) THEN
         CALL  particles_initialize2d_d(Pc,Npart_global,info,&
             distrib,topoid,minphys,maxphys,cutoff,name=name)
     ELSE
@@ -15111,7 +15111,7 @@ SUBROUTINE part_mapping_ghosts_d(Pc,info,ghostsize,debug)
             ENDIF
         ENDIF !.NOT.skip_send
 
-    ELSE ! if cutoff .le. 0
+    ELSE ! if cutoff.LE.0
 
         IF(dbg) THEN
             write(*,*) 'cutoff = 0, nothing to do'

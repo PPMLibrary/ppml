@@ -1,4 +1,3 @@
-
 # basic settings
 conf.project_name = "grayscott"
 conf.binary = "grayscott"

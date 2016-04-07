@@ -119,7 +119,7 @@ module CG
       end
       args
     end
-   
+
     # similar to the above but also allows empty elements in comma separated
     # list
     def self.injects_split str
@@ -127,7 +127,7 @@ module CG
       str.scan /".*?(?<!\\)"|[^,]*/ do |inj|
         injs << inj
       end
-      injs  
+      injs
     end
 
     # Creates a propper regexp from pattern by making sure to

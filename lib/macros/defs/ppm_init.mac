@@ -1,9 +1,9 @@
 macro ppm_init(debug_level=0)
+% scope.use :ppm_module_mpi
 % scope.raw_var comm:  "INTEGER :: comm"
 % scope.raw_var rank:  "INTEGER :: rank"
 % scope.raw_var nproc: "INTEGER :: nproc"
 % scope.raw_var info:  "INTEGER :: info"
-% scope.include "mpif.h"
 
 % if conf.mpi
 CALL MPI_Init(info)
@@ -27,7 +27,6 @@ ELSE
   or_fail("Parse args failed.")
 ENDIF
 
-CALL ppm_init(<%= conf.ppm.dim %>,<%= conf.ppm.prec %>, &
-&             <%= conf.ppm.tolexp %>,comm,<%= debug_level %>,info)
+CALL ppm_init(<%= conf.ppm.dim %>,<%= conf.ppm.prec %>,<%= conf.ppm.tolexp %>,comm,<%= debug_level %>,info)
 or_fail("ppm_init failed.")
 end macro

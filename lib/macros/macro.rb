@@ -190,7 +190,7 @@ module CG
           if named
             named.each_pair do |name,value|
               # do NOT check for nil, since the default value may be actually
-              # nil! 
+              # nil!
               if result.has_key?(name)
                 result[name] = value
               else
@@ -206,10 +206,10 @@ module CG
           result.delete(:splat)
         end
         raise ArgumentError if result.values.include? :required
-        # get the <# code #> fragments and remove the tags 
+        # get the <# code #> fragments and remove the tags
         result.each_pair do |k,v|
           if v.kind_of? Array
-            cleaned_v = [] 
+            cleaned_v = []
             v.each do |ve|
               if ve.to_s =~ /\A<#(.+)#>\z/
                 cleaned_v << $~[1]

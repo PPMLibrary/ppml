@@ -122,7 +122,7 @@ module CG
         printf("%d\t",p)
         printf("%s\n",timings[p].collect{|t| "%.3f"%t}.join("\t"))
       end
-        
+
     end
   end
 end

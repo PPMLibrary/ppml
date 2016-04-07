@@ -1,37 +1,37 @@
 client lj
-  integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
-  real(mk), dimension(3) :: r_pq
-  real(mk)               :: r_s_pq
-  real(mk)               :: r_s_pq2
-  real(mk), dimension(3) :: dF
-  real(mk)               :: cutoff
-  real(mk)               :: skin
-  real(mk)               :: E_prc
-  real(mk)               :: Ev_tot, Ep_tot, E_tot
-  real(mk)               :: Ev_tot_old, Ep_tot_old
-  real(mk), dimension(:,:), pointer :: displace
-  real(mk), dimension(:,:), pointer :: xp
-  class(ppm_t_neighlist_d_), pointer :: templist
-  integer :: nia,n
-  integer :: st = 0
+  INTEGER, DIMENSION(6) :: bcdef = ppm_param_bcdef_periodic
+  REAL(MK), DIMENSION(3) :: r_pq
+  REAL(MK)               :: r_s_pq
+  REAL(MK)               :: r_s_pq2
+  REAL(MK), DIMENSION(3) :: dF
+  REAL(MK)               :: cutoff
+  REAL(MK)               :: skin
+  REAL(MK)               :: E_prc
+  REAL(MK)               :: Ev_tot, Ep_tot, E_tot
+  REAL(MK)               :: Ev_tot_old, Ep_tot_old
+  REAL(MK), DIMENSION(:,:), pointer :: displace
+  REAL(MK), DIMENSION(:,:), pointer :: xp
+  CLASS(ppm_t_neighlist_d_), pointer :: templist
+  INTEGER :: nia,n
+  INTEGER :: st = 0
 
-  add_arg(m,<#real(mk)#>,1.0_mk,0.0_mk,'mass','mass of particles')
-  add_arg(eps,<#real(mk)#>,1.0_mk,0.0_mk,'epsilon','Potential well depth')
-  add_arg(sigma,<#real(mk)#>,1.0_mk,0.0_mk,'sigma','distance of potential well')
-  add_arg(dt,<#real(mk)#>,1.0_mk,0.0_mk,'delta_t','time step')
+  add_arg(m,<#REAL(MK)#>,1.0_MK,0.0_MK,'mass','mass of particles')
+  add_arg(eps,<#REAL(MK)#>,1.0_MK,0.0_MK,'epsilon','Potential well depth')
+  add_arg(sigma,<#REAL(MK)#>,1.0_MK,0.0_MK,'sigma','distance of potential well')
+  add_arg(dt,<#REAL(MK)#>,1.0_MK,0.0_MK,'delta_t','time step')
 
   ppm_init()
-  
-  cutoff = sigma*(2.5_mk/1.1_mk)
-  skin = 0.1_mk*cutoff
+
+  cutoff = sigma*(2.5_MK/1.1_MK)
+  skin = 0.1_MK*cutoff
 
   topo = create_topology(bcdef,ghost_size=<#cutoff + skin#>)
   parts = create_particles(topo,ghost_size=<#cutoff + skin#>)
-  !allocate(displace(ppm_dim,parts%Npart))
-  !call random_number(displace)
-  !displace = (displace - 0.5_mk) * parts%h_avg * 1.0E-6_mk
-  !call parts%move(displace, info)
-  call parts%apply_bc(info)
+  !ALLOCATE(displace(ppm_dim,parts%Npart))
+  !CALL RANDOM_NUMBER(displace)
+  !displace = (displace - 0.5_MK) * parts%h_avg * 1.0E-6_MK
+  !CALL parts%move(displace, info)
+  CALL parts%apply_bc(info)
 
   global_mapping(parts, topo)
 
@@ -42,61 +42,67 @@ client lj
 
   ghost_mapping(parts)
 
-  !print *,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
-  !print *,'eq dist:',sigma*2.0_mk**(1.0_mk/6.0_mk)
-  nlist = create_neighlist(parts,cutoff=<#cutoff#>,skin=<#skin#>,sym=<#.false.#>)
-  
-  E_prc =  4.0_mk*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
+  !PRINT*,parts%Npart,parts%Mpart-parts%Npart,parts%h_avg,sigma
+  !PRINT*,'eq dist:',sigma*2.0_MK**(1.0_MK/6.0_MK)
+  nlist = create_neighlist(parts,cutoff=<#cutoff#>,skin=<#skin#>,sym=<#.FALSE.#>)
 
-  t = timeloop(tstart=0.0_mk,deltat=dt,tend=stop_time)
+  E_prc =  4.0_MK*eps*((sigma/(cutoff+skin))**12 - (sigma/(cutoff+skin))**6)
+
+  t = timeloop(tstart=0.0_MK,deltat=dt,tend=stop_time)
     foreach p in particles(parts) with positions(x,writex=true) sca_props(E) vec_props(F,a,v) prec(ppm_kind_double)
       a_p(:) = F_p(:)/m
-      x_p(:) = x_p(:) + v_p(:)*dt + 0.5_mk*a_p(:)*dt**2
-      F_p(:) = 0.0_mk
-      E_p = 0.0_mk
+      x_p(:) = x_p(:) + v_p(:)*dt + 0.5_MK*a_p(:)*dt**2
+      F_p(:) = 0.0_MK
+      E_p = 0.0_MK
     end foreach
-    call parts%apply_bc(info) 
+
+    CALL parts%apply_bc(info)
     partial_mapping(parts)
     ghost_mapping(parts)
-    
+
     ! this should recompute the neighlist
     comp_neighlist(parts)
-    
+
     foreach p in particles(parts) with positions(x) sca_props(E) vec_props(F) prec(ppm_kind_double)
       foreach q in neighbors(p,nlist) with positions(x) prec(ppm_kind_double)
         r_pq(:) = x_p(:) - x_q(:)
-        !r_s_pq = sqrt(r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2) 
+        !r_s_pq = sqrt(r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2)
         r_s_pq2 = r_pq(1)**2 + r_pq(2)**2 + r_pq(3)**2
-        dF(:) = (24.0_mk*eps*r_pq(:))*(2.0_mk*(sigma**12/r_s_pq2**7) - (sigma**6/r_s_pq2**4))
+        dF(:) = (24.0_MK*eps*r_pq(:))*(2.0_MK*(sigma**12/r_s_pq2**7) - (sigma**6/r_s_pq2**4))
         F_p(:) = F_p(:) + dF(:)
-        E_p = E_p + 4.0_mk*eps*(sigma**12/r_s_pq2**6 - sigma**6/r_s_pq2**3) &
+        E_p = E_p + 4.0_MK*eps*(sigma**12/r_s_pq2**6 - sigma**6/r_s_pq2**3) &
         &         - E_prc
       end foreach
     end foreach
+
     foreach p in particles(parts) with positions(x) vec_props(F,a,v) prec(ppm_kind_double)
-      v_p(:) = v_p(:) + 0.5_mk*(a_p(:) + (F_p(:)/m))*dt
+      v_p(:) = v_p(:) + 0.5_MK*(a_p(:) + (F_p(:)/m))*dt
     end foreach
+
     t = t + dt
     ghost_mapping(parts)
-   
+
     ! analysis
     Ev_tot_old = Ev_tot
     Ep_tot_old = Ep_tot
-    E_tot = 0.0_mk
-    Ev_tot = 0.0_mk
-    Ep_tot = 0.0_mk
+    E_tot = 0.0_MK
+    Ev_tot = 0.0_MK
+    Ep_tot = 0.0_MK
+
     foreach p in particles(parts) with sca_props(E) vec_props(v) prec(ppm_kind_double)
-      Ev_tot = Ev_tot + 0.5_mk*m*(v_p(1)**2+v_p(2)**2+v_p(3)**2)
+      Ev_tot = Ev_tot + 0.5_MK*m*(v_p(1)**2+v_p(2)**2+v_p(3)**2)
       Ep_tot = Ep_tot + E_p
     end foreach
-    Ep_tot = Ep_tot*0.5_mk
+
+    Ep_tot = Ep_tot*0.5_MK
     E_tot = Ev_tot + Ep_tot
-    write(*,'(I7,3E17.8)'),st,E_tot,Ev_tot, Ep_tot!,maxdisp
-    !print *,Ev_tot, Ep_tot, E_tot
-    !print *,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
+
+    WRITE(*,'(I7,3E17.8)'),st,E_tot,Ev_tot, Ep_tot!,maxdisp
+    !PRINT*,Ev_tot, Ep_tot, E_tot
+    !PRINT*,Ev_tot-Ev_tot_old, Ep_tot-Ep_tot_old
     !print([E=>parts,v=>parts,F=>parts],100 )
     st = st + 1
   end timeloop
 
-end client
+END client
 

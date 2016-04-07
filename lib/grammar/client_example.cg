@@ -1,8 +1,8 @@
 client PSE
   ! fortran definitions up front
   ! or should we make it possible to define anywhere?
-  real, dimension(3), pointer :: bells_and_whistles
-  integer :: fortran_is_crap
+  REAL, DIMENSION(3), POINTER :: bells_and_whistles
+  INTEGER :: fortran_is_crap
 
   property f
   operator d
@@ -20,7 +20,7 @@ client PSE
   create_neighlist(c)
 
   ! more fortran here
-  call boilerplate(some, arg)
+  CALL boilerplate(some, arg)
 
   compute(d,c)
 
@@ -33,15 +33,16 @@ client PSE
       dp = dp + n.weight/d**2
     end loop
   end loop
+
   ! FORTRAN --------------------------------
-  do i=1,c%size
+  DO i=1,c%size
     dp = 0
     neighlist => c%neighlist(i)
-    do j=1,c%nvlist(i)
+    DO j=1,c%nvlist(i)
       dist = euclidean_distance(c%xp(i), c%xp(neiglist(j)))
       dp = dp + c%wp(neighlist(j)) / dist**2
-    end
-  end
+    ENDDO
+  ENDDO
   ! ----------------------------------------
 
     step_ode(o,c)

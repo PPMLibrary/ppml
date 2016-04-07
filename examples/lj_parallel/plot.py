@@ -26,11 +26,11 @@ def plot_tot(ival):
 
     ax1.plot(t,etot,'b',label='$E_{tot}$')
     ax1.plot(t,epot,'r',label='$E_{pot}$')
-    
+
     #ax2 = ax1.twinx()
     #ax2.plot(t,dist,'g',label='$\lambda$')
-    
-    
+
+
     ax1.legend(loc=3)
     #ax2.legend(loc=0)
     ax1.set_xlabel('timestep')

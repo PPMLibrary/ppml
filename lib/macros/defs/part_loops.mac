@@ -6,7 +6,7 @@ modifier sca_fields(*sca_fields)
 modifier vec_fields(*vec_fields)
 modifier sca_props(*sca_props)
 modifier vec_props(*vec_props)
-modifier prec(precision=mk)
+modifier prec(precision=MK)
 % # ghosts = true does not imply the loop is iterating over up to Mp - change?
 % fields = []
 % sca_fields.each do |f|

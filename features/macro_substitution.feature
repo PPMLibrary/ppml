@@ -69,7 +69,7 @@ Feature: macro substitution
     """
     Then it should expand into
     """
-    print *, "Hello, Mr. ","Duderino",". Can I be of any service?"
+    PRINT*, "Hello, Mr. ","Duderino",". Can I be of any service?"
     call ppm_error(ppm_err_argument, &
       "topoid not valid",&
       caller, 100000 , info)
@@ -102,12 +102,12 @@ Feature: macro substitution
     """
     When I preprocess
     """
-    test_exec(<#print *, "hello world!"#>)
+    test_exec(<#PRINT*, "hello world!"#>)
 
     """
     Then it should expand into
     """
-    print *, "hello world!"
+    PRINT*, "hello world!"
 
     """
 
@@ -172,7 +172,7 @@ Feature: macro substitution
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= body.indent 2 -%>
-    end do
+    ENDDO
 
     """
     Given a macro "test" with argument list ("pset,f") is defined as
@@ -199,7 +199,7 @@ Feature: macro substitution
       ! inside test
       do p=1,parts%Npart
         f_p = 0.0_mk
-      end do
+      ENDDO
     end subroutine t
 
     """

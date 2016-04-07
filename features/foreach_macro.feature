@@ -9,7 +9,7 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= particle_set %>%Npart
     <%= body.indent 2 -%>
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -27,7 +27,7 @@ Feature: Foreach Macros
       do p=1,P%Npart
         ! do something to p
         p = 20
-      end do
+      ENDDO
 
     """
 
@@ -37,7 +37,7 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= a %>%Npart
     <%= body.indent 2 -%>
-    end do
+    ENDDO
 
     """
     And a foreach macro named "inner" with argument list (b)
@@ -45,7 +45,7 @@ Feature: Foreach Macros
     """
     do <%= iter %>=1,<%= b %>%Npart
     <%= body.indent 2 -%>
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -62,8 +62,8 @@ Feature: Foreach Macros
       do p=1,X%Npart
         do q=1,Y%Npart
           bla
-        end do
-      end do
+        ENDDO
+      ENDDO
 
     """
 
@@ -104,8 +104,8 @@ Feature: Foreach Macros
           mangled_q = nlist%vlist(mangled_nvq,mangled_p)
           ! updating w
           mangled_dw_wp(mangled_p) = mangled_w_wp(mangled_p)*mangled_w_wp(mangled_q)
-        end do
-      end do
+        ENDDO
+      ENDDO
 
     """
 
@@ -118,7 +118,7 @@ Feature: Foreach Macros
     modifier indices(i,j,k=nil)
     % body_indent = conf.ppm.dim * 2 + 2
     patch_iterator = <%= m %>%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
     % fields.each_with_index do |f,ind|
       call patch_iterator%get_field(field_data<%= ind %>, <%= f %>, info)
     % end
@@ -129,12 +129,12 @@ Feature: Foreach Macros
     % end
     <%= body.indent body_indent -%>
     % if conf.ppm.dim == 3
-          end do
+          ENDDO
     % end
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => <%= m %>%subpatch%next()
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -149,17 +149,17 @@ Feature: Foreach Macros
     Then it should expand into
     """
     patch_iterator = M%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
       call patch_iterator%get_field(field_data0, f1, info)
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           node%f1(1) = cos(i*h(1)+j)
           node%f1(2) = sin(i*h(1)+j)
           node%f1(3) = cos(i*h(1)+j)**2
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => M%subpatch%next()
-    end do
+    ENDDO
 
     """
 
@@ -170,7 +170,7 @@ Feature: Foreach Macros
     modifier indices(i=i,j=j,k=k)
     modifier fields(*fs)
     patch_iterator = <%= m %>%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
     % fs.each do |f|
       call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
     %   body.transform! "#{f}_#{iter}", "#{f}_data(#{i},#{j},$1)"
@@ -178,10 +178,10 @@ Feature: Foreach Macros
       do <%= i %> = 1, patch_iterator%nnodes(1)
         do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= body.indent 6 -%>
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => <%= m %>%subpatch%next()
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -196,7 +196,7 @@ Feature: Foreach Macros
     Then it should expand into
     """
     patch_iterator = M%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
       call patch_iterator%get_field(f1_data, f1, info)
       call patch_iterator%get_field(f2_data, f2, info)
       call patch_iterator%get_field(f3_data, f3, info)
@@ -205,10 +205,10 @@ Feature: Foreach Macros
           f1_data(i,j,1) = cos(i*h(1)+j)
           f2_data(i,j,2) = sin(i*h(1)+j)
           f3_data(i,j,3) = cos(i*h(1)+j)**2
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => M%subpatch%next()
-    end do
+    ENDDO
 
     """
   Scenario: injecting offsets
@@ -218,7 +218,7 @@ Feature: Foreach Macros
     modifier indices(i=i,j=j,k=k)
     modifier fields(*fs)
     patch_iterator = <%= m %>%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
     % fs.each do |f|
       call patch_iterator%get_field(<%= f %>_data, <%= f %>, info)
     %   body.transform! "#{f}_#{iter}", "#{f}_data(#{i} #1,#{j} #2,$1)"
@@ -226,10 +226,10 @@ Feature: Foreach Macros
       do <%= i %> = 1, patch_iterator%nnodes(1)
         do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= body.indent 6 -%>
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => <%= m %>%subpatch%next()
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -242,17 +242,17 @@ Feature: Foreach Macros
     Then it should expand into
     """
     patch_iterator = M%subpatch%begin()
-    do while (associated(patch_iterator))
+    DO WHILE (ASSOCIATED(patch_iterator))
       call patch_iterator%get_field(f1_data, f1, info)
       call patch_iterator%get_field(f2_data, f2, info)
       call patch_iterator%get_field(f3_data, f3, info)
       do i = 1, patch_iterator%nnodes(1)
         do j = 1, patch_iterator%nnodes(2)
           f1_data(i ,j ,1) = f2_data(i +1,j ,1) + f2_data(i ,j -1,1)
-        end do
-      end do
+        ENDDO
+      ENDDO
       patch_iterator => M%subpatch%next()
-    end do
+    ENDDO
 
     """
 
@@ -264,18 +264,18 @@ Feature: Foreach Macros
     <%= i %> = 1
     do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.top.indent 2 -%>
-    end do
+    ENDDO
 
     do <%= i %> = 2, patch_iterator%nnodes(1) - 1
       do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.rest.indent 4 -%>
-      end do
-    end do
+      ENDDO
+    ENDDO
 
     <%= i %> = patch_iterator%nnodes(1)
     do <%= j %> = 1, patch_iterator%nnodes(2)
     <%= bodies.bottom.indent 2 -%>
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -295,18 +295,18 @@ Feature: Foreach Macros
     i = 1
     do j = 1, patch_iterator%nnodes(2)
       x = f(i+1,j)
-    end do
+    ENDDO
 
     do i = 2, patch_iterator%nnodes(1) - 1
       do j = 1, patch_iterator%nnodes(2)
         x = f(i-1,j) + f(i+1,j)
-      end do
-    end do
+      ENDDO
+    ENDDO
 
     i = patch_iterator%nnodes(1)
     do j = 1, patch_iterator%nnodes(2)
       x = f(i-1,j)
-    end do
+    ENDDO
 
     """
     
@@ -330,18 +330,18 @@ Feature: Foreach Macros
     i = 1
     do j = 1, patch_iterator%nnodes(2)
     <%= bodies.top.indent 2 -%>
-    end do
+    ENDDO
 
     do i = 2, patch_iterator%nnodes(1) - 1
       do j = 1, patch_iterator%nnodes(2)
     <%= bodies.rest.indent 4 -%>
-      end do
-    end do
+      ENDDO
+    ENDDO
 
     i = patch_iterator%nnodes(1)
     do j = 1, patch_iterator%nnodes(2)
     <%= bodies.bottom.indent 2 -%>
-    end do
+    ENDDO
 
     """
     When I preprocess
@@ -366,19 +366,19 @@ Feature: Foreach Macros
     i = 1
     do j = 1, patch_iterator%nnodes(2)
       f_data(i,j,1) = g_data(i+1,j)
-    end do
+    ENDDO
 
     do i = 2, patch_iterator%nnodes(1) - 1
       do j = 1, patch_iterator%nnodes(2)
         f_data(i,j,1) = g_data(i-1,j) + g_data(i+1,j)
-      end do
-    end do
+      ENDDO
+    ENDDO
 
     i = patch_iterator%nnodes(1)
     do j = 1, patch_iterator%nnodes(2)
       f_data(i,j,1) = g_data(i-1,j)
       f_data(i,j,2) = g_data(i,j)
       f_data(i,j,3) = g_data(i+1,j)
-    end do
+    ENDDO
 
     """

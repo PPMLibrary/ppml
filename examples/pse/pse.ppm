@@ -34,16 +34,16 @@ client pse
     f_p = 1.0_mk
     do idim = 1, ppm_dim
       f_p = f_p*exp(-((x_p(idim)-mu)**2)/sigma)
-    end do
+    ENDDO
   end foreach
 
   create_neighlist(c)
 
-  if (ppm_dim.eq.2) then
+  IF (ppm_dim.eq.2) THEN
     Lap = define_op(2, [2, 0, 0, 2], [1.0_mk, 1.0_mk], "Laplacian")
   else 
     Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
-  end if 
+  ENDIF 
   L = discretize_op(Lap, c, ppm_param_op_dcpse, [order=>2,c=>0.5_mk])
 
   o, nstages = create_ode([f=>c], pse_rhs, [f], rk4)
@@ -51,12 +51,12 @@ client pse
   call ppm_tstats_add('pse',timer,info)
 
   t = timeloop(0.0_mk,deltat=dt)
-    do istage=1,nstages
+    DO istage=1,nstages
       ghost_mapping(c)
       call ppm_tstats_tic(timer,1,info)
       ode_step(o, t, dt, istage)
       call ppm_tstats_toc(timer,1,timing,info)
-    end do
+    ENDDO
     write(*,*) "time: ", t
 
     call ppm_tstats_collect('time.dat',info)

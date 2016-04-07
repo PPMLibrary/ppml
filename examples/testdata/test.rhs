@@ -1,4 +1,4 @@
 rhs test(topology=t,discretization=pset1,rhs=wp,drhs=dwp,idata,ldata,rdata)
 ! arguments cannot be changed but erb templates are allowed
-print *,t, <%= conf.ppm.dim %>
+PRINT*,t, <%= conf.ppm.dim %>
 end rhs

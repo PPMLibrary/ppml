@@ -9,16 +9,16 @@ describe "ppm" do
     end
     it "takes a file argument and puts result to STDOUT" do
       `./bin/ppm pp examples/testdata/fortran.f`.should == <<-HEREDOC
-program test
-  implicit none
-  integer, dimension(50) :: a,b,c
-  integer :: x,i=2,j=49
-!             Int. J. Numer. Meth. Engng 2003; 56:935-960.
-  forall (x=i:j)
+PROGRAM test
+  IMPLICIT NONE
+  INTEGER, DIMENSION(50) :: a,b,c
+  INTEGER :: x,i=2,j=49
+  ! Int. J. Numer. Meth. Engng 2003; 56:935-960.
+  FORALL (x=i:j)
     a(x)=b(x)+c(x) ! All these assignments are performed after the
     c(x)=b(x)-a(x) ! assignments in the preceding statement
-  end forall
-end program
+  END FORALL
+END PROGRAM
 HEREDOC
     end
     it "takes '-o file' and puts result to 'file'" do

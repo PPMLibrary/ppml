@@ -30,7 +30,7 @@ Feature: preprocessing standard fortran
 
     Examples: loops
       | code                        |
-      | do i=1,N\nj = i+1\nend do\n |
+      | do i=1,N\nj = i+1\nENDDO\n |
 
     Examples: continued line
       | code                            |

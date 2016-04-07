@@ -1,15 +1,15 @@
 client grayscott
-  integer, dimension(6) :: bcdef = ppm_param_bcdef_periodic
-  integer, dimension(2) :: seed
-  real(ppm_kind_double), dimension(:,:), pointer :: displace
-  real(ppm_kind_double) :: noise = 0.0_mk
-  integer               :: istage = 1
-  integer               :: interval
+  INTEGER, DIMENSION(6) :: bcdef = ppm_param_bcdef_periodic
+  INTEGER, DIMENSION(2) :: seed
+  REAL(ppm_kind_double), DIMENSION(:,:), POINTER :: displace
+  REAL(ppm_kind_double) :: noise = 0.0_MK
+  INTEGER               :: istage = 1
+  INTEGER               :: interval
 
-  add_arg(k_rate,<#real(mk)#>,1.0_mk,0.0_mk,'k_rate','Reaction rate')
-  add_arg(F,<#real(mk)#>,1.0_mk,0.0_mk,'F_param','Reaction parameter F')
-  add_arg(D_u,<#real(mk)#>,1.0_mk,0.0_mk,'Du_param','Diffusion constant of U')
-  add_arg(D_v,<#real(mk)#>,1.0_mk,0.0_mk,'Dv_param','Diffusion constant of V')
+  add_arg(k_rate,<#REAL(MK)#>,1.0_MK,0.0_MK,'k_rate','Reaction rate')
+  add_arg(F,<#REAL(MK)#>,1.0_MK,0.0_MK,'F_param','Reaction parameter F')
+  add_arg(D_u,<#REAL(MK)#>,1.0_MK,0.0_MK,'Du_param','Diffusion constant of U')
+  add_arg(D_v,<#REAL(MK)#>,1.0_MK,0.0_MK,'Dv_param','Diffusion constant of V')
 
   ppm_init()
 
@@ -17,14 +17,14 @@ client grayscott
   V = create_field(1, "V")
 
   topo = create_topology(bcdef)
-  
+
   c = create_particles(topo)
-  allocate(displace(ppm_dim,c%Npart))
-  call random_number(displace)
-  displace = (displace - 0.5_mk) * c%h_avg * 0.15_mk
-  call c%move(displace, info)
-  call c%apply_bc(info)
-  !call c%set_cutoff(4._mk * c%h_avg, info)
+  ALLOCATE(displace(ppm_dim,c%Npart))
+  CALL RANDOM_NUMBER(displace)
+  displace = (displace - 0.5_MK) * c%h_avg * 0.15_MK
+  CALL c%move(displace, info)
+  CALL c%apply_bc(info)
+  !CALL c%set_cutoff(4._MK * c%h_avg, info)
 
   global_mapping(c, topo)
 
@@ -34,39 +34,40 @@ client grayscott
   ghost_mapping(c)
 
   foreach p in particles(c) with positions(x) sca_fields(U,V)
-    U_p = 1.0_mk
-    V_p = 0.0_mk 
-    if (((x_p(1) - 0.5_mk)**2 + (x_p(2) - 0.5_mk)**2) .lt. 0.01) then
-      call random_number(noise)
-      U_p = 0.5_mk  + 0.01_mk*noise
-      call random_number(noise)
-      V_p = 0.25_mk + 0.01_mk*noise
-    end if
+    U_p = 1.0_MK
+    V_p = 0.0_MK
+    IF (((x_p(1) - 0.5_MK)**2 + (x_p(2) - 0.5_MK)**2) .lt. 0.01) THEN
+      CALL RANDOM_NUMBER(noise)
+      U_p = 0.5_MK  + 0.01_MK*noise
+      CALL RANDOM_NUMBER(noise)
+      V_p = 0.25_MK + 0.01_MK*noise
+    ENDIF
   end foreach
-  
-  n = create_neighlist(c,cutoff=<#4._mk * c%h_avg#>)
 
-  if (ppm_dim .eq. 2) then
-    Lap = define_op(2, [2,0, 0,2], [1.0_mk, 1.0_mk], "Laplacian")
-  else 
-    Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_mk, 1.0_mk, 1.0_mk], "Laplacian")
-  end if 
+  n = create_neighlist(c,cutoff=<#4._MK * c%h_avg#>)
 
-  L = discretize_op(Lap, c, ppm_param_op_dcpse,[order=>2,c=>1.0_mk])
+  IF (ppm_dim.EQ.2) THEN
+    Lap = define_op(2, [2,0, 0,2], [1.0_MK, 1.0_MK], "Laplacian")
+  ELSE
+    Lap = define_op(3, [2,0,0, 0,2,0, 0,0,2], [1.0_MK, 1.0_MK, 1.0_MK], "Laplacian")
+  ENDIF
+
+  L = discretize_op(Lap, c, ppm_param_op_dcpse,[order=>2,c=>1.0_MK])
 
   o, nstages = create_ode([U,V], grayscott_rhs, [U=>c,V], rk4)
-  interval = 1 
+  interval = 1
   t = timeloop()
-    do istage=1,nstages
-      ghost_mapping(c)
-      ode_step(o, t, time_step, istage)
-    end do
+    DO istage=1,nstages
+       ghost_mapping(c)
+
+       ode_step(o, t, time_step, istage)
+    ENDDO
     print([U=>c, V=>c],interval )
   end timeloop
 
   !print([U=>c, V=>c],1 )
   ppm_finalize()
-end client
+END client
 
 rhs grayscott_rhs(U=>parts,V)
   get_fields(dU,dV)
@@ -74,10 +75,8 @@ rhs grayscott_rhs(U=>parts,V)
   dU = apply_op(L, U)
   dV = apply_op(L, V)
 
-
   foreach p in particles(parts) with sca_fields(U,V,dU,dV)
-    dU_p = D_u*dU_p - U_p*(V_p**2) + F*(1.0_mk-U_p)
+    dU_p = D_u*dU_p - U_p*(V_p**2) + F*(1.0_MK-U_p)
     dV_p = D_v*dV_p + U_p*(V_p**2) - (F+k_rate)*V_p
   end foreach
-
 end rhs

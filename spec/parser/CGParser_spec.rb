@@ -27,11 +27,11 @@ module CG
 
     fortran_program = <<HDC
 PROGRAM name
-  integer i
+  INTEGER i
   bla bla bla
   macro_name()
   some more shit
-end program
+END PROGRAM
 HDC
 
     it "playground" do

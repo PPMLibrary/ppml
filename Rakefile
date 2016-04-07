@@ -11,7 +11,6 @@ CLEAN.include("**/*~")
 # generated filesc
 CLOBBER.include("lib/parser/CG*")
 
-
 def antlr f
   puts "Generating #{f}"
   Dir.mkdir("lib/parser") if !File.directory?("lib/parser")

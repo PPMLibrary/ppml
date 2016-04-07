@@ -12,10 +12,10 @@ Feature: Recursive macro expansion
   Scenario: macro expansion syntax
     Given a macro "fail" with argument list ("condition,msg") is defined as
     """
-    if (<%= condition %>) then
+    IF (<%= condition %>) THEN
       call ppm_error(errno, <%= msg %>)
       goto 9999
-    end if
+    ENDIF
     """
     And a macro "ppm_init" with argument list ("msg") is defined as
     """
@@ -31,9 +31,9 @@ Feature: Recursive macro expansion
     Then it should expand into
     """
     call ppm_init(many,args,info)
-    if (info.ne.0) then
+    IF (info.ne.0) THEN
       call ppm_error(errno, "messagemessage")
       goto 9999
-    end if
+    ENDIF
 
     """

@@ -9,10 +9,10 @@ module CG
       it "adds a use statement" do
         @s.use "module_ctrl"
         @s.to_s.to_s.should == <<EOF
-subroutine name
-  use module_ctrl
-  implicit none
-end subroutine name
+SUBROUTINE name
+  USE module_ctrl
+  IMPLICIT NONE
+END SUBROUTINE name
 EOF
       end
     end
@@ -21,35 +21,35 @@ EOF
       it "adds new lines of code" do
         @s.add "2 + 3"
         @s.to_s.should == <<EOF
-subroutine name
-  implicit none
+SUBROUTINE name
+  IMPLICIT NONE
   2 + 3
-end subroutine name
+END SUBROUTINE name
 EOF
       end
     end
 
     context "#args" do
       it "defines the argument list" do
-        @s.args x: "integer :: x", info: "integer :: info"
+        @s.args x: "INTEGER :: x", info: "INTEGER :: info"
         @s.to_s.should == <<EOF
-subroutine name(x, info)
-  implicit none
-  integer :: x
-  integer :: info
-end subroutine name
+SUBROUTINE name(x, info)
+  IMPLICIT NONE
+  INTEGER :: x
+  INTEGER :: info
+END SUBROUTINE name
 EOF
       end
     end
 
     context "#var" do
       it "adds a variable definition" do
-        @s.var :ndim, "integer :: ndim"
+        @s.var :ndim, "INTEGER :: ndim"
         @s.to_s.should == <<EOF
-subroutine name
-  implicit none
-  integer :: ndim
-end subroutine name
+SUBROUTINE name
+  IMPLICIT NONE
+  INTEGER :: ndim
+END SUBROUTINE name
 EOF
       end
     end

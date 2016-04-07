@@ -30,7 +30,7 @@ end
 
 def initialize( input, options = {}, scope = nil)
   super( input, options )
-  
+
   if scope.nil?
     @scope = Scope.new nil, nil
   else
@@ -65,8 +65,8 @@ def update_line_number
     @scope.line = @line_offset
   else # otherwise...
     t = Preprocessor.instance.tokens
-    i = @input.look.start_index 
-    @scope.line = t[i].line 
+    i = @input.look.start_index
+    @scope.line = t[i].line
   end
 end
 
@@ -231,8 +231,8 @@ scope_start returns [name]
       {
 setup_scope $kind.text, $n
 @scope.output_continue = true
-@scope.raw_var caller: "character(len=#{$n.text.to_s.length}) :: caller = '#{$n.text.to_s}'"
-@scope.raw_var   info: "integer :: info"
+@scope.raw_var caller: "CHARACTER(LEN=#{$n.text.to_s.length}) :: caller = '#{$n.text.to_s}'"
+@scope.raw_var   info: "INTEGER :: info"
 $name = $n
 }
       -> client(in={@empty_lines + @current_indent + $text.text})
@@ -323,7 +323,7 @@ imacro
 foreach
     : {dont_indent_old = @dont_indent
        @dont_indent = true
-       modarg_acc = [] 
+       modarg_acc = []
        bodies = {} }
       ^(FOREACH n=ID_T it=ID_T a=arglist?
             ^(MODIFIERS m+=ID_T* (ma+=arglist {modarg_acc << ma})*  )
@@ -343,7 +343,7 @@ foreach_end : ^(SCOPE_END TEXT) -> verbatim(in={""});
 timeloop
     : {dont_indent_old = @dont_indent
        @dont_indent = true}
-      ^(TIMELOOP t=ID_T tp=arglist b=loop_body 
+      ^(TIMELOOP t=ID_T tp=arglist b=loop_body
         {find_hidden} timeloop_end)
        {@dont_indent = dont_indent_old}
       -> timeloop(context={@scope},time={$t},tparams={tp}, body={$b.body.to_s + (@empty_lines || '')})
@@ -361,18 +361,18 @@ arglist returns [pos,named,splat]
     : {posargs = []
        nvals = []}
       ^(ARGS ((a+=value
-              { posargs << a.template 
+              { posargs << a.template
               })
               | (a+=value_list
-              { posargs << a.lst 
+              { posargs << a.lst
               })
               )*
             ^(NAMEDARGS na+=ID_T*)
             ^(NAMEDARGS ((a+=value
-              { nvals << a.template 
+              { nvals << a.template
               })
               | (a+=value_list
-              { nvals << a.lst 
+              { nvals << a.lst
               })
             )*))
       { $pos = posargs
@@ -385,7 +385,7 @@ fline : ^(FLINE c=TEXT) -> verbatim(in={$c.text}) ;
 value_list returns [lst]
     : {v_acc = []}
       ^(VLIST (v+=value {v_acc << v.template} |
-               v+=value_pair {v_acc << v.pair})*) 
+               v+=value_pair {v_acc << v.pair})*)
       { $lst = v_acc }
     ;
 

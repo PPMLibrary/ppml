@@ -203,7 +203,7 @@ Feature: Templating for fortran
     Given a macro "pmac" with argument list ("type") is defined as
     """
     ! inside pmac
-    print *,'<%= type %>'
+    PRINT*,'<%= type %>'
 
     """
     When I preprocess
@@ -239,7 +239,7 @@ Feature: Templating for fortran
         integer :: x
         integer :: info
         ! inside pmac
-        print *,'integer'
+        PRINT*,'integer'
       end subroutine sub_integer
 
       subroutine sub_real(x,info)
@@ -247,7 +247,7 @@ Feature: Templating for fortran
         real :: x
         integer :: info
         ! inside pmac
-        print *,'real'
+        PRINT*,'real'
       end subroutine sub_real
 
     end module scope

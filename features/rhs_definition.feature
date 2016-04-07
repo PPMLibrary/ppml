@@ -47,7 +47,7 @@ Feature: Right hand side definition
         class(ppm_t_field_), pointer :: df
         class(ppm_t_field_), pointer :: dg
         class(ppm_t_field_), pointer :: dh
-        real(mk), dimension(:), pointer :: mangled_dgdata
+        REAL(MK), dimension(:), pointer :: mangled_dgdata
         integer :: test
         testrhs = 0
         vd_pair => vars_discr%at(1)
@@ -121,7 +121,7 @@ Feature: Right hand side definition
   #   rhs name(topology=t,discretization=pset1,rhs=wp,drhs=dwp,idata=idata,ldata=ldata,rdata=rdata)
   #   ! the body of rhs is in fortran
   #   ! arguments cannot be changed but erb templates are allowed
-  #   print *,topo_id, <%= conf.ppm.dim %>
+  #   PRINT*,topo_id, <%= conf.ppm.dim %>
   #   end rhs
 
   #   """
@@ -133,15 +133,15 @@ Feature: Right hand side definition
   #     implicit none
   #     integer :: name
   #     integer, intent(in) :: t
-  #     real(mk), dimension(:,:), pointer :: pset1
-  #     real(mk), dimension(:,:), pointer :: wp
-  #     real(mk), dimension(:,:), pointer :: dwp
+  #     REAL(MK), dimension(:,:), pointer :: pset1
+  #     REAL(MK), dimension(:,:), pointer :: wp
+  #     REAL(MK), dimension(:,:), pointer :: dwp
   #     integer, dimension(:,:), intent(in), optional :: idata
   #     logical, dimension(:,:), intent(in), optional :: ldata
-  #     real(mk), dimension(:,:), intent(in), optional :: rdata
+  #     REAL(MK), dimension(:,:), intent(in), optional :: rdata
   #     ! the body of rhs is in fortran
   #     ! arguments cannot be changed but erb templates are allowed
-  #     print *,topo_id, <%= conf.ppm.dim %>
+  #     PRINT*,topo_id, <%= conf.ppm.dim %>
       
   #   end function name
 
