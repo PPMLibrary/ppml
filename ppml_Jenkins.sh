@@ -1,5 +1,5 @@
 #!/bin/sh
 echo "$HOME"
-source .bashrc
+source $HOME/.bashrc
 rake antlr
 
