@@ -81,7 +81,7 @@ write(*,*)ppm_rank
       IF (disp.gt.maxdisp) maxdisp = disp
     end foreach
 
-    CALL MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,0,comm,info)
+    CALL MPI_Allreduce(maxdisp,allmaxdisp,1,ppm_mpi_kind,MPI_MAX,comm,info)
     CALL ppm_tstats_tic(map_time,st+1,info)
     !if (4.0_MK*allmaxdisp.ge.skin**2) THEN
     IF (MOD(st,2)==0) THEN
@@ -149,7 +149,7 @@ write(*,*)ppm_rank
     energies(2) = Ev_tot
     energies(3) = Ep_tot
 
-    CALL MPI_Allreduce(energies,energies_reduced,3,ppm_mpi_kind,MPI_SUM,0,comm,info)
+    CALL MPI_Allreduce(energies,energies_reduced,3,ppm_mpi_kind,MPI_SUM,comm,info)
 
     IF (ppm_rank.EQ.0) THEN
       !WRITE(*,'(I7,3E17.8)'),st,energies_reduced(1),energies_reduced(2),energies_reduced(3)
